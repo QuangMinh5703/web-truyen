@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useMemo, useState, Suspense } from 'react';
+import { useEffect, useRef, useMemo, useState, Suspense, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
 import { useParams, useRouter } from 'next/navigation';
@@ -8,29 +8,44 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
-// import ChapterNav from '@/components/ChapterNav'; // Removed static import
 import ProgressBar from '@/components/ProgressBar';
 import { useInView } from 'react-intersection-observer';
+import { WebtoonImage } from '@/components/WebtoonImage';
+
+import { ReaderControls } from '@/components/ReaderControls';
 
 import screenfull from 'screenfull';
 import { useDrag } from '@use-gesture/react';
-import { useReaderSettings } from '@/lib/hooks/useReaderSettings';
+import { useReaderSettings, PageWidth } from '@/lib/hooks/useReaderSettings';
 import { useChapterData } from '@/lib/hooks/useChapterData';
 import { useReadingProgress } from '@/lib/hooks/useReadingProgress';
-import { useDebounce } from '@/lib/hooks/useDebounce';
+import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback';
+import { getImageUrl } from '@/lib/api';
+
+
+
+const DynamicWebtoonReader = dynamic(() => import('@/components/WebtoonReader'), {
+  loading: () => <div className="text-center py-12">Đang tải trình đọc...</div>,
+  ssr: false,
+});
 
 const DynamicChapterNav = dynamic(() => import('@/components/ChapterNav'), {
-  loading: () => null, // Or a small spinner if desired
+  loading: () => null,
 });
 
 const DynamicTransformWrapper = dynamic(() => import('react-zoom-pan-pinch').then(mod => mod.TransformWrapper), {
   loading: () => null,
-  ssr: false, // react-zoom-pan-pinch might have issues with SSR
+  ssr: false,
 });
 
 const DynamicTransformComponent = dynamic(() => import('react-zoom-pan-pinch').then(mod => mod.TransformComponent), {
   loading: () => null,
-  ssr: false, // react-zoom-pan-pinch might have issues with SSR
+  ssr: false,
+});
+
+const DynamicCommentSection = dynamic(() => import('@/components/CommentSection'), {
+  loading: () => <div className="text-center py-8">Đang tải bình luận...</div>,
+  ssr: false,
 });
 
 const ChapterPage = () => {
@@ -44,15 +59,32 @@ const ChapterPage = () => {
   const { chapter, allChapters, story, loading, error } = useChapterData(slug, chapterId);
   const { currentPage, progress, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(chapterId, chapter);
 
-  const [isNavigating, setIsNavigating] = useState(false); // New state for navigation loading
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isChapterNavOpen, setIsChapterNavOpen] = useState(false);
+  const [imageHeights, setImageHeights] = useState<Record<number, number>>({});
+  const isLoadingNextChapter = isNavigating;
 
-  const { ref, inView } = useInView({
-    threshold: 0,
+  const { ref: commentsRef, inView: commentsInView } = useInView({
+    triggerOnce: true,
+    rootMargin: '200px 0px',
   });
 
-  // Navigation functions wrapped in useCallback for stable references
+  const { ref: infiniteScrollRef, inView: infiniteScrollInView } = useInView({
+    triggerOnce: false,
+    rootMargin: '200px 0px',
+  });
+
+  // Handle measured image heights for continuous mode
+  const handleImageHeightMeasured = useCallback((index: number, height: number) => {
+    setImageHeights(prev => ({
+      ...prev,
+      [index]: height
+    }));
+  }, []);
+
+  // Navigation functions
   const navigateToChapter = useCallback((targetChapterId: string) => {
-    setIsNavigating(true); // Set navigating to true when starting navigation
+    setIsNavigating(true);
     router.push(`/truyen/${slug}/chuong/${targetChapterId}`);
   }, [router, slug]);
 
@@ -80,10 +112,10 @@ const ChapterPage = () => {
     }
   }, [nextPage, handleChapterNavigation]);
 
-  // Debounced navigation functions
-  const debouncedPrevPage = useDebounce(prevPage, 300);
-  const debouncedHandleNextPage = useDebounce(handleNextPage, 300);
-  const debouncedHandleChapterNavigation = useDebounce(handleChapterNavigation, 300);
+  // Debounced navigation
+  const debouncedPrevPage = useDebouncedCallback(prevPage, 300);
+  const debouncedHandleNextPage = useDebouncedCallback(handleNextPage, 300);
+  const debouncedHandleChapterNavigation = useDebouncedCallback(handleChapterNavigation, 300);
 
   const bind = useDrag(({ movement: [mx], last }) => {
     if (readerMode === 'single' && last) {
@@ -95,21 +127,27 @@ const ChapterPage = () => {
     }
   });
 
-  // Effect for infinite scroll
-  useEffect(() => {
-    if (inView && readerMode === 'continuous' && !loading) {
-      handleChapterNavigation('next'); // Not debouncing here as InView already handles debouncing
-    }
-  }, [inView, readerMode, loading, handleChapterNavigation]); // Added handleChapterNavigation to dependencies
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement ||
+        event.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
       if (readerMode === 'single') {
-        if (event.key === 'ArrowLeft' || event.key === 'a') {
-          debouncedPrevPage();
-        } else if (event.key === 'ArrowRight' || event.key === 'd') {
+        switch (event.key.toLowerCase()) {
+          case 'arrowleft':
+          case 'a':
+            debouncedPrevPage();
+            break;
+          case 'arrowright':
+          case 'd':
             debouncedHandleNextPage();
+            break;
         }
       }
     };
@@ -118,23 +156,32 @@ const ChapterPage = () => {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [debouncedPrevPage, debouncedHandleNextPage, readerMode]);
+  }, [readerMode, debouncedPrevPage, debouncedHandleNextPage]);
 
-  const handleFullscreen = useCallback(() => {
-    if (screenfull.isEnabled && chapterPageRef.current) {
-        screenfull.toggle(chapterPageRef.current);
-        toggleFullscreen();
-    }
-  }, [toggleFullscreen]);
+  const handleReportError = (imageUrl: string) => {
+    const storyName = story?.name || slug;
+    const chapterName = chapter?.name ?? chapterId;
+    const subject = `Báo lỗi ảnh truyện: ${storyName} - Chương ${chapterName}`;
+    const body = `
+      Link truyện: ${window.location.href}
+      Link ảnh lỗi: ${imageUrl}
+      
+      Mô tả lỗi:
+    `;
+    window.location.href = `mailto:support@example.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
 
-  // Effect to reset isNavigating when chapter data loads
-  useEffect(() => {
-    if (!loading && !error && chapter) {
-      setIsNavigating(false);
-    }
-  }, [chapterId, loading, error, chapter]); // Added chapterId to dependencies
+  const currentImageUrl = useMemo(() => {
+    return chapter?.images?.[currentPage] ? getImageUrl(chapter.images[currentPage]) : '';
+  }, [chapter, currentPage]);
 
-  if (loading || isNavigating) { // Show loading state if either data is loading or navigating
+  // Preload next 2 images
+  const preloadImages = useMemo(() => {
+    if (!chapter?.images) return [];
+    return chapter.images.slice(currentPage + 1, currentPage + 3).map(image => getImageUrl(image));
+  }, [chapter, currentPage]);
+
+  if (loading || isNavigating) {
     return (
       <div className="min-h-screen --background">
         <Navbar />
@@ -166,14 +213,6 @@ const ChapterPage = () => {
       </div>
     );
   }
-
-  const cdnDomain = 'https://img.otruyenapi.com';
-  const currentImageUrl = chapter.content[currentPage] ? `${cdnDomain}${chapter.content[currentPage]}` : '';
-
-  // Preload next 2 images
-  const preloadImages = useMemo(() => {
-    return chapter.content.slice(currentPage + 1, currentPage + 3).map(image => `${cdnDomain}${image}`);
-  }, [chapter.content, currentPage, cdnDomain]);
 
   return (
     <div className={`min-h-screen --background`} ref={chapterPageRef}>
@@ -208,9 +247,9 @@ const ChapterPage = () => {
           </button>
           <button
             onClick={debouncedHandleNextPage}
-            disabled={(currentPage === chapter.content.length - 1 && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
+            disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
             className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full flex items-center justify-center transition-all ${
-              (currentPage === chapter.content.length - 1 && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+              (currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
             }`}
             aria-label="Trang sau"
           >
@@ -238,7 +277,7 @@ const ChapterPage = () => {
             </li>
             <li>/</li>
             <li className="text-gray-900 font-medium">
-              Chương {chapter.chapter_name} {chapter.chapter_title && `- ${chapter.chapter_title}`}
+              Chương {chapter.name} {chapter.title && `- ${chapter.title}`}
             </li>
           </ol>
         </nav>
@@ -249,10 +288,10 @@ const ChapterPage = () => {
             {story?.name}
           </h1>
           <h2 className="text-xl text-gray-700 mb-2">
-            Chương {chapter.chapter_name} {chapter.chapter_title && `- ${chapter.chapter_title}`}
+            Chương {chapter.name} {chapter.title && `- ${chapter.title}`}
           </h2>
           <p className="text-sm text-gray-600">
-            Cập nhật: {new Date(chapter.updatedAt).toLocaleDateString('vi-VN')}
+            Cập nhật: {new Date(chapter.updatedAt ?? '').toLocaleDateString('vi-VN')}
           </p>
         </div>
         
@@ -261,164 +300,91 @@ const ChapterPage = () => {
             <ProgressBar progress={progress} />
         </div>
 
-
         {/* Navigation Controls */}
-        <div className={`flex items-center justify-between mb-6 p-4 bg-white rounded-lg shadow-sm ${isFullscreen ? 'hidden' : ''}`}>
-          <button
-            onClick={() => debouncedHandleChapterNavigation('prev')}
-            disabled={(!allChapters.length || allChapters.findIndex(ch => ch.id === chapterId) === 0) || isNavigating}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed`}
-          >
-            ← Chương trước
-          </button>
-
-          <div className="flex items-center space-x-4">
-            <button
-                onClick={() => setIsChapterNavOpen(true)}
-                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
-              >
-                Mục lục
-              </button>
-
-            {/* Reader Mode Toggle */}
-            <div className="flex items-center space-x-2">
-              <span className="text-sm text-gray-600">Chế độ:</span>
-              <button
-                onClick={() => setReaderMode(readerMode === 'single' ? 'continuous' : 'single')}
-                className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
-              >
-                {readerMode === 'single' ? 'Từng trang' : 'Cuộn liên tục'}
-              </button>
-            </div>
-            
-            {/* Background Color Toggle */}
-            <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Màu nền:</span>
-                <button onClick={() => setBackgroundColor('white')} className={`w-6 h-6 rounded-full bg-white border ${backgroundColor === 'white' ? 'ring-2 ring-blue-500' : ''}`}></button>
-                <button onClick={() => setBackgroundColor('black')} className={`w-6 h-6 rounded-full bg-black border ${backgroundColor === 'black' ? 'ring-2 ring-blue-500' : ''}`}></button>
-                <button onClick={() => setBackgroundColor('sepia')} className={`w-6 h-6 rounded-full bg-yellow-100 border ${backgroundColor === 'sepia' ? 'ring-2 ring-blue-500' : ''}`}></button>
-            </div>
-            
-            {/* Page Width Toggle */}
-            <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600">Chiều rộng:</span>
-                <select onChange={(e) => setPageWidth(e.target.value as PageWidth)} value={pageWidth} className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors">
-                    <option value="fit-width">Vừa chiều rộng</option>
-                    <option value="fit-height">Vừa chiều cao</option>
-                    <option value="original">Kích thước gốc</option>
-                </select>
-            </div>
-
-            {/* Fullscreen Toggle */}
-            <div className="flex items-center space-x-2">
-                <button
-                    onClick={handleFullscreen}
-                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm font-medium transition-colors"
-                >
-                    {isFullscreen ? 'Thoát' : 'Toàn màn hình'}
-                </button>
-            </div>
-          </div>
-
-          <button
-            onClick={() => debouncedHandleChapterNavigation('next')}
-            disabled={(!allChapters.length || allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed`}
-          >
-            Chương sau →
-          </button>
-        </div>
+        <ReaderControls
+          chapterId={chapterId}
+          onPrevChapter={() => debouncedHandleChapterNavigation('prev')}
+          onNextChapter={() => debouncedHandleChapterNavigation('next')}
+          onChapterNavOpen={() => setIsChapterNavOpen(true)}
+          isFirstChapter={allChapters.findIndex(ch => ch.id === chapterId) === 0}
+          isLastChapter={allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1}
+          isNavigating={isNavigating}
+        />
 
         {/* Chapter Content */}
-        <div className={`mb-6 ${pageWidth}`} ref={scrollRef} {...bind()}>
+        <div 
+          className={`mb-6 ${pageWidth}`} 
+          ref={chapterPageRef} 
+          style={{ touchAction: 'none' }} 
+          {...bind()}
+        >
           {readerMode === 'single' ? (
-             <Suspense fallback={<div className="text-center py-8">Đang tải công cụ zoom...</div>}>
-                <DynamicTransformWrapper>
-                    <DynamicTransformComponent>
-                        <div className="relative mx-auto max-w-full">
-                        {currentImageUrl ? (
-                            <div className="relative">
-                            {/* Loading skeleton */}
-                            <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
-                                <div className="text-gray-500">Đang tải...</div>
-                            </div>
-                            <Image
-                                src={currentImageUrl}
-                                alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.chapter_name}`}
-                                width={800}
-                                height={1200}
-                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                                className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
-                                priority
-                                placeholder="blur"
-                                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
-                                onLoad={(e) => {
-                                    // Hide loading skeleton when image loads
-                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                    if (skeleton) skeleton.style.display = 'none';
-                                }}
-                                onError={(e) => {
-                                    console.error('Image load error:', currentImageUrl);
-                                    e.currentTarget.src = '/placeholder-image.svg';
-                                    // Hide loading skeleton on error too
-                                    const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                    if (skeleton) skeleton.style.display = 'none';
-                                }}
-                            />
-                            </div>
-                        ) : (
-                            <div className="w-full aspect-[2/3] bg-gray-200 rounded-lg flex items-center justify-center">
-                            <span className="text-gray-500">Không có hình ảnh</span>
-                            </div>
-                        )}
-                        </div>
-                    </DynamicTransformComponent>
-                </DynamicTransformWrapper>
-             </Suspense>
+            currentImageUrl ? (
+              <Suspense fallback={<div className="text-center py-8">Đang tải công cụ zoom...</div>}>
+                  <DynamicTransformWrapper>
+                      <DynamicTransformComponent>
+                          <div className="relative mx-auto max-w-full">
+                              <div className="relative">
+                                  {/* Loading skeleton */}
+                                  <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
+                                      <div className="text-gray-500">Đang tải...</div>
+                                  </div>
+                                  <Image
+                                      src={currentImageUrl}
+                                      alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
+                                      width={800}
+                                      height={1200}
+                                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                                      className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
+                                      priority
+                                      placeholder="blur"
+                                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
+                                      onLoad={(e) => {
+                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                          if (skeleton) skeleton.style.display = 'none';
+                                      }}
+                                      onError={(e) => {
+                                          console.error('Image load error:', currentImageUrl);
+                                          e.currentTarget.src = '/placeholder-image.svg';
+                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                          if (skeleton) skeleton.style.display = 'none';
+                                      }}
+                                  />
+                                  <button 
+                                    onClick={() => handleReportError(currentImageUrl)} 
+                                    className="absolute bottom-4 right-4 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-50 hover:opacity-100 transition-opacity"
+                                  >
+                                    Báo lỗi
+                                  </button>
+                              </div>
+                          </div>
+                      </DynamicTransformComponent>
+                  </DynamicTransformWrapper>
+              </Suspense>
+            ) : (
+              <div className="w-full aspect-[2/3] bg-gray-200 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500">{loading || isNavigating ? 'Đang tải...' : 'Không có hình ảnh'}</span>
+              </div>
+            )
           ) : (
-            <div className="space-y-4">
-              {chapter.content.map((imagePath, index) => {
-                const imageUrl = `${cdnDomain}${imagePath}`;
+            // Continuous scroll mode - Hiển thị ảnh dài liên tục
+            <div className="space-y-2">
+              {chapter.images?.map((imagePath, index) => {
+                const imageUrl = getImageUrl(imagePath);
                 return (
-                    <Suspense key={index} fallback={<div className="text-center py-8">Đang tải ảnh...</div>}>
-                        <DynamicTransformWrapper>
-                            <DynamicTransformComponent>
-                                <div className="relative mx-auto max-w-full">
-                                    <div className="relative">
-                                    {/* Loading skeleton */}
-                                    <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
-                                        <div className="text-gray-500">Đang tải...</div>
-                                    </div>
-                                    <Image
-                                        src={imageUrl}
-                                        alt={`Trang ${index + 1} - ${story?.name} Chương ${chapter.chapter_name}`}
-                                        width={800}
-                                        height={1200}
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1024px"
-                                        className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
-                                        loading={index < 3 ? 'eager' : 'lazy'}
-                                        onLoad={(e) => {
-                                        // Hide loading skeleton when image loads
-                                        const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                        if (skeleton) skeleton.style.display = 'none';
-                                        }}
-                                        onError={(e) => {
-                                        console.error('Image load error:', imageUrl);
-                                        e.currentTarget.src = '/placeholder-image.svg';
-                                        // Hide loading skeleton on error too
-                                        const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                        if (skeleton) skeleton.style.display = 'none';
-                                        }}
-                                    />
-                                    </div>
-                                </div>
-                            </DynamicTransformComponent>
-                        </DynamicTransformWrapper>
-                    </Suspense>
+                  <WebtoonImage
+                    key={`${chapterId}-${index}`}
+                    src={imageUrl}
+                    alt={`Trang ${index + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
+                    index={index}
+                    priority={index < 3}
+                    onHeightMeasured={(height) => handleImageHeightMeasured(index, height)}
+                  />
                 );
               })}
+              
               {/* Trigger for infinite scroll */}
-              <div ref={ref} />
+              <div ref={infiniteScrollRef} />
               {isLoadingNextChapter && (
                 <div className="text-center py-8">
                   <p>Đang tải chương tiếp theo...</p>
@@ -429,10 +395,10 @@ const ChapterPage = () => {
         </div>
 
         {/* Page Navigation Dots - Only show for single page mode */}
-        {readerMode === 'single' && chapter.content.length > 1 && (
+        {readerMode === 'single' && (chapter.images?.length || 0) > 1 && (
           <div className={`flex justify-center mb-6 ${isFullscreen ? 'hidden' : ''}`}>
             <div className="flex space-x-2 overflow-x-auto max-w-full px-4">
-              {chapter.content.map((_, index) => (
+              {chapter.images?.map((_, index) => (
                 <div key={index} className="relative">
                   <button
                     onClick={() => goToPage(index)}
@@ -451,7 +417,7 @@ const ChapterPage = () => {
                     </div>
                     <div className="w-16 h-20 bg-gray-300 rounded overflow-hidden border-2 border-white shadow-lg">
                       <img
-                        src={`${cdnDomain}${chapter.content[index]}`}
+                        src={getImageUrl(chapter.images![index])}
                         alt={`Preview trang ${index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
@@ -490,9 +456,9 @@ const ChapterPage = () => {
 
             <button
               onClick={debouncedHandleNextPage}
-              disabled={(currentPage === chapter.content.length - 1 && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
+              disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                (currentPage === chapter.content.length - 1 && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
+                (currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
                   ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   : 'bg-blue-600 text-white hover:bg-blue-700'
               }`}
@@ -501,6 +467,11 @@ const ChapterPage = () => {
             </button>
           </div>
         )}
+        
+        {/* Comments Section */}
+        <div ref={commentsRef}>
+          {commentsInView && <DynamicCommentSection chapterId={chapterId} />}
+        </div>
       </main>
 
       <FooterComponent className={isFullscreen ? 'hidden' : ''}/>
