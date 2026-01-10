@@ -6,6 +6,7 @@ import StoryList from '@/components/StoryList';
 import RecentUpdates from '@/components/RecentUpdates';
 import TopRankings from '@/components/TopRankings';
 import FooterComponent from '@/components/FooterComponent';
+import { ContinueReading } from '@/components/ContinueReading';
 
 export default function HomePage() {
   return (
@@ -13,6 +14,7 @@ export default function HomePage() {
       <Navbar />
 
       <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ContinueReading />
         <HeroBanner />
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <TopRankings />

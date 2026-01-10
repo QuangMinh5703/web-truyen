@@ -1,45 +1,125 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { saveReadingProgress, getReadingProgress } from '@/lib/api-sync';
+import { ReadingProgress, SyncStatus } from '@/lib/types';
 
-export const useReadingProgress = (chapterId: string, chapter: any) => {
+export const useReadingProgress = (storySlug: string, chapterId: string, chapter: any) => {
     const [currentPage, setCurrentPage] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
+    
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
+    // Effect to fetch initial progress from local and "remote"
     useEffect(() => {
-        const savedPage = localStorage.getItem(`reading-progress-${chapterId}`);
-        if(savedPage) {
-            setCurrentPage(parseInt(savedPage, 10));
-        } else {
-            setCurrentPage(0);
-        }
+        let isMounted = true;
+        
+        const fetchInitialProgress = async () => {
+            setSyncStatus('syncing');
+            const localProgressStr = localStorage.getItem(`reading-progress-${chapterId}`);
+            const localProgress = localProgressStr ? JSON.parse(localProgressStr) as ReadingProgress : null;
+
+            try {
+                const remoteProgress = await getReadingProgress(chapterId);
+                if (!isMounted) return;
+
+                if (remoteProgress && (!localProgress || remoteProgress.lastRead > localProgress.lastRead)) {
+                    // Remote is newer, use it
+                    setCurrentPage(remoteProgress.currentPage);
+                    localStorage.setItem(`reading-progress-${chapterId}`, JSON.stringify(remoteProgress));
+                } else if (localProgress) {
+                    // Local is newer or no remote, use local
+                    setCurrentPage(localProgress.currentPage);
+                }
+                setSyncStatus('synced');
+            } catch (error) {
+                if (!isMounted) return;
+                console.error("Failed to fetch remote progress:", error);
+                setSyncStatus('error');
+                // Fallback to local if remote fetch fails
+                if (localProgress) {
+                    setCurrentPage(localProgress.currentPage);
+                }
+            }
+        };
+
+        fetchInitialProgress();
+
+        return () => {
+            isMounted = false;
+        };
     }, [chapterId]);
 
+    // Effect to save progress locally and trigger debounced remote save
     useEffect(() => {
-        if (chapter && chapter.images) {
-            localStorage.setItem(`reading-progress-${chapterId}`, String(currentPage));
-            const calculatedProgress = ((currentPage + 1) / chapter.images.length) * 100;
-            setProgress(calculatedProgress);
-        }
-    }, [currentPage, chapter, chapterId]);
+        if (!chapter || !chapter.images || chapter.images.length === 0 || !storySlug) return;
 
-    const nextPage = () => {
+        const totalPages = chapter.images.length;
+        const calculatedProgress = ((currentPage + 1) / totalPages) * 100;
+        setProgress(calculatedProgress);
+
+        const progressData: ReadingProgress = {
+            storySlug,
+            chapterId,
+            currentPage,
+            totalPages,
+            progress: calculatedProgress,
+            lastRead: Date.now(),
+        };
+
+        // Save to local storage immediately
+        localStorage.setItem(`reading-progress-${chapterId}`, JSON.stringify(progressData));
+
+        // Debounce saving to remote
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        setSyncStatus('syncing');
+        debounceTimeout.current = setTimeout(async () => {
+            try {
+                await saveReadingProgress(chapterId, progressData);
+                setSyncStatus('synced');
+            } catch (error) {
+                console.error("Failed to save progress:", error);
+                setSyncStatus('error');
+            }
+        }, 2000); // Debounce for 2 seconds
+
+        // Cleanup function to clear timeout on unmount or when dependencies change
+        return () => {
+            if (debounceTimeout.current) {
+                clearTimeout(debounceTimeout.current);
+            }
+        };
+    }, [currentPage, chapter, chapterId, storySlug]);
+
+    const nextPage = useCallback(() => {
         if (chapter && chapter.images && currentPage < chapter.images.length - 1) {
-          setCurrentPage(currentPage + 1);
-          return true;
+            setCurrentPage(currentPage + 1);
+            return true;
         }
         return false;
-      };
-    
-      const prevPage = () => {
-        if (currentPage > 0) {
-          setCurrentPage(currentPage - 1);
-        }
-      };
-    
-      const goToPage = (pageIndex: number) => {
-        if (chapter && chapter.images && pageIndex >= 0 && pageIndex < chapter.images.length) {
-          setCurrentPage(pageIndex);
-        }
-      };
+    }, [currentPage, chapter]);
 
-      return { currentPage, progress, nextPage, prevPage, goToPage, setCurrentPage };
+    const prevPage = useCallback(() => {
+        if (currentPage > 0) {
+            setCurrentPage(currentPage - 1);
+        }
+    }, [currentPage]);
+
+    const goToPage = useCallback((pageIndex: number) => {
+        if (chapter && chapter.images && pageIndex >= 0 && pageIndex < chapter.images.length) {
+            setCurrentPage(pageIndex);
+        }
+    }, [chapter]);
+
+    return { 
+        currentPage, 
+        progress, 
+        syncStatus,
+        nextPage, 
+        prevPage, 
+        goToPage, 
+        setCurrentPage 
+    };
 }

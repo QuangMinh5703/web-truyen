@@ -185,3 +185,27 @@ export interface ApiError {
 // Utility types
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
+
+// Reading progress and sync types
+export interface ReadingProgress {
+  storySlug: string;
+  chapterId: string;
+  currentPage: number;
+  totalPages: number;
+  progress: number; // Percentage
+  lastRead: number; // Timestamp
+  lastSynced?: string; // ISO 8601 Date string
+}
+
+export type SyncStatus = 'idle' | 'syncing' | 'synced' | 'error';
+
+// Bookmark types
+export interface Bookmark {
+  id: string;
+  storySlug: string;
+  chapterId: string;
+  pageNumber?: number; // Optional, for specific page bookmarks
+  createdAt: number; // Timestamp
+  folder?: string; // For categorization
+  notes?: string; // User notes
+}
