@@ -38,6 +38,11 @@ export default function Footer() {
                   Chính sách bảo mật
                 </Link>
               </li>
+              <li>
+                <Link href="/cache-management" className="hover:text-blue-400">
+                  Quản lý Cache
+                </Link>
+              </li>
             </ul>
           </div>
 

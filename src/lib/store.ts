@@ -9,10 +9,12 @@ interface ReaderState {
     backgroundColor: BackgroundColor;
     pageWidth: PageWidth;
     isFullscreen: boolean;
+    swipeThreshold: number;
     setReaderMode: (mode: ReaderMode) => void;
     setBackgroundColor: (color: BackgroundColor) => void;
     setPageWidth: (width: PageWidth) => void;
     toggleFullscreen: () => void;
+    setSwipeThreshold: (threshold: number) => void;
 }
 
 export const useReaderStore = create<ReaderState>((set) => ({
@@ -20,8 +22,10 @@ export const useReaderStore = create<ReaderState>((set) => ({
     backgroundColor: 'white',
     pageWidth: 'fit-width',
     isFullscreen: false,
+    swipeThreshold: 50,
     setReaderMode: (mode) => set({ readerMode: mode }),
     setBackgroundColor: (color) => set({ backgroundColor: color }),
     setPageWidth: (width) => set({ pageWidth: width }),
     toggleFullscreen: () => set((state) => ({ isFullscreen: !state.isFullscreen })),
+    setSwipeThreshold: (threshold) => set({ swipeThreshold: threshold }),
 }));

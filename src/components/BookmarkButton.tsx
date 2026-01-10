@@ -15,6 +15,10 @@ interface BookmarkButtonProps {
    */
   chapterId: string;
   /**
+   * @property {string} storySlug - The slug of the story this chapter belongs to.
+   */
+  storySlug: string;
+  /**
    * @property {string} [className] - Optional CSS classes to apply to the button.
    */
   className?: string;
@@ -27,9 +31,9 @@ interface BookmarkButtonProps {
  * @param {BookmarkButtonProps} props - The component props.
  * @returns {JSX.Element} The rendered bookmark button.
  */
-const BookmarkButton = ({ chapterId, className }: BookmarkButtonProps) => {
-  const { isBookmarked, toggleBookmark } = useBookmarks();
-  const bookmarked = isBookmarked(chapterId);
+const BookmarkButton = ({ chapterId, storySlug, className }: BookmarkButtonProps) => {
+  const { getBookmarkByChapterId, toggleBookmark, loading } = useBookmarks();
+  const bookmarked = !!getBookmarkByChapterId(chapterId);
 
   /**
    * Handles the click event, toggling the bookmark state and stopping event propagation.
@@ -37,13 +41,14 @@ const BookmarkButton = ({ chapterId, className }: BookmarkButtonProps) => {
    */
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent any parent onClick events, e.g., if inside a clickable card.
-    toggleBookmark(chapterId);
+    toggleBookmark({ chapterId, storySlug });
   };
 
   return (
     <button
       onClick={handleClick}
-      className={`group relative flex items-center justify-center p-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
+      disabled={loading}
+      className={`group relative flex items-center justify-center p-2 rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${
         bookmarked ? 'text-yellow-500 dark:text-yellow-400' : 'text-gray-500 hover:text-yellow-400 dark:text-gray-400 dark:hover:text-yellow-300'
       } ${className}`}
       aria-label={bookmarked ? 'Bỏ đánh dấu chương' : 'Đánh dấu chương này'}

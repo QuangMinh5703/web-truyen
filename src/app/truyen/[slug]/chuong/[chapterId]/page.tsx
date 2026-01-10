@@ -18,16 +18,38 @@ import screenfull from 'screenfull';
 import { useDrag } from '@use-gesture/react';
 import { useReaderSettings, PageWidth } from '@/lib/hooks/useReaderSettings';
 import { useChapterData } from '@/lib/hooks/useChapterData';
+import { Cloudy, CheckCircle, XCircle } from 'lucide-react';
 import { useReadingProgress } from '@/lib/hooks/useReadingProgress';
 import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback';
 import { getImageUrl } from '@/lib/api';
 
-
+const SyncStatusIndicator = ({ status }: { status: 'idle' | 'syncing' | 'synced' | 'error' }) => {
+    switch (status) {
+        case 'syncing':
+            return <div className="text-xs text-yellow-400 flex items-center gap-1">
+                <Cloudy size={14} className="animate-spin" />
+                <span>Đang đồng bộ...</span>
+            </div>;
+        case 'synced':
+            return <div className="text-xs text-green-400 flex items-center gap-1">
+                <CheckCircle size={14} />
+                <span>Đã lưu</span>
+            </div>;
+        case 'error':
+            return <div className="text-xs text-red-400 flex items-center gap-1">
+                <XCircle size={14} />
+                <span>Lỗi đồng bộ</span>
+            </div>;
+        default:
+            return null;
+    }
+};
 
 const DynamicWebtoonReader = dynamic(() => import('@/components/WebtoonReader'), {
   loading: () => <div className="text-center py-12">Đang tải trình đọc...</div>,
   ssr: false,
 });
+
 
 const DynamicChapterNav = dynamic(() => import('@/components/ChapterNav'), {
   loading: () => null,
@@ -55,20 +77,21 @@ const ChapterPage = () => {
   const chapterId = params?.chapterId as string;
   const chapterPageRef = useRef<HTMLDivElement>(null);
 
-  const { readerMode, backgroundColor, pageWidth, isFullscreen, setReaderMode, setBackgroundColor, setPageWidth, toggleFullscreen } = useReaderSettings();
+  const { readerMode, backgroundColor, pageWidth, isFullscreen, swipeThreshold, setReaderMode, setBackgroundColor, setPageWidth, toggleFullscreen } = useReaderSettings();
   const { chapter, allChapters, story, loading, error } = useChapterData(slug, chapterId);
-  const { currentPage, progress, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(chapterId, chapter);
+  const { currentPage, progress, syncStatus, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(chapterId, chapter);
 
   const [isNavigating, setIsNavigating] = useState(false);
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false);
   const [imageHeights, setImageHeights] = useState<Record<number, number>>({});
+  const [swipeOffset, setSwipeOffset] = useState(0);
   const isLoadingNextChapter = isNavigating;
 
   const { ref: commentsRef, inView: commentsInView } = useInView({
     triggerOnce: true,
     rootMargin: '200px 0px',
   });
-
+  
   const { ref: infiniteScrollRef, inView: infiniteScrollInView } = useInView({
     triggerOnce: false,
     rootMargin: '200px 0px',
@@ -113,21 +136,33 @@ const ChapterPage = () => {
   }, [nextPage, handleChapterNavigation]);
 
   // Debounced navigation
-  const debouncedPrevPage = useDebouncedCallback(prevPage, 300);
-  const debouncedHandleNextPage = useDebouncedCallback(handleNextPage, 300);
+  const debouncedPrevPage = useDebouncedCallback(prevPage, 200);
+  const debouncedHandleNextPage = useDebouncedCallback(handleNextPage, 200);
   const debouncedHandleChapterNavigation = useDebouncedCallback(handleChapterNavigation, 300);
 
-  const bind = useDrag(({ movement: [mx], last }) => {
-    if (readerMode === 'single' && last) {
-        if (mx > 50) {
-            debouncedPrevPage();
-        } else if (mx < -50) {
-            debouncedHandleNextPage();
-        }
+  const bind = useDrag(({ down, movement: [mx, my], direction: [dx], last }) => {
+    if (readerMode !== 'single') return;
+
+    // Only respond to horizontal swipes
+    if (Math.abs(mx) < Math.abs(my)) {
+      if(down) setSwipeOffset(0); // If scrolling vertically, don't allow horizontal movement
+      return;
+    }
+    
+    if (down) {
+      setSwipeOffset(mx);
+    } else if (last) {
+      if (mx > swipeThreshold) {
+        debouncedPrevPage();
+      } else if (mx < -swipeThreshold) {
+        debouncedHandleNextPage();
+      }
+      // Reset position with animation
+      setSwipeOffset(0);
     }
   });
-
-  // Keyboard navigation
+  
+    // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -302,6 +337,7 @@ const ChapterPage = () => {
 
         {/* Navigation Controls */}
         <ReaderControls
+          storySlug={slug}
           chapterId={chapterId}
           onPrevChapter={() => debouncedHandleChapterNavigation('prev')}
           onNextChapter={() => debouncedHandleChapterNavigation('next')}
@@ -311,11 +347,22 @@ const ChapterPage = () => {
           isNavigating={isNavigating}
         />
 
+        {/* Page/Sync Status Display */}
+        <div className="fixed bottom-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg flex flex-col gap-1">
+            <div className="text-sm font-bold">
+                Trang {currentPage + 1} / {chapter.images?.length || 0}
+            </div>
+            <div className="text-xs opacity-80">
+                {Math.round(progress)}% đã đọc
+            </div>
+            <SyncStatusIndicator status={syncStatus} />
+        </div>
+
         {/* Chapter Content */}
         <div 
-          className={`mb-6 ${pageWidth}`} 
+          className={`mb-6 ${pageWidth} overflow-hidden`} 
           ref={chapterPageRef} 
-          style={{ touchAction: 'none' }} 
+          style={{ touchAction: 'pan-y' }} 
           {...bind()}
         >
           {readerMode === 'single' ? (
@@ -323,6 +370,12 @@ const ChapterPage = () => {
               <Suspense fallback={<div className="text-center py-8">Đang tải công cụ zoom...</div>}>
                   <DynamicTransformWrapper>
                       <DynamicTransformComponent>
+                        <div
+                          style={{
+                            transform: `translateX(${swipeOffset}px)`,
+                            transition: 'transform 0.1s ease-out',
+                          }}
+                        >
                           <div className="relative mx-auto max-w-full">
                               <div className="relative">
                                   {/* Loading skeleton */}
@@ -358,6 +411,7 @@ const ChapterPage = () => {
                                   </button>
                               </div>
                           </div>
+                        </div>
                       </DynamicTransformComponent>
                   </DynamicTransformWrapper>
               </Suspense>

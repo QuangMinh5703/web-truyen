@@ -17,6 +17,7 @@ interface DesktopControlsProps {
     pageWidth: PageWidth;
     setPageWidth: (width: PageWidth) => void;
     chapterId: string;
+    storySlug: string;
     onNextChapter: () => void;
     isLastChapter: boolean;
 }
@@ -33,6 +34,7 @@ const DesktopControls = ({
     pageWidth,
     setPageWidth,
     chapterId,
+    storySlug,
     onNextChapter,
     isLastChapter,
 }: DesktopControlsProps) => (
@@ -71,7 +73,7 @@ const DesktopControls = ({
                 <option value="fit-height">Vừa chiều cao</option>
                 <option value="original">Kích thước gốc</option>
             </select>
-            <BookmarkButton chapterId={chapterId} />
+            <BookmarkButton chapterId={chapterId} storySlug={storySlug} />
         </div>
 
         <button
@@ -100,6 +102,7 @@ interface MobileControlsProps {
     pageWidth: PageWidth;
     setPageWidth: (width: PageWidth) => void;
     chapterId: string;
+    storySlug: string;
 }
 
 const MobileControls = ({
@@ -118,6 +121,7 @@ const MobileControls = ({
     pageWidth,
     setPageWidth,
     chapterId,
+    storySlug,
 }: MobileControlsProps) => (
     <>
         <div className="lg:hidden flex items-center justify-between mb-6 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700">
@@ -186,7 +190,7 @@ const MobileControls = ({
                         </div>
                         <div className="flex justify-between items-center">
                             <span>Đánh dấu</span>
-                            <BookmarkButton chapterId={chapterId} />
+                            <BookmarkButton chapterId={chapterId} storySlug={storySlug} />
                         </div>
                         <div className="flex justify-between items-center">
                             <span>Mục lục</span>
@@ -212,6 +216,10 @@ const MobileControls = ({
  * @description Props for the ReaderControls component.
  */
 interface ReaderControlsProps {
+    /**
+   * @property {string} storySlug - The slug of the story, used for bookmarking.
+   */
+  storySlug: string;
   /**
    * @property {string} chapterId - The ID of the current chapter, used for bookmarking.
    */
@@ -251,6 +259,7 @@ interface ReaderControlsProps {
  * @returns {JSX.Element} The rendered reader controls.
  */
 export const ReaderControls = ({
+  storySlug,
   chapterId,
   onPrevChapter,
   onNextChapter,
@@ -287,6 +296,7 @@ export const ReaderControls = ({
         pageWidth={pageWidth}
         setPageWidth={setPageWidth}
         chapterId={chapterId}
+        storySlug={storySlug}
         onNextChapter={onNextChapter}
         isLastChapter={isLastChapter}
       />
@@ -306,6 +316,7 @@ export const ReaderControls = ({
         pageWidth={pageWidth}
         setPageWidth={setPageWidth}
         chapterId={chapterId}
+        storySlug={storySlug}
       />
     </>
   );

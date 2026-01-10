@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { useInView } from 'react-intersection-observer';
+import { WebtoonImage } from './WebtoonImage';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useReaderSettings } from '@/lib/hooks/useReaderSettings';
 import { getImageUrl } from '@/lib/api';
@@ -47,8 +48,6 @@ interface WebtoonPage {
   id: string;
   imageUrl: string;
   height: number;
-  width: number;
-  isLoaded: boolean;
 }
 
 /**
@@ -98,68 +97,30 @@ export default function WebtoonReader({
   const [isWebtoon, setIsWebtoon] = useState(false);
   
   /**
-   * @effect Initializes the pages state from the images prop and preloads the first few images.
+   * @effect Initializes the pages state from the images prop.
    */
   useEffect(() => {
     const initialPages: WebtoonPage[] = images.map((image, index) => ({
       id: `page-${index}`,
       imageUrl: getImageUrl(image),
       height: 800, // Default height, will be updated after image loads
-      width: 600,  // Default width
-      isLoaded: false,
     }));
     
     setPages(initialPages);
-    
-    // Preload first few images for a smooth start
-    initialPages.slice(0, 3).forEach((page, index) => {
-      preloadImage(page.imageUrl, index);
-    });
   }, [images]);
 
-  /**
-   * Preloads an image to get its dimensions and update the page state.
-   * @param {string} imageUrl - The URL of the image to preload.
-   * @param {number} index - The index of the page to update.
-   */
-  const preloadImage = (imageUrl: string, index: number) => {
-    const img = document.createElement('img');
-    img.onload = () => {
-      setPages(prev => prev.map((page, i) =>
-        i === index
-          ? {
-              ...page,
-              isLoaded: true,
-              height: img.naturalHeight,
-              width: img.naturalWidth,
-            }
-          : page
-      ));
-    };
-    img.onerror = () => {
-      // Mark as loaded even if there's an error to prevent infinite loading state
-      setPages(prev => prev.map((page, i) =>
-        i === index ? { ...page, isLoaded: true } : page
-      ));
-    };
-    img.src = imageUrl;
-  };
-
-  /**
-   * @effect Automatically detects if the comic is a vertical webtoon based on aspect ratio.
-   */
-  useEffect(() => {
-    const loadedPages = pages.filter(p => p.isLoaded && p.height > 100);
-    if (loadedPages.length > 0) {
-      const totalHeight = loadedPages.reduce((sum, p) => sum + p.height, 0);
-      const totalWidth = loadedPages.reduce((sum, p) => sum + p.width, 0);
-      const avgAspectRatio = (totalHeight / loadedPages.length) / (totalWidth / loadedPages.length);
-      // Webtoons are typically much taller than they are wide.
-      if (avgAspectRatio > 1.5) {
-        setIsWebtoon(true);
-      }
+  const handleHeightMeasured = useCallback((index: number, height: number) => {
+    if (height > 0) {
+      setPages(prev => {
+        const newPages = [...prev];
+        if (newPages[index] && newPages[index].height !== height) {
+          newPages[index] = { ...newPages[index], height };
+          return newPages;
+        }
+        return prev;
+      });
     }
-  }, [pages]);
+  }, []);
 
   /**
    * Virtualizer instance from @tanstack/react-virtual for performance.
@@ -168,36 +129,16 @@ export default function WebtoonReader({
     count: pages.length,
     getScrollElement: () => containerRef.current,
     estimateSize: useCallback((index) => pages[index]?.height || 800, [pages]),
-    overscan: 5, // Render more items to make scrolling smoother
+    overscan: 3, // Reduce overscan to be more aggressive with memory
   });
 
   /**
    * Intersection observer to trigger loading more images as the user scrolls.
    */
-  const { ref: loadMoreRef, inView } = useInView({
+  const { ref: loadMoreRef } = useInView({
     root: containerRef.current,
     rootMargin: '500px 0px', // Trigger when 500px away from the viewport
   });
-
-  /**
-   * @effect Preloads the next batch of images when the `loadMoreRef` comes into view.
-   */
-  useEffect(() => {
-    if (inView) {
-      const virtualItems = rowVirtualizer.getVirtualItems();
-      if (virtualItems.length === 0) return;
-
-      const lastVisibleIndex = virtualItems[virtualItems.length - 1].index;
-      const nextBatchStart = lastVisibleIndex + 1;
-      const nextBatchEnd = Math.min(nextBatchStart + 5, pages.length);
-
-      for (let i = nextBatchStart; i < nextBatchEnd; i++) {
-        if (!pages[i].isLoaded) {
-          preloadImage(pages[i].imageUrl, i);
-        }
-      }
-    }
-  }, [inView, pages, rowVirtualizer.getVirtualItems()]);
   
   /**
    * @effect Tracks reading progress and sends analytics events.
@@ -273,7 +214,7 @@ export default function WebtoonReader({
    * @description Smoothly scrolls to a specific page index.
    */
   const scrollToPage = useCallback((pageIndex: number) => {
-    rowVirtualizer.scrollToIndex(pageIndex, { align: 'start', smooth: true });
+    rowVirtualizer.scrollToIndex(pageIndex, { align: 'start', behavior: 'smooth' });
   }, [rowVirtualizer]);
 
   /**
@@ -398,26 +339,13 @@ export default function WebtoonReader({
                 padding: '10px 0',
               }}
             >
-              <div className="relative w-full h-full flex items-center justify-center">
-                {page.isLoaded && page.height > 100 ? (
-                  <Image
-                    src={page.imageUrl}
-                    alt={`${storyTitle} - ${chapterName} - Trang ${virtualItem.index + 1}`}
-                    width={page.width}
-                    height={page.height}
-                    className="max-w-full object-contain rounded-md shadow-md"
-                    priority={virtualItem.index < 3} // Prioritize loading the first 3 images
-                    sizes="(max-width: 768px) 100vw, 800px"
-                    onError={() => {
-                      console.error(`Failed to load image: ${page.imageUrl}`);
-                    }}
-                  />
-                ) : (
-                  <div className="w-full flex items-center justify-center bg-gray-200 animate-pulse rounded-md" style={{height: virtualItem.size}}>
-                    <div className="text-gray-500">Đang tải trang {virtualItem.index + 1}...</div>
-                  </div>
-                )}
-              </div>
+              <WebtoonImage
+                src={page.imageUrl}
+                alt={`${storyTitle} - ${chapterName} - Trang ${virtualItem.index + 1}`}
+                index={virtualItem.index}
+                priority={virtualItem.index < 3}
+                onHeightMeasured={(height) => handleHeightMeasured(virtualItem.index, height)}
+              />
             </div>
           );
         })}

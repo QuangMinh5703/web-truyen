@@ -1,90 +1,183 @@
 // src/lib/hooks/useBookmarks.ts
 import { useState, useEffect, useCallback } from 'react';
+import { Bookmark, ApiError } from '@/lib/types';
+import * as api from '@/lib/api-bookmarks';
 
-const BOOKMARKS_STORAGE_KEY = 'comic-reader-bookmarks';
+const DEFAULT_FOLDER = 'Uncategorized';
 
-/**
- * Safely retrieves the list of bookmarked chapter IDs from localStorage.
- * @returns {string[]} An array of bookmarked chapter IDs.
- */
-const getBookmarkedChapters = (): string[] => {
-  try {
-    const savedBookmarks = localStorage.getItem(BOOKMARKS_STORAGE_KEY);
-    if (savedBookmarks) {
-      const parsed = JSON.parse(savedBookmarks);
-      // Basic validation to ensure it's an array of strings
-      if (Array.isArray(parsed) && parsed.every(item => typeof item === 'string')) {
-        return parsed;
-      }
-    }
-  } catch (error) {
-    console.error('Failed to parse bookmarks from localStorage:', error);
-  }
-  return [];
-};
-
-/**
- * @typedef {object} UseBookmarksReturn
- * @property {string[]} bookmarkedChapters - An array of all bookmarked chapter IDs.
- * @property {(chapterId: string) => boolean} isBookmarked - A function to check if a specific chapter is bookmarked.
- * @property {(chapterId: string) => void} toggleBookmark - A function to add or remove a chapter from bookmarks.
- */
-
-/**
- * A custom hook to manage chapter bookmarks using localStorage.
- * It provides functions to check and toggle bookmarks, and persists the state across sessions.
- *
- * @returns {UseBookmarksReturn} An object containing the bookmark state and management functions.
- */
 export const useBookmarks = () => {
-  const [bookmarkedChapters, setBookmarkedChapters] = useState<string[]>([]);
+  const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
+  const [folders, setFolders] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<ApiError | null>(null);
 
-  // Load bookmarks from localStorage on initial client-side render.
   useEffect(() => {
-    setBookmarkedChapters(getBookmarkedChapters());
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const [remoteBookmarks, remoteFolders] = await Promise.all([
+            api.getBookmarks(),
+            api.getFolders(),
+        ]);
+        setBookmarks(remoteBookmarks);
+        setFolders(remoteFolders);
+      } catch (err) {
+        setError({ message: 'Failed to fetch initial bookmark data' });
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
   }, []);
 
-  /**
-   * Saves the provided list of bookmarks to both state and localStorage.
-   * @param {string[]} bookmarks - The array of chapter IDs to save.
-   */
-  const saveBookmarks = (bookmarks: string[]) => {
-    try {
-      localStorage.setItem(BOOKMARKS_STORAGE_KEY, JSON.stringify(bookmarks));
-      setBookmarkedChapters(bookmarks);
-    } catch (error) {
-      console.error('Failed to save bookmarks to localStorage:', error);
-      // Optionally: show a toast notification to the user
-    }
-  };
-
-  /**
-   * Checks if a given chapter ID is already bookmarked.
-   * @param {string} chapterId - The ID of the chapter to check.
-   * @returns {boolean} True if the chapter is bookmarked, false otherwise.
-   */
-  const isBookmarked = useCallback(
-    (chapterId: string): boolean => {
-      return bookmarkedChapters.includes(chapterId);
+  const getBookmarkByChapterId = useCallback(
+    (chapterId: string): Bookmark | undefined => {
+      return bookmarks.find((bm) => bm.chapterId === chapterId);
     },
-    [bookmarkedChapters]
+    [bookmarks]
   );
 
-  /**
-   * Toggles the bookmark status for a given chapter ID.
-   * If the chapter is already bookmarked, it will be removed. Otherwise, it will be added.
-   * @param {string} chapterId - The ID of the chapter to toggle.
-   */
   const toggleBookmark = useCallback(
-    (chapterId: string) => {
-      const updatedBookmarks = isBookmarked(chapterId)
-        ? bookmarkedChapters.filter((id) => id !== chapterId)
-        : [...bookmarkedChapters, chapterId];
-      
-      saveBookmarks(updatedBookmarks);
+    async (chapterData: { chapterId: string; storySlug: string; }, folder?: string) => {
+      const { chapterId, storySlug } = chapterData;
+      const existingBookmark = getBookmarkByChapterId(chapterId);
+
+      if (existingBookmark) {
+        const originalBookmarks = bookmarks;
+        setBookmarks((prev) => prev.filter((bm) => bm.id !== existingBookmark.id));
+        try {
+          await api.removeBookmark(existingBookmark.id);
+        } catch (err) {
+          setBookmarks(originalBookmarks);
+          setError({ message: 'Failed to remove bookmark' });
+        }
+      } else {
+        const optimisticBookmark: Bookmark = {
+          id: `temp-${Date.now()}`,
+          chapterId,
+          storySlug,
+          folder: folder || DEFAULT_FOLDER,
+          createdAt: Date.now(),
+        };
+        setBookmarks((prev) => [optimisticBookmark, ...prev]);
+        try {
+          const newBookmark = await api.addBookmark({ chapterId, storySlug, folder });
+          setBookmarks((prev) => prev.map(bm => bm.id === optimisticBookmark.id ? newBookmark : bm));
+        } catch (err) {
+          setBookmarks((prev) => prev.filter(bm => bm.id !== optimisticBookmark.id));
+          setError({ message: 'Failed to add bookmark' });
+        }
+      }
     },
-    [bookmarkedChapters, isBookmarked] // isBookmarked is a dependency of this callback
+    [bookmarks, getBookmarkByChapterId]
   );
 
-  return { bookmarkedChapters, isBookmarked, toggleBookmark };
+  const moveBookmarkToFolder = useCallback(
+    async (bookmarkId: string, folder: string) => {
+      const originalBookmarks = bookmarks;
+      const bookmark = originalBookmarks.find(bm => bm.id === bookmarkId);
+      if (!bookmark) return;
+
+      setBookmarks(prev => prev.map(bm => bm.id === bookmarkId ? { ...bm, folder } : bm));
+
+      try {
+        await api.updateBookmark(bookmarkId, { folder });
+      } catch (err) {
+        setBookmarks(originalBookmarks);
+        setError({ message: 'Failed to move bookmark' });
+      }
+    },
+    [bookmarks]
+  );
+  
+  // --- Folder Management ---
+
+  const addFolder = useCallback(async (folderName: string) => {
+    if (folders.includes(folderName)) {
+      setError({ message: `Folder "${folderName}" already exists.`});
+      return;
+    }
+    const originalFolders = folders;
+    setFolders(prev => [...prev, folderName].sort());
+    try {
+      const updatedFolders = await api.addFolder(folderName);
+      setFolders(updatedFolders); // Sync with authoritative source
+    } catch (err) {
+      setFolders(originalFolders);
+      setError({ message: 'Failed to add folder' });
+    }
+  }, [folders]);
+
+  const renameFolder = useCallback(async (oldName: string, newName: string) => {
+    if (folders.includes(newName)) {
+      setError({ message: `Folder "${newName}" already exists.` });
+      return;
+    }
+    const originalFolders = folders;
+    const originalBookmarks = bookmarks;
+    
+    setFolders(prev => prev.map(f => f === oldName ? newName : f).sort());
+    setBookmarks(prev => prev.map(bm => bm.folder === oldName ? { ...bm, folder: newName } : bm));
+    
+    try {
+      await api.renameFolder(oldName, newName);
+    } catch (err) {
+      setFolders(originalFolders);
+      setBookmarks(originalBookmarks);
+      setError({ message: 'Failed to rename folder' });
+    }
+  }, [folders, bookmarks]);
+
+  const deleteFolder = useCallback(async (folderName: string) => {
+    if (folderName === DEFAULT_FOLDER) {
+      setError({ message: 'Cannot delete the default folder.' });
+      return;
+    }
+    const originalFolders = folders;
+    const originalBookmarks = bookmarks;
+
+    setFolders(prev => prev.filter(f => f !== folderName));
+    setBookmarks(prev => prev.map(bm => bm.folder === folderName ? { ...bm, folder: DEFAULT_FOLDER } : bm));
+
+    try {
+      await api.deleteFolder(folderName);
+    } catch (err) {
+      setFolders(originalFolders);
+      setBookmarks(originalBookmarks);
+      setError({ message: 'Failed to delete folder' });
+    }
+  }, [folders, bookmarks]);
+
+  // --- Sharing ---
+  const shareFolder = useCallback(async (folderName: string): Promise<string | null> => {
+    try {
+      setError(null);
+      const { token } = await api.createShare(folderName);
+      if (typeof window !== 'undefined') {
+        return `${window.location.origin}/bookmarks/share/${token}`;
+      }
+      return null;
+    } catch (err: any) {
+      setError({ message: err.message || 'Failed to share folder.' });
+      return null;
+    }
+  }, []);
+
+
+  return {
+    bookmarks,
+    folders,
+    loading,
+    error,
+    getBookmarkByChapterId,
+    toggleBookmark,
+    moveBookmarkToFolder,
+    addFolder,
+    renameFolder,
+    deleteFolder,
+    shareFolder,
+  };
 };
+

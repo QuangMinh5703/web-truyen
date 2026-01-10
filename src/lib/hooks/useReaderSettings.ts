@@ -29,11 +29,13 @@ export const useReaderSettings = () => {
         readerMode, 
         backgroundColor, 
         pageWidth, 
-        isFullscreen, 
+        isFullscreen,
+        swipeThreshold,
         setReaderMode, 
         setBackgroundColor, 
         setPageWidth, 
-        toggleFullscreen 
+        toggleFullscreen,
+        setSwipeThreshold
     } = useReaderStore();
 
     /**
@@ -54,7 +56,12 @@ export const useReaderSettings = () => {
         if (savedMode && ['single', 'continuous'].includes(savedMode)) {
             setReaderMode(savedMode);
         }
-    }, [setReaderMode, setBackgroundColor, setPageWidth]);
+
+        const savedSwipeThreshold = localStorage.getItem('reader-swipeThreshold');
+        if (savedSwipeThreshold) {
+            setSwipeThreshold(Number(savedSwipeThreshold));
+        }
+    }, [setReaderMode, setBackgroundColor, setPageWidth, setSwipeThreshold]);
 
     /**
      * @effect Persists the background color to localStorage and updates the root HTML element class.
@@ -81,14 +88,23 @@ export const useReaderSettings = () => {
         localStorage.setItem('reader-readerMode', readerMode);
     }, [readerMode]);
 
+    /**
+     * @effect Persists the swipe threshold setting to localStorage.
+     */
+    useEffect(() => {
+        localStorage.setItem('reader-swipeThreshold', String(swipeThreshold));
+    }, [swipeThreshold]);
+
     return {
         readerMode,
         backgroundColor,
         pageWidth,
         isFullscreen,
+        swipeThreshold,
         setReaderMode,
         setBackgroundColor,
         setPageWidth,
         toggleFullscreen,
+        setSwipeThreshold,
     };
 }

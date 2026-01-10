@@ -7,6 +7,10 @@ const CACHE_NAME = 'comic-reader-v1.0.0';
 const API_CACHE_NAME = 'comic-reader-api-v1.0.0';
 const IMAGE_CACHE_NAME = 'comic-reader-images-v1.0.0';
 
+// Cache size limits
+const MAX_IMAGE_CACHE_SIZE = 500 * 1024 * 1024; // 500 MB
+const TRIM_TO_SIZE = 400 * 1024 * 1024; // Trim to 400 MB
+
 // Files to cache on install
 const STATIC_CACHE_URLS = [
   '/',
@@ -91,13 +95,67 @@ self.addEventListener('fetch', event => {
   if (isApiRequest(url)) {
     event.respondWith(handleApiRequest(request));
   } else if (isImageRequest(url)) {
-    event.respondWith(handleImageRequest(request));
+    event.respondWith(handleImageRequest(request, event));
   } else if (isStaticAsset(request)) {
     event.respondWith(handleStaticRequest(request));
   } else {
     event.respondWith(handlePageRequest(request));
   }
 });
+
+/**
+ * Trim the image cache to a specific size using an LRU-like strategy (oldest first).
+ */
+async function trimCache() {
+  try {
+    const cache = await caches.open(IMAGE_CACHE_NAME);
+    const requests = await cache.keys();
+    
+    if (requests.length === 0) return;
+
+    // Create a list of cache entries with their size and date
+    const cacheEntries = await Promise.all(
+      requests.map(async (request) => {
+        const response = await cache.match(request);
+        if (!response) return null;
+        
+        const size = response.headers.get('content-length') || 0;
+        const date = new Date(response.headers.get('date') || 0);
+        
+        return {
+          url: request.url,
+          size: Number(size),
+          date: date,
+        };
+      })
+    );
+
+    // Filter out null entries and sort by date (oldest first)
+    const validEntries = cacheEntries.filter(entry => entry !== null);
+    validEntries.sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    const totalSize = validEntries.reduce((sum, entry) => sum + entry.size, 0);
+
+    if (totalSize > MAX_IMAGE_CACHE_SIZE) {
+      console.log(`[SW] Cache size (${(totalSize / 1024 / 1024).toFixed(2)} MB) exceeds limit. Trimming...`);
+      let currentSize = totalSize;
+      
+      for (const entry of validEntries) {
+        if (currentSize <= TRIM_TO_SIZE) {
+          break;
+        }
+        
+        console.log(`[SW] Deleting oldest entry: ${entry.url}`);
+        await cache.delete(entry.url);
+        currentSize -= entry.size;
+      }
+      
+      console.log(`[SW] Cache trimmed to ${(currentSize / 1024 / 1024).toFixed(2)} MB.`);
+    }
+  } catch (error) {
+    console.error('[SW] Error trimming cache:', error);
+  }
+}
 
 /**
  * Check if request is for API
@@ -174,7 +232,7 @@ async function handleApiRequest(request) {
 /**
  * Handle image requests - Cache First with network fallback
  */
-async function handleImageRequest(request) {
+async function handleImageRequest(request, event) {
   const cache = await caches.open(IMAGE_CACHE_NAME);
   
   // Try cache first
@@ -189,7 +247,13 @@ async function handleImageRequest(request) {
     
     if (networkResponse.ok) {
       // Cache successful image responses
-      cache.put(request, networkResponse.clone());
+      const responseToCache = networkResponse.clone();
+      event.waitUntil(
+        (async () => {
+          await cache.put(request, responseToCache);
+          await trimCache();
+        })()
+      );
     }
     
     return networkResponse;

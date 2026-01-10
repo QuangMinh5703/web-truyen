@@ -76,6 +76,8 @@ class AnalyticsService {
   private sessionId: string;
   private events: AnalyticsEvent[] = [];
   private storage = typeof window !== 'undefined' ? window.localStorage : null;
+  private periodicExportIntervalId: NodeJS.Timeout | null = null;
+  private ANALYTICS_EXPORT_BUNDLE_KEY = 'analytics_export_bundle';
 
   constructor() {
     this.sessionId = this.generateSessionId();
@@ -431,11 +433,53 @@ class AnalyticsService {
     // fetch('/api/analytics', { method: 'POST', body: JSON.stringify(event) });
   }
 
+  /**
+   * Gathers all analytics data and stores it in a single localStorage entry.
+   */
+  public consolidateAndStoreData(): void {
+    if (!this.storage) return;
+
+    console.log('Consolidating analytics data for export...');
+    const dataToExport = {
+        events: this.events,
+        completedSessions: JSON.parse(this.storage.getItem('completed_reading_sessions') || '[]'),
+        exportDate: new Date().toISOString(),
+    };
+    
+    this.storage.setItem(this.ANALYTICS_EXPORT_BUNDLE_KEY, JSON.stringify(dataToExport));
+  }
+  
+  /**
+   * Starts a periodic job to consolidate analytics data.
+   * @param {number} intervalInHours - The interval in hours to run the consolidation.
+   */
+  public startPeriodicExport(intervalInHours: number): void {
+    if (this.periodicExportIntervalId) {
+      clearInterval(this.periodicExportIntervalId);
+    }
+    
+    const intervalInMillis = intervalInHours * 60 * 60 * 1000;
+    this.periodicExportIntervalId = setInterval(() => {
+        this.consolidateAndStoreData();
+    }, intervalInMillis);
+
+    // Also run once on startup
+    this.consolidateAndStoreData();
+  }
+
   // Export data for analysis
   public exportData(): string {
+    if (this.storage) {
+        const bundledData = this.storage.getItem(this.ANALYTICS_EXPORT_BUNDLE_KEY);
+        if (bundledData) {
+            return bundledData;
+        }
+    }
+    
+    // Fallback to generate on the fly if bundle not found
     return JSON.stringify({
       events: this.events,
-      completedSessions: this.storage?.getItem('completed_reading_sessions'),
+      completedSessions: JSON.parse(this.storage?.getItem('completed_reading_sessions') || '[]'),
       exportDate: new Date().toISOString(),
     });
   }
@@ -448,7 +492,7 @@ class AnalyticsService {
     if (this.storage) {
       const keys = Object.keys(this.storage);
       keys.forEach(key => {
-        if (key.startsWith('analytics_') || key.startsWith('active_session_') || key === 'completed_reading_sessions') {
+        if (key.startsWith('analytics_') || key.startsWith('active_session_') || key === 'completed_reading_sessions' || key === this.ANALYTICS_EXPORT_BUNDLE_KEY) {
           this.storage?.removeItem(key);
         }
       });
