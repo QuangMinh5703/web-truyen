@@ -368,7 +368,7 @@ const ChapterPage = () => {
           {readerMode === 'single' ? (
             currentImageUrl ? (
               <Suspense fallback={<div className="text-center py-8">Đang tải công cụ zoom...</div>}>
-                  <DynamicTransformWrapper>
+                  <DynamicTransformWrapper key={currentImageUrl}>
                       <DynamicTransformComponent>
                         <div
                           style={{
