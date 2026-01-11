@@ -21,7 +21,7 @@ export const ContinueReading = () => {
             const fetchStoryDetails = async () => {
                 setIsLoadingDetails(true);
                 try {
-                    const details = await otruyenApi.getStoryDetails(lastRead.storySlug);
+                    const details = await otruyenApi.getStoryBySlug(lastRead.storySlug);
                     setStoryDetails(details);
                 } catch (error) {
                     console.error("Failed to fetch story details for Continue Reading:", error);
