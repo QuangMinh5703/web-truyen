@@ -360,8 +360,25 @@ class OtruyenApi {
         console.error("[API] getChapterByUrl received an empty URL.");
         return undefined;
     }
-    const response = await this.fetch<Chapter>(chapterApiUrl, options);
-    return this.extractSingleData(response);
+    const response = await this.fetch<any>(chapterApiUrl, options); // Fetch as any to handle raw structure
+    const rawData = this.extractSingleData(response);
+    const domainCdn = response.data?.domain_cdn;
+
+    if (rawData && domainCdn) {
+      // Transform the raw data to match the application's Chapter type
+      const chapter: Chapter = {
+        id: rawData._id,
+        _id: rawData._id,
+        name: rawData.chapter_name,
+        title: rawData.chapter_title,
+        images: rawData.chapter_image.map(
+          (img: { image_file: string }) => `${domainCdn}/${rawData.chapter_path}/${img.image_file}`
+        ),
+      };
+      return chapter;
+    }
+
+    return undefined;
   }
   
   /**

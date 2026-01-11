@@ -79,7 +79,7 @@ const ChapterPage = () => {
 
   const { readerMode, backgroundColor, pageWidth, isFullscreen, swipeThreshold, setReaderMode, setBackgroundColor, setPageWidth, toggleFullscreen } = useReaderSettings();
   const { chapter, allChapters, story, loading, error } = useChapterData(slug, chapterId);
-  const { currentPage, progress, syncStatus, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(chapterId, chapter);
+  const { currentPage, progress, syncStatus, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(slug, chapterId, chapter);
 
   const [isNavigating, setIsNavigating] = useState(false);
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false);

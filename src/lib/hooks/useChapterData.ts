@@ -48,13 +48,28 @@ export const useChapterData = (slug: string, chapterId: string) => {
 
     const allChapters: UiChapter[] = useMemo(() => {
         if (!story?.chapters) return [];
-        const allApiChapters = story.chapters.flatMap(server => server.server_data || []).filter(Boolean);
-        const uniqueChapters = Array.from(new Map(allApiChapters.map(c => [getChapterId(c.chapter_api_data), c])).values());
-        return uniqueChapters.map((apiChapter: ApiChapter) => ({
-            id: getChapterId(apiChapter.chapter_api_data!),
-            name: apiChapter.chapter_name || 'N/A',
-            title: apiChapter.chapter_title || '',
-        }));
+        const flatChapters = story.chapters.flatMap(server => server.server_data || []).filter(Boolean);
+        
+        const chapterMap = new Map<string, UiChapter>();
+        flatChapters.forEach((apiChapter: ApiChapter) => {
+            const chapterId = getChapterId(apiChapter.chapter_api_data!);
+            if (chapterId && !chapterMap.has(chapterId)) { // Ensure chapterId is not empty and not already added
+                chapterMap.set(chapterId, {
+                    id: chapterId,
+                    name: apiChapter.chapter_name || 'N/A',
+                    title: apiChapter.chapter_title || '',
+                });
+            }
+        });
+        return Array.from(chapterMap.values()).sort((a, b) => {
+            // Simple numerical sort if chapter names are numbers, otherwise alphabetical
+            const aName = parseFloat(a.name);
+            const bName = parseFloat(b.name);
+            if (!isNaN(aName) && !isNaN(bName)) {
+                return aName - bName;
+            }
+            return a.name.localeCompare(b.name);
+        });
     }, [story]);
 
     const prefetchChapter = useCallback(async (chapterIdToPrefetch: string) => {
