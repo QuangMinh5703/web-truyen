@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { otruyenApi, Story, ApiChapter, getImageUrl, UiChapter } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
+import { useViewTracking } from '@/lib/hooks/useViewTracking';
 
 // Helper to extract chapter ID from a full API URL
 const getChapterId = (url: string | undefined): string => {
@@ -18,11 +19,26 @@ const StoryDetailPage = () => {
   const params = useParams();
   const router = useRouter();
   const slug = params?.slug as string;
-  
+
   const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastReadChapter, setLastReadChapter] = useState<{chapterId: string, page: number} | null>(null);
+
+  const { trackView } = useViewTracking();
+  const trackedRef = useRef(false);
+
+  // Effect for tracking story view
+  useEffect(() => {
+    if (story && story._id && story.slug && story.name && !trackedRef.current) {
+      trackView({
+        id: story._id,
+        slug: story.slug,
+        title: story.name,
+      });
+      trackedRef.current = true;
+    }
+  }, [story, trackView]);
 
   // Fetch story data
   useEffect(() => {
@@ -152,11 +168,10 @@ const StoryDetailPage = () => {
   const imageUrl = getImageUrl(story.cover || story.thumbnail || story.thumb_url || '');
 
   return (
-    <div className="min-h-screen --background text-gray-800">
+    <div className="flex flex-col min-h-screen --background text-gray-800">
       <Navbar />
       
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
+      <main className="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <nav className="mb-6">
           <ol className="flex items-center space-x-2 text-sm text-gray-500">
             <li>

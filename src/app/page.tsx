@@ -1,6 +1,5 @@
 import Navbar from '@/components/Navbar';
 import HeroBanner from '@/components/HeroBanner';
-import QuickStats from '@/components/QuickStats';
 import PopularGenres from '@/components/PopularGenres';
 import StoryList from '@/components/StoryList';
 import RecentUpdates from '@/components/RecentUpdates';
@@ -14,7 +13,6 @@ export default function HomePage() {
       <Navbar />
 
       <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ContinueReading />
         <HeroBanner />
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <TopRankings />

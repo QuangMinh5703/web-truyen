@@ -4,12 +4,15 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, getImageUrl } from '@/lib/api';
 import Image from "next/image";
+import { useViewTracking } from '@/lib/hooks/useViewTracking';
+import { StoryStats } from '@/lib/view-tracking';
 
 interface MangaItemProps {
     number: number;
     title: string;
     image: string;
     slug?: string;
+    views?: number;
 }
 
 const localBackground = [
@@ -29,7 +32,7 @@ const shuffleArray = <T,>(array: T[]): T[] => {
     return newArray;
 };
 
-const MangaItem = ({ number, title, image, slug }: MangaItemProps) => {
+const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
     return (
         <Link href={`/truyen/${slug || ''}`}>
             <div className="flex gap-4 p-3 mb-[5px]  cursor-pointer ">
@@ -54,6 +57,7 @@ const MangaItem = ({ number, title, image, slug }: MangaItemProps) => {
                     <h3 className="story-list-name">
                         {title}
                     </h3>
+                    {views !== undefined && <p className="text-sm text-gray-500">👁️ {views}</p>}
                 </div>
             </div>
         </Link>
@@ -61,9 +65,12 @@ const MangaItem = ({ number, title, image, slug }: MangaItemProps) => {
 };
 
 const TopRankings = () => {
-    const [movieTop, setMovieTop] = useState<Story[]>([]);
+    const [topStories, setTopStories] = useState<(Story | StoryStats)[]>([]);
     const [loading, setLoading] = useState(true);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
+    const [dataSource, setDataSource] = useState<'api' | 'local'>('local');
+    const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'all'>('week');
+    const { getHotStories } = useViewTracking();
 
     useEffect(() => {
         const shuffledBackground = shuffleArray(localBackground);
@@ -71,17 +78,29 @@ const TopRankings = () => {
     }, []);
 
     useEffect(() => {
-
-        const fetchmovieTop = async () => {
+        const fetchTopStories = async () => {
             try {
                 setLoading(true);
-                const stories = await otruyenApi.getHomeStories({ page: 1, limit: 10 });
-
-                if (stories) {
-                    setMovieTop(stories.items);
+                let stories: (Story | StoryStats)[] = [];
+                if (dataSource === 'local') {
+                    const hotStories = getHotStories(period, 10);
+                    // Since StoryStats might not have image URLs, we might need to fetch them
+                    // For now, we will assume that the slug is enough to navigate
+                    // and we will try to get the image from the API if it's not present
+                    stories = await Promise.all(hotStories.map(async (story) => {
+                        if ('storySlug' in story && !('cover' in story)) {
+                            const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
+                            return { ...story, ...storyDetails };
+                        }
+                        return story;
+                    }));
                 } else {
-                    console.warn('[TopRankings] No stories found in response');
+                    const apiStories = await otruyenApi.getHomeStories({ page: 1, limit: 10 });
+                    if (apiStories) {
+                        stories = apiStories.items;
+                    }
                 }
+                setTopStories(stories);
             } catch (error) {
                 console.error('Error fetching top stories:', error);
             } finally {
@@ -89,8 +108,8 @@ const TopRankings = () => {
             }
         };
 
-        fetchmovieTop();
-    }, []);
+        fetchTopStories();
+    }, [dataSource, period, getHotStories]);
 
     if (loading) {
         return (
@@ -104,21 +123,32 @@ const TopRankings = () => {
         );
     }
 
-    if (!movieTop || movieTop.length === 0) {
-        return null;
+    if (!topStories || topStories.length === 0) {
+        return (
+            <section className="mb-12">
+                 <div className="flex items-center justify-between mb-2">
+                    <h2 className="title-main space-x-2">
+                        Bảng xếp hạng
+                    </h2>
+                </div>
+                <div className="flex justify-center items-center h-64 bg-gray-100 rounded-lg">
+                    <p className="text-gray-500">Không có dữ liệu xếp hạng để hiển thị.</p>
+                </div>
+            </section>
+        );
     }
 
-    const movie = movieTop[0];
-    const topStories = movieTop.slice(1, 5); // Lấy 4 truyện tiếp theo
+    const movie = topStories[0];
+    const otherTopStories = topStories.slice(1, 5); // Lấy 4 truyện tiếp theo
 
-    const movieName = movie.name || movie.title || 'Truyện tranh';
-    const movieSlug = movie.slug || '';
+    const movieName = ('name' in movie ? movie.name : movie.storyTitle) || 'Truyện tranh';
+    const movieSlug = ('slug' in movie ? movie.slug : movie.storySlug) || '';
 
     const index = Math.floor(Math.random() * backgroundImages.length);
     const imageBgUrl = backgroundImages[index % backgroundImages.length] || backgroundImages[0];
 
 
-    let imageUrl = getImageUrl(movie.cover || movie.thumbnail || movie.thumb_url || '');
+    let imageUrl = getImageUrl(('cover' in movie && movie.cover) || ('thumbnail' in movie && movie.thumbnail) || ('thumb_url' in movie && movie.thumb_url) || '');
 
     return (
         <section className="mb-12">
@@ -126,14 +156,26 @@ const TopRankings = () => {
                 <h2 className="title-main space-x-2">
                     Bảng xếp hạng
                 </h2>
-                <Image
-                    src="/view_more.svg"
-                    alt="View more"
-                    onClick={() => {}}
-                    width={116}
-                    height={52}
-                    className="text-lime-400 cursor-pointer"
-                />
+                 <div className="flex gap-2 mb-4">
+                    <button onClick={() => setDataSource('local')} className={`px-3 py-1 rounded-full text-sm ${dataSource === 'local' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Dữ liệu thực</button>
+                    <button onClick={() => setDataSource('api')} className={`px-3 py-1 rounded-full text-sm ${dataSource === 'api' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Dữ liệu API</button>
+                </div>
+                <div className="flex gap-2 mb-4">
+                    <button onClick={() => setPeriod('day')} className={`px-3 py-1 rounded-full text-sm ${period === 'day' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Hôm nay</button>
+                    <button onClick={() => setPeriod('week')} className={`px-3 py-1 rounded-full text-sm ${period === 'week' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Tuần này</button>
+                    <button onClick={() => setPeriod('month')} className={`px-3 py-1 rounded-full text-sm ${period === 'month' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Tháng này</button>
+                    <button onClick={() => setPeriod('all')} className={`px-3 py-1 rounded-full text-sm ${period === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>Tất cả</button>
+                </div>
+                <Link href={`/xep-hang`} passHref>
+                    <Image
+                        src="/view_more.svg"
+                        alt="View more"
+                        onClick={() => {}}
+                        width={116}
+                        height={52}
+                        className="text-lime-400 cursor-pointer"
+                    />
+                </Link>
             </div>
 
             <div className="flex flex-row gap-4">
@@ -188,8 +230,9 @@ const TopRankings = () => {
 
                                     {/* Story Title */}
                                     <h2 className="top-ranking-title line-clamp-2">
-                                        {movieName}
+                                        🔥 {movieName}
                                     </h2>
+                                    {'totalViews' in movie && <p className="text-lg text-white">👁️ {movie.totalViews}</p>}
                                 </div>
                             </div>
                         </div>
@@ -199,18 +242,20 @@ const TopRankings = () => {
                 {/* Right Side - Top Stories List */}
                 <div className="basis-1/4 flex items-center justify-center top-ranking-stories-list rounded-2xl">
                     <div className="space-y-3 ">
-                        {topStories.map((story, index) => {
-                            const storyName = story.name || story.title || 'Truyện tranh';
-                            const storySlug = story.slug || '';
-                            let storyImage = getImageUrl(story.cover || story.thumbnail || story.thumb_url || '');
+                        {otherTopStories.map((story, index) => {
+                            const storyName = 'name' in story ? story.name : story.storyTitle || 'Truyện tranh';
+                            const storySlug = 'slug' in story ? story.slug : story.storySlug || '';
+                            let storyImage = getImageUrl(('cover' in story && story.cover) || ('thumbnail' in story && story.thumbnail) || ('thumb_url' in story && story.thumb_url) || '');
+                            const views = 'totalViews' in story ? story.totalViews : undefined;
 
                             return (
                                 <MangaItem
-                                    key={story.id || index}
+                                    key={('id' in story && story.id) || index}
                                     number={index + 2}
                                     title={storyName}
                                     image={storyImage}
                                     slug={storySlug}
+                                    views={views}
                                 />
                             );
                         })}

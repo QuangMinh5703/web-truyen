@@ -84,7 +84,7 @@ interface StoryListProps {
  * @param {StoryListProps} props - The component props.
  * @returns {JSX.Element} A section containing a list of stories.
  */
-const StoryList = ({ title, type = 'truyen-moi', limit = 10 }: StoryListProps) => {
+const StoryList = ({ title, type = 'hoan-thanh', limit = 10 }: StoryListProps) => {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -120,9 +120,9 @@ const StoryList = ({ title, type = 'truyen-moi', limit = 10 }: StoryListProps) =
     <section className="mb-12">
       <div className="flex items-center justify-between mb-4">
         <h2 className="title-main">
-          Truyện mới
+          Hoàn Thành
         </h2>
-        <Link href={`/the-loai`} passHref>
+        <Link href={`/hoan-thanh`} passHref>
             <Image
                 src="/view_more.svg"
                 alt=""

@@ -85,7 +85,7 @@ const Navbar = ({ className }: NavbarProps) => {
                                 ></span>
                             </Link>
                             <Link
-                                href="/truyen-moi"
+                                href="/xep-hang"
                                 className="relative px-4 py-2 --text-while rounded-lg transition-all duration-200 navbar-text group overflow-hidden "
                             >
                                 Xếp Hạng

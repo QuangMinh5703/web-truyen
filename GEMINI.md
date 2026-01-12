@@ -64,8 +64,9 @@ https://img.otruyenapi.com
 Khi nhận được yêu cầu từ user:
 1. **Đọc và hiểu đầy đủ yêu cầu** - Phân tích kỹ lưỡng từng chi tiết
 2. **Kiểm tra TODO.md** - Xem yêu cầu có liên quan đến task nào trong danh sách không
-3. **Xác định scope** - Các file/folder cần thao tác, components cần tạo/sửa
-4. **Làm rõ nếu cần** - Nếu thiếu thông tin → HỎI USER trước khi code
+3. **Tìm kiếm đoạn mã user cần sửa hoặc cần thêm. Sreach từ kháo một cách thông minh để tìm đúng chỗ" - Có thể BỎ QUA  bước này nếu có task liên quan trong TODO.md
+4. **Xác định scope** - Các file/folder cần thao tác, components cần tạo/sửa
+5. **Làm rõ nếu cần** - Nếu thiếu thông tin → HỎI USER trước khi code
 
 ### Bước 2: Đọc tài liệu liên quan
 - **Kiểm tra `/Docs`** - Đọc các file convention và structure liên quan
@@ -299,6 +300,7 @@ m-truyen/
 │   ├── COMMIT_GUIDE.md
 │   ├── PROJECT_STRUCTURE.md
 │   ├── TECH_STACK.md
+ |   ├── HOT_MANGA_RANKING_TODO.md
 │   └── TODO.md
 └── GEMINI.md                    # This file
 ```
@@ -329,7 +331,7 @@ m-truyen/
 ## Development Workflow
 
 ### Khi bắt đầu task mới:
-1. Đọc yêu cầu trong TODO.md
+1. Đọc yêu cầu trong TODO.md hoặc các file .md trong tên có TODO mà người dùng yêu cầu làm
 2. Review code liên quan
 3. Plan approach
 4. Implement từng phần nhỏ
@@ -347,7 +349,7 @@ m-truyen/
 ### Khi hoàn thành feature:
 1.  Self-review code
 2.  Test all edge cases
-3.  Update TODO.md
+3.  Update TODO.md và các file name có đuôi "{name file}_TODO.md"
 4.  Write commit message
 5.  Document any new patterns
 6.  Suggest next steps

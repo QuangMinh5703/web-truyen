@@ -2,29 +2,29 @@
 
 ## Overview
 
-D? ·n Comic Reader tu‚n th? c·c nguyÍn t?c WCAG 2.1 Level AA ?? ??m b?o tr?i nghi?m t?t cho t?t c? ng??i d˘ng, bao g?m nh?ng ng??i khuy?t t?t.
+D? √°n Comic Reader tu√¢n th? c√°c nguy√™n t?c WCAG 2.1 Level AA ?? ??m b?o tr?i nghi?m t?t cho t?t c? ng??i d√πng, bao g?m nh?ng ng??i khuy?t t?t.
 
 ## Core Principles
 
-### 1. Perceivable (CÛ th? nh?n th?c ???c)
-- **Text Alternatives**: T?t c? hÏnh ?nh ph?i cÛ alt text
-- **Captions**: Video v‡ audio ph?i cÛ ph? ??
-- **Adaptable**: Content cÛ th? hi?n th? theo nhi?u c·ch kh·c nhau
-- **Distinguishable**: Text v‡ background ph?i cÛ ?? t??ng ph?n ??
+### 1. Perceivable (C√≥ th? nh?n th?c ???c)
+- **Text Alternatives**: T?t c? h√¨nh ?nh ph?i c√≥ alt text
+- **Captions**: Video v√† audio ph?i c√≥ ph? ??
+- **Adaptable**: Content c√≥ th? hi?n th? theo nhi?u c√°ch kh√°c nhau
+- **Distinguishable**: Text v√† background ph?i c√≥ ?? t??ng ph?n ??
 
-### 2. Operable (CÛ th? ?i?u khi?n ???c)
-- **Keyboard Accessible**: T?t c? ch?c n?ng cÛ th? s? d?ng b?ng b‡n phÌm
-- **Enough Time**: Ng??i d˘ng cÛ ?? th?i gian ?? ??c v‡ s? d?ng content
-- **Seizures**: KhÙng s? d?ng animation g‚y co gi?t
-- **Navigable**: D? d‡ng tÏm v‡ ?i?u h??ng
+### 2. Operable (C√≥ th? ?i?u khi?n ???c)
+- **Keyboard Accessible**: T?t c? ch?c n?ng c√≥ th? s? d?ng b?ng b√†n ph√≠m
+- **Enough Time**: Ng??i d√πng c√≥ ?? th?i gian ?? ??c v√† s? d?ng content
+- **Seizures**: Kh√¥ng s? d?ng animation g√¢y co gi?t
+- **Navigable**: D? d√†ng t√¨m v√† ?i?u h??ng
 
-### 3. Understandable (CÛ th? hi?u ???c)
-- **Readable**: Text cÛ th? ??c ???c v‡ d? hi?u
-- **Predictable**: Giao di?n ho?t ??ng theo c·ch cÛ th? d? ?o·n
-- **Input Assistance**: Gi˙p ng??i d˘ng tr·nh v‡ s?a l?i
+### 3. Understandable (C√≥ th? hi?u ???c)
+- **Readable**: Text c√≥ th? ??c ???c v√† d? hi?u
+- **Predictable**: Giao di?n ho?t ??ng theo c√°ch c√≥ th? d? ?o√°n
+- **Input Assistance**: Gi√∫p ng??i d√πng tr√°nh v√† s?a l?i
 
 ### 4. Robust (M?nh m?)
-- **Compatible**: T??ng thÌch v?i assistive technologies
+- **Compatible**: T??ng th√≠ch v?i assistive technologies
 
 ## Implementation Guidelines
 
@@ -112,11 +112,11 @@ useEffect(() => {
 // Proper ARIA labels for story grid
 <div 
   role="grid" 
-  aria-label="Danh s·ch truy?n tranh"
+  aria-label="Danh s√°ch truy?n tranh"
   aria-describedby="story-grid-description"
 >
   <div id="story-grid-description" className="sr-only">
-    S? d?ng phÌm Tab ?? di chuy?n gi?a c·c truy?n. 
+    S? d?ng ph√≠m Tab ?? di chuy?n gi?a c√°c truy?n. 
     Nh?n Enter ?? m? truy?n.
   </div>
   
@@ -140,9 +140,9 @@ useEffect(() => {
   aria-atomic="true"
   className="sr-only"
 >
-  {loading && '?ang t?i danh s·ch truy?n...'}
+  {loading && '?ang t?i danh s√°ch truy?n...'}
   {error && `L?i: ${error}`}
-  {success && `?„ t?i th‡nh cÙng ${stories.length} truy?n`}
+  {success && `?√£ t?i th√†nh c√¥ng ${stories.length} truy?n`}
 </div>
 ```
 
@@ -218,7 +218,7 @@ useEffect(() => {
 #### Chapter Navigation
 ```tsx
 // Accessible chapter list
-<nav aria-label="Danh s·ch ch??ng">
+<nav aria-label="Danh s√°ch ch??ng">
   <ul role="list">
     {chapters.map(chapter => (
       <li key={chapter.id}>
@@ -232,7 +232,7 @@ useEffect(() => {
           id={`chapter-${chapter.id}-description`}
           className="sr-only"
         >
-          {chapter.isRead ? '?„ ??c' : 'Ch?a ??c'}
+          {chapter.isRead ? '?√£ ??c' : 'Ch?a ??c'}
         </span>
       </li>
     ))}
@@ -256,7 +256,7 @@ useEffect(() => {
   id={`image-description-${pageNumber}`}
   className="sr-only"
 >
-  {pageDescription || 'HÏnh ?nh trang truy?n'}
+  {pageDescription || 'H√¨nh ?nh trang truy?n'}
 </div>
 ```
 
@@ -323,17 +323,17 @@ const shouldAnimate = !prefersReducedMotion;
 ```tsx
 // Proper form labels
 <label htmlFor="search-input" className="sr-only">
-  TÏm ki?m truy?n
+  T√¨m ki?m truy?n
 </label>
 <input
   id="search-input"
   type="search"
-  placeholder="Nh?p tÍn truy?n..."
+  placeholder="Nh?p t√™n truy?n..."
   aria-describedby="search-help"
   aria-required="true"
 />
 <div id="search-help" className="sr-only">
-  Nh?p Ìt nh?t 2 k˝ t? ?? tÏm ki?m
+  Nh?p √≠t nh?t 2 k√Ω t? ?? t√¨m ki?m
 </div>
 ```
 
@@ -463,7 +463,7 @@ if (!supportsFullscreen) {
 // ? Good
 <Image 
   src="/cover.jpg" 
-  alt="BÏa truy?n One Piece - Monkey D. Luffy v?i chi?c m? r?m" 
+  alt="B√¨a truy?n One Piece - Monkey D. Luffy v?i chi?c m? r?m" 
 />
 ```
 

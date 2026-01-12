@@ -109,14 +109,16 @@ const RecentUpdates = () => {
                 <h2 className="title-main space-x-2">
                     Mới cập nhật
                 </h2>
-                <Image
-                    src="/view_more.svg"
-                    alt=""
-                    onClick={() => {}}
-                    width={116}
-                    height={52}
-                    className="text-lime-400 cursor-pointer"
-                />
+                <Link href={`/hoan-thanh`} passHref>
+                    <Image
+                        src="/view_more.svg"
+                        alt=""
+                        onClick={() => {}}
+                        width={116}
+                        height={52}
+                        className="text-lime-400 cursor-pointer"
+                    />
+                </Link>
             </div>
 
             {updates.length === 0 ? (
