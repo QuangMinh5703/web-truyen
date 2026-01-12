@@ -115,72 +115,66 @@ const HeroBanner = () => {
             </div>
         );
     }
+    const currentStory = stories[currentSlide];
+    const storyId = currentStory._id || currentStory.id || '';
+    const storySlug = currentStory.slug || storyId;
+    const storyTitle = currentStory.name || currentStory.title || 'Truyện tranh';
+    const imageUrl = bannerImages[currentSlide % bannerImages.length] || bannerImages[0];
 
     return (
         <div className="mb-12">
             <div
                 className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-[var(--herobanner-height)] overflow-hidden shadow-2xl">
 
-                {/* Background slides */}
-                {stories.map((story, index) => {
-                    
-                    const storyId = story._id || story.id || '';
-                    const storySlug = story.slug || storyId;
-                    const storyTitle = story.name || story.title || 'Truyện tranh';
-
-                    const imageUrl = bannerImages[index % bannerImages.length] || bannerImages[0];
-
-                    return (
-                        <div
-                            key={storyId}
-                            className={`absolute inset-0 transition-opacity duration-1000 ${
-                                index === currentSlide ? 'opacity-100' : 'opacity-0'
-                            }`}
-                        >
-                            {/* Background image */}
-                                <div className="absolute inset-0 w-full h-full">
-                                    <Image
-                                        src={imageUrl}
-                                        alt={storyTitle}
-                                        fill
-                                        className="object-cover object-center"
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, var(--herobanner-width)"
-                                        quality={95}
-                                        priority={index === 0}
-                                        unoptimized={false}
-                                    />
-                                    <div
-                                        className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
-                                </div>
-
-                            {/* Content */}
-                            <div className="absolute bottom-20 left-0 right-0 p-8 md:p-12 lg:p-16 pl-12 md:pl-16 lg:pl-20">
-                                <div className="text-white max-w-4xl">
-                                    <p className="herobanner-description-text">
-                                        {story.category && Array.isArray(story.category) && story.category.length > 0
-                                            ? story.category.map(category => category.name).join(' | ')
-                                            : 'Thể loại đang được cập nhật.'
-                                        }
-                                    </p>
-                                    <h1 className="black-ops-one-text mb-6 animate-fade-in drop-shadow-lg">
-                                        {storyTitle}
-                                    </h1>
-                                    <div className=" mt-[10px]">
-                                        <Link href={`/truyen/${storySlug}`}>
-                                            <Image
-                                                src="/read_now.svg"
-                                                alt="Đọc ngay"
-                                                width={157}
-                                                height={59}
-                                                className="cursor-pointer hover:scale-105 transition-transform duration-200"
-                                            />
-                                        </Link>
-                                    </div>
-                                </div>
-                            </div>
+                {/* Background slide */}
+                <div
+                    key={storyId}
+                    className="absolute inset-0 transition-opacity duration-1000 opacity-100"
+                >
+                    {/* Background image */}
+                        <div className="absolute inset-0 w-full h-full">
+                            <Image
+                                src={imageUrl}
+                                alt={storyTitle}
+                                fill
+                                className="object-cover object-center"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, var(--herobanner-width)"
+                                quality={95}
+                                priority={true}
+                                unoptimized={false}
+                            />
+                            <div
+                                className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
                         </div>
-                    );
-                })}
+
+                    {/* Content */}
+                    <div className="absolute bottom-20 left-0 right-0 p-8 md:p-12 lg:p-16 pl-12 md:pl-16 lg:pl-20">
+                        <div className="text-white max-w-4xl">
+                            <p className="herobanner-description-text">
+                                {currentStory.category && Array.isArray(currentStory.category) && currentStory.category.length > 0
+                                    ? currentStory.category.map(category => category.name).join(' | ')
+                                    : 'Thể loại đang được cập nhật.'
+                                }
+                            </p>
+                            <h1 className="black-ops-one-text mb-6 animate-fade-in drop-shadow-lg">
+                                {storyTitle}
+                            </h1>
+                            {storySlug && (
+                                <div className=" mt-[10px]">
+                                    <Link href={`/truyen/${storySlug}`}>
+                                        <Image
+                                            src="/read_now.svg"
+                                            alt="Đọc ngay"
+                                            width={157}
+                                            height={59}
+                                            className="cursor-pointer hover:scale-105 transition-transform duration-200"
+                                        />
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-8">

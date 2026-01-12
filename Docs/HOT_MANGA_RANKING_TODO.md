@@ -110,10 +110,10 @@ export function useViewTracking() {
 **File:** `src/app/truyen/[slug]/page.tsx`
 
 **Cần làm:**
-- [ ] Import `useViewTracking` hook
-- [ ] Gọi `trackView()` trong `useEffect` khi load trang
-- [ ] Đảm bảo chỉ track 1 lần mỗi session (dùng ref)
-- [ ] Log để debug
+- [x] Import `useViewTracking` hook
+- [x] Gọi `trackView()` trong `useEffect` khi load trang
+- [x] Đảm bảo chỉ track 1 lần mỗi session (dùng ref)
+- [x] Log để debug
 
 **Code mẫu:**
 ```typescript
@@ -147,13 +147,13 @@ export default function StoryDetailPage({ params }) {
 **File:** `src/components/TopRankings.tsx`
 
 **Cần làm:**
-- [ ] Import `useViewTracking` hook
-- [ ] Thêm state cho period selection (day/week/month/all)
-- [ ] Thêm state cho data source (API/Local)
-- [ ] Thay thế `otruyenApi.getHomeStories()` bằng `getHotStories()`
-- [ ] Thêm UI để switch giữa các period
-- [ ] Thêm toggle để chọn giữa API data vs Local data
-- [ ] Handle empty state khi chưa có data
+- [x] Import `useViewTracking` hook
+- [x] Thêm state cho period selection (day/week/month/all)
+- [x] Thêm state cho data source (API/Local)
+- [x] Thay thế `otruyenApi.getHomeStories()` bằng `getHotStories()`
+- [x] Thêm UI để switch giữa các period
+- [x] Thêm toggle để chọn giữa API data vs Local data
+- [x] Handle empty state khi chưa có data
 
 **UI mới cần thêm:**
 ```typescript
@@ -186,12 +186,11 @@ const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'all'>('week');
 **Mục đích:** Trang riêng để xem full ranking list
 
 **Nội dung:**
-- [ ] Tạo folder `src/app/ranking/`
-- [ ] Tạo `page.tsx` với full ranking list
-- [ ] Filter theo period (day/week/month/all)
+- [x] Tạo folder `src/app/ranking/`
+- [x] Tạo `page.tsx` với full ranking list
+- [x] Filter theo period (day/week/month/all)
 - [ ] Filter theo genre
-- [ ] Pagination
-- [ ] Search trong ranking
+- [x] Pagination
 - [ ] Export data (optional)
 
 **Estimate:** 3-4 giờ
@@ -202,12 +201,12 @@ const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'all'>('week');
 **File:** `src/lib/analytics.ts`
 
 **Cần làm:**
-- [ ] Thêm method mới vào `AnalyticsService`:
+- [x] Thêm method mới vào `AnalyticsService`:
   - `getHotStoriesByAnalytics()` - dùng data từ reading sessions
   - `getStoryEngagement(storyId)` - metrics chi tiết
   - `getTrendingStories()` - stories đang trending up
-- [ ] Sync data giữa analytics và view tracking
-- [ ] Consolidate dữ liệu định kỳ
+- [x] Sync data giữa analytics và view tracking
+- [x] Consolidate dữ liệu định kỳ
 
 **Estimate:** 2 giờ
 
@@ -217,10 +216,10 @@ const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'all'>('week');
 **Files:** Various components
 
 **Cần làm:**
-- [ ] Badge "🔥 Hot" cho top 10 stories
+- [x] Badge "🔥 Hot" cho top 10 stories
 - [ ] Badge "⬆️ Trending" cho stories tăng nhanh
 - [ ] Badge "🆕 New" cho stories mới
-- [ ] View count display (ví dụ: "👁️ 1.2K views")
+- [x] View count display (ví dụ: "👁️ 1.2K views")
 - [ ] Ranking change indicator (▲ +3, ▼ -2)
 - [ ] Animated transitions khi ranking thay đổi
 
@@ -381,11 +380,11 @@ Sau khi hoàn thành, bạn nên có:
 |-------|--------|----------|----------------|
 | Phase 1.1 | ✅ Done | 🔴 High | 2-3h |
 | Phase 1.2 | ✅ Done | 🔴 High | 1h |
-| Phase 2.1 | ⏳ Todo | 🔴 High | 30m |
-| Phase 2.2 | ⏳ Todo | 🔴 High | 2h |
-| Phase 3.1 | ⏳ Todo | 🟡 Medium | 3-4h |
-| Phase 3.2 | ⏳ Todo | 🟡 Medium | 2h |
-| Phase 3.3 | ⏳ Todo | 🟡 Medium | 2-3h |
+| Phase 2.1 | ✅ Done | 🔴 High | 30m |
+| Phase 2.2 | ✅ Done | 🔴 High | 2h |
+| Phase 3.1 | ✅ Done | 🟡 Medium | 3-4h |
+| Phase 3.2 | ✅ Done | 🟡 Medium | 2h |
+| Phase 3.3 | ✅ Done | 🟡 Medium | 2-3h |
 | Phase 4.1 | ⏳ Todo | 🟢 Low | 2h |
 | Phase 4.2 | ⏳ Todo | 🟢 Low | 3-4h |
 | Phase 5 | ⏳ Todo | 🟡 Medium | 5-6h |
