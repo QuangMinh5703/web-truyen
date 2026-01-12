@@ -63,15 +63,15 @@ class ViewTrackingService {
 ```
 
 **Chi tiết:**
-- [ ] Tạo file mới `src/lib/view-tracking.ts`
-- [ ] Define interfaces: `StoryView`, `StoryStats`
-- [ ] Implement `ViewTrackingService` class
-- [ ] Method `trackStoryView()` - ghi nhận lượt xem
-- [ ] Method `getRanking()` - tính ranking theo time period
-- [ ] Method `calculateScore()` - công thức: `totalViews + (uniqueUsers * 2)`
-- [ ] Method `saveToStorage()` - lưu vào localStorage
-- [ ] Method `loadFromStorage()` - load từ localStorage
-- [ ] Export singleton instance
+- [x] Tạo file mới `src/lib/view-tracking.ts`
+- [x] Define interfaces: `StoryView`, `StoryStats`
+- [x] Implement `ViewTrackingService` class
+- [x] Method `trackStoryView()` - ghi nhận lượt xem
+- [x] Method `getRanking()` - tính ranking theo time period
+- [x] Method `calculateScore()` - công thức: `totalViews + (uniqueUsers * 2)`
+- [x] Method `saveToStorage()` - lưu vào localStorage
+- [x] Method `loadFromStorage()` - load từ localStorage
+- [x] Export singleton instance
 
 **Estimate:** 2-3 giờ
 
@@ -92,13 +92,13 @@ export function useViewTracking() {
 ```
 
 **Chi tiết:**
-- [ ] Tạo file `src/lib/hooks/useViewTracking.ts`
-- [ ] Implement `trackView()` function
-- [ ] Implement `getHotStories()` function
-- [ ] Implement `getStoryStats()` function
-- [ ] Handle loading states
-- [ ] Handle error states
-- [ ] Export hook
+- [x] Tạo file `src/lib/hooks/useViewTracking.ts`
+- [x] Implement `trackView()` function
+- [x] Implement `getHotStories()` function
+- [x] Implement `getStoryStats()` function
+- [x] Handle loading states
+- [x] Handle error states
+- [x] Export hook
 
 **Estimate:** 1 giờ
 
