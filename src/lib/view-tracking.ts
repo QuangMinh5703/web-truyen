@@ -65,9 +65,9 @@ class ViewTrackingService {
         this.views = parsedData.views || [];
         this.stats = new Map(
           parsedData.stats
-            ? parsedData.stats.map((item: { storyId: string; stats: StoryStats }) => [
-                item.storyId,
-                { ...item.stats, uniqueUsers: new Set(item.stats.uniqueUsers) },
+            ? parsedData.stats.map((stat: StoryStats) => [
+                stat.storyId,
+                { ...stat, uniqueUsers: new Set(stat.uniqueUsers || []) },
               ])
             : []
         );

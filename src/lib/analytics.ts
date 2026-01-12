@@ -5,6 +5,7 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { viewTrackingService } from './view-tracking'; // Import viewTrackingService
 
 // Analytics event types
 export interface AnalyticsEvent {
@@ -221,7 +222,7 @@ class AnalyticsService {
     });
   }
 
-  public trackStoryView(storyId: string, storyTitle: string): void {
+  public trackStoryView(storyId: string, storyTitle: string, storySlug: string): void {
     this.trackEvent({
       event: 'story_view',
       category: 'content',
@@ -232,7 +233,63 @@ class AnalyticsService {
         storyTitle,
       },
     });
+
+    // Sync with ViewTrackingService
+    viewTrackingService.trackStoryView({ id: storyId, slug: storySlug, title: storyTitle });
   }
+
+  public getHotStoriesByAnalytics(limit: number = 10): ContentMetrics[] {
+    const popularContent = this.getPopularContent();
+    // Simple scoring: completionRate is weighted higher than totalViews
+    return popularContent
+      .map(story => ({
+        ...story,
+        popularityScore: (story.totalViews * 0.4) + (story.completionRate * 0.6),
+      }))
+      .sort((a, b) => b.popularityScore - a.popularityScore)
+      .slice(0, limit);
+  }
+
+  public getStoryEngagement(storyId: string): ContentMetrics | undefined {
+    const popularContent = this.getPopularContent();
+    return popularContent.find(story => story.storyId === storyId);
+  }
+
+  public getTrendingStories(limit: number = 5, timePeriod: 'day' | 'week' = 'week'): ContentMetrics[] {
+    if (!this.storage) return [];
+
+    const now = Date.now();
+    const timeThreshold = timePeriod === 'day' ? now - 24 * 60 * 60 * 1000 : now - 7 * 24 * 60 * 60 * 1000;
+
+    const completed = this.storage.getItem('completed_reading_sessions');
+    const sessions: ReadingSession[] = completed ? JSON.parse(completed) : [];
+
+    const recentSessions = sessions.filter(session => session.startTime >= timeThreshold);
+
+    const storyMetrics: Record<string, ContentMetrics> = {};
+      
+    recentSessions.forEach(session => {
+      if (!storyMetrics[session.storyId]) {
+        storyMetrics[session.storyId] = {
+          storyId: session.storyId,
+          storyTitle: session.storyTitle,
+          totalViews: 0,
+          uniqueReaders: 0,
+          averageReadingTime: 0,
+          completionRate: 0,
+          averageRating: 0,
+          popularityScore: 0,
+          lastUpdated: Date.now(),
+        };
+      }
+      
+      const metric = storyMetrics[session.storyId];
+      metric.totalViews += 1;
+    });
+
+    return Object.values(storyMetrics).sort((a,b) => b.totalViews - a.totalViews).slice(0, limit);
+  }
+
 
   public trackChapterCompletion(storyId: string, chapterId: string, completionTime: number): void {
     this.trackEvent({

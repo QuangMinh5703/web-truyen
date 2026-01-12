@@ -81,11 +81,16 @@ const ChapterPage = () => {
   const { chapter, allChapters, story, loading, error } = useChapterData(slug, chapterId);
   const { currentPage, progress, syncStatus, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(slug, chapterId, chapter);
 
+  const [isMounted, setIsMounted] = useState(false);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false);
   const [imageHeights, setImageHeights] = useState<Record<number, number>>({});
   const [swipeOffset, setSwipeOffset] = useState(0);
   const isLoadingNextChapter = isNavigating;
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const { ref: commentsRef, inView: commentsInView } = useInView({
     triggerOnce: true,
@@ -366,55 +371,53 @@ const ChapterPage = () => {
           {...bind()}
         >
           {readerMode === 'single' ? (
-            currentImageUrl ? (
-              <Suspense fallback={<div className="text-center py-8">Đang tải công cụ zoom...</div>}>
-                  <DynamicTransformWrapper key={currentImageUrl}>
-                      <DynamicTransformComponent>
-                        <div
-                          style={{
-                            transform: `translateX(${swipeOffset}px)`,
-                            transition: 'transform 0.1s ease-out',
-                          }}
-                        >
-                          <div className="relative mx-auto max-w-full">
-                              <div className="relative">
-                                  {/* Loading skeleton */}
-                                  <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
-                                      <div className="text-gray-500">Đang tải...</div>
-                                  </div>
-                                  <Image
-                                      src={currentImageUrl}
-                                      alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
-                                      width={800}
-                                      height={1200}
-                                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                                      className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
-                                      priority
-                                      placeholder="blur"
-                                      blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
-                                      onLoad={(e) => {
-                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                          if (skeleton) skeleton.style.display = 'none';
-                                      }}
-                                      onError={(e) => {
-                                          console.error('Image load error:', currentImageUrl);
-                                          e.currentTarget.src = '/placeholder-image.svg';
-                                          const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                          if (skeleton) skeleton.style.display = 'none';
-                                      }}
-                                  />
-                                  <button 
-                                    onClick={() => handleReportError(currentImageUrl)} 
-                                    className="absolute bottom-4 right-4 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-50 hover:opacity-100 transition-opacity"
-                                  >
-                                    Báo lỗi
-                                  </button>
+            currentImageUrl && isMounted ? (
+              <DynamicTransformWrapper key={currentImageUrl}>
+                  <DynamicTransformComponent>
+                    <div
+                      style={{
+                        transform: `translateX(${swipeOffset}px)`,
+                        transition: 'transform 0.1s ease-out',
+                      }}
+                    >
+                      <div className="relative mx-auto max-w-full">
+                          <div className="relative">
+                              {/* Loading skeleton */}
+                              <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
+                                  <div className="text-gray-500">Đang tải...</div>
                               </div>
+                              <Image
+                                  src={currentImageUrl}
+                                  alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
+                                  width={800}
+                                  height={1200}
+                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                                  className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
+                                  priority
+                                  placeholder="blur"
+                                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
+                                  onLoad={(e) => {
+                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                      if (skeleton) skeleton.style.display = 'none';
+                                  }}
+                                  onError={(e) => {
+                                      console.error('Image load error:', currentImageUrl);
+                                      e.currentTarget.src = '/placeholder-image.svg';
+                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                                      if (skeleton) skeleton.style.display = 'none';
+                                  }}
+                              />
+                              <button 
+                                onClick={() => handleReportError(currentImageUrl)} 
+                                className="absolute bottom-4 right-4 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-50 hover:opacity-100 transition-opacity"
+                              >
+                                Báo lỗi
+                              </button>
                           </div>
-                        </div>
-                      </DynamicTransformComponent>
-                  </DynamicTransformWrapper>
-              </Suspense>
+                      </div>
+                    </div>
+                  </DynamicTransformComponent>
+              </DynamicTransformWrapper>
             ) : (
               <div className="w-full aspect-[2/3] bg-gray-200 rounded-lg flex items-center justify-center">
                 <span className="text-gray-500">{loading || isNavigating ? 'Đang tải...' : 'Không có hình ảnh'}</span>
