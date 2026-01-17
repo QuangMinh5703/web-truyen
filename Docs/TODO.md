@@ -134,7 +134,10 @@ useEffect(() => {
 - [ ] Search autocomplete
 - [ ] Saved searches
 
-**8. Recommendations**
+**8. Ranking Page Improvements**
+- See `HOT_MANGA_RANKING_TODO.md` and `STORY_COMMENTS_TODO.md` for details.
+
+**9. Recommendations**
 - [ ] Algorithm design
 - [ ] User interaction tracking
 - [ ] "Recommended for you" section

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useViewTracking } from '@/lib/hooks/useViewTracking';
 import { StoryStats } from '@/lib/view-tracking';
 import { otruyenApi, Story, getImageUrl } from '@/lib/api';
@@ -12,16 +12,16 @@ import Link from 'next/link';
 const RankingPage = () => {
   const [rankedStories, setRankedStories] = useState<(Story | StoryStats)[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<'day' | 'week' | 'month' | 'all'>('week');
   const [currentPage, setCurrentPage] = useState(1);
-  const [storiesPerPage] = useState(20); // Number of stories per page
+  const [storiesPerPage] = useState(20);
   const { getHotStories } = useViewTracking();
+
+  const hotStories = useMemo(() => getHotStories('month', 100), [getHotStories]);
 
   useEffect(() => {
     const fetchRankedStories = async () => {
       setLoading(true);
       try {
-        const hotStories = getHotStories(period, 100); // Get top 100 for pagination
         const stories = await Promise.all(
           hotStories.map(async (story) => {
             if ('storySlug' in story && !('cover' in story)) {
@@ -39,13 +39,18 @@ const RankingPage = () => {
       }
     };
 
-    fetchRankedStories();
-  }, [period, getHotStories]);
+    if (hotStories.length > 0) {
+      fetchRankedStories();
+    } else {
+      setLoading(false);
+    }
+  }, [hotStories]);
 
-  // Pagination logic
-  const indexOfLastStory = currentPage * storiesPerPage;
-  const indexOfFirstStory = indexOfLastStory - storiesPerPage;
-  const currentStories = rankedStories.slice(indexOfFirstStory, indexOfLastStory);
+  const currentStories = useMemo(() => {
+    const indexOfLastStory = currentPage * storiesPerPage;
+    const indexOfFirstStory = indexOfLastStory - storiesPerPage;
+    return rankedStories.slice(indexOfFirstStory, indexOfLastStory);
+  }, [rankedStories, currentPage, storiesPerPage]);
 
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
@@ -53,25 +58,7 @@ const RankingPage = () => {
     <div className="flex flex-col min-h-screen --background text-gray-800">
       <Navbar />
       <main className="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Bảng Xếp Hạng</h1>
-
-        <div className="flex justify-center gap-4 mb-8">
-          {(['day', 'week', 'month', 'all'] as const).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-4 py-2 rounded-lg font-semibold transition-colors ${
-                period === p
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {
-                { day: 'Hôm nay', week: 'Tuần này', month: 'Tháng này', all: 'Tất cả' }[p]
-              }
-            </button>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold text-center mb-8">Bảng Xếp Hạng Tháng</h1>
 
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -83,6 +70,10 @@ const RankingPage = () => {
               </div>
             ))}
           </div>
+        ) : rankedStories.length === 0 ? (
+          <div className="text-center text-gray-500 text-xl">
+            Không có dữ liệu xếp hạng để hiển thị.
+          </div>
         ) : (
           <div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -90,6 +81,7 @@ const RankingPage = () => {
                 const storyName = 'name' in story ? story.name : story.storyTitle || 'Truyện tranh';
                 const storySlug = 'slug' in story ? story.slug : story.storySlug || '';
                 const imageUrl = getImageUrl(('cover' in story && story.cover) || ('thumbnail' in story && story.thumbnail) || ('thumb_url' in story && story.thumb_url) || '');
+                const indexOfFirstStory = (currentPage - 1) * storiesPerPage;
 
                 return (
                   <Link key={storySlug} href={`/truyen/${storySlug}`}>
@@ -118,17 +110,7 @@ const RankingPage = () => {
                 );
               })}
             </div>
-            <div className="flex justify-center mt-8">
-              {Array.from({ length: Math.ceil(rankedStories.length / storiesPerPage) }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => paginate(index + 1)}
-                  className={`mx-1 px-4 py-2 rounded-lg ${currentPage === index + 1 ? 'bg-blue-600 text-white' : 'bg-white text-gray-700'}`}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
+
           </div>
         )}
       </main>

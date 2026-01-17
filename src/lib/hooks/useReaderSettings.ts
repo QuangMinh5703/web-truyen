@@ -68,10 +68,6 @@ export const useReaderSettings = () => {
      */
     useEffect(() => {
         localStorage.setItem('reader-backgroundColor', backgroundColor);
-        // Apply class to root for global styling, useful for non-component parts of the UI.
-        const root = document.documentElement;
-        root.classList.remove('bg-white', 'bg-black', 'bg-sepia');
-        root.classList.add(`bg-${backgroundColor}`);
     }, [backgroundColor]);
     
     /**
