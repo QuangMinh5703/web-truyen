@@ -65,11 +65,6 @@ const DynamicTransformComponent = dynamic(() => import('react-zoom-pan-pinch').t
   ssr: false,
 });
 
-const DynamicCommentSection = dynamic(() => import('@/components/CommentSection'), {
-  loading: () => <div className="text-center py-8">Đang tải bình luận...</div>,
-  ssr: false,
-});
-
 const ChapterPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -91,11 +86,6 @@ const ChapterPage = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  const { ref: commentsRef, inView: commentsInView } = useInView({
-    triggerOnce: true,
-    rootMargin: '200px 0px',
-  });
   
   const { ref: infiniteScrollRef, inView: infiniteScrollInView } = useInView({
     triggerOnce: false,
@@ -254,14 +244,23 @@ const ChapterPage = () => {
     );
   }
 
+  const bgClassMap = {
+    white: 'bg-white text-black',
+    black: 'bg-black text-white',
+    sepia: 'bg-[#fbf0d9] text-[#5b4636]',
+  };
+
   return (
-    <div className={`min-h-screen --background`} ref={chapterPageRef}>
+    <>
+      {/* Navbar nằm NGOÀI container bị ảnh hưởng */}
+      <Navbar className={isFullscreen ? 'hidden' : ''}/>
+      
+      <div className={`min-h-screen ${bgClassMap[backgroundColor]}`} ref={chapterPageRef}>
         <Head>
             {preloadImages.map((imgUrl) => (
               <link key={imgUrl} rel="preload" as="image" href={imgUrl} />
             ))}
         </Head>
-      <Navbar className={isFullscreen ? 'hidden' : ''}/>
       <Suspense fallback={null}>
         <DynamicChapterNav
           isOpen={isChapterNavOpen}
@@ -371,7 +370,7 @@ const ChapterPage = () => {
           {...bind()}
         >
           {readerMode === 'single' ? (
-            currentImageUrl && isMounted ? (
+            isMounted && currentImageUrl ? (
               <DynamicTransformWrapper key={currentImageUrl}>
                   <DynamicTransformComponent>
                     <div
@@ -525,14 +524,25 @@ const ChapterPage = () => {
           </div>
         )}
         
-        {/* Comments Section */}
-        <div ref={commentsRef}>
-          {commentsInView && <DynamicCommentSection chapterId={chapterId} />}
+        {/* Link to story comments */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+          <div className="text-center">
+            <p className="text-gray-700 font-medium mb-3">
+              💬 Muốn chia sẻ suy nghĩ về truyện này?
+            </p>
+            <Link 
+              href={`/truyen/${slug}#comments`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all duration-200"
+            >
+              Đến trang truyện để bình luận →
+            </Link>
+          </div>
         </div>
       </main>
 
       <FooterComponent className={isFullscreen ? 'hidden' : ''}/>
     </div>
+    </>
   );
 };
 

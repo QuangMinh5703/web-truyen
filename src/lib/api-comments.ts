@@ -1,94 +1,140 @@
 // src/lib/api-comments.ts
 
+// ✅ CHANGED: Interface với storySlug
 export interface Comment {
   id: string;
-  chapterId: string;
+  storySlug: string;      // CHANGED: từ chapterId
+  storyTitle?: string;    // NEW: thêm title
   name: string;
   message: string;
   createdAt: string;
 }
 
-// In-memory store for comments
-const commentsByChapter = new Map<string, Comment[]>();
+// ✅ CHANGED: Đổi tên Map
+const commentsByStory = new Map<string, Comment[]>();
 
-// Mock initial data
+// Storage keys
+const STORAGE_KEY = 'mtruyen-story-comments';
+const STORAGE_VERSION = '1.0';
+
+// ✅ NEW: Mock data với storySlug
 const initialComments: Comment[] = [
   {
     id: '1',
-    chapterId: '123',
+    storySlug: 'demo-story',
+    storyTitle: 'Demo Story',
     name: 'Độc giả 1',
-    message: 'Chương này hay quá!',
-    createdAt: new Date('2025-12-18T10:00:00Z').toISOString(),
-  },
-  {
-    id: '2',
-    chapterId: '123',
-    name: 'Fan Manhwa',
-    message: 'Hóng chương mới!',
-    createdAt: new Date('2025-12-18T11:30:00Z').toISOString(),
-  },
-    {
-    id: '3',
-    chapterId: '123',
-    name: 'Tester',
-    message: 'Test comment.',
-    createdAt: new Date('2025-12-19T11:30:00Z').toISOString(),
+    message: 'Truyện này hay quá!',
+    createdAt: new Date('2025-01-15T10:00:00Z').toISOString(),
   },
 ];
 
-commentsByChapter.set('123', initialComments);
+commentsByStory.set('demo-story', initialComments);
 
-// Mock API functions
-export const getComments = async (chapterId: string): Promise<Comment[]> => {
-  console.log(`[Mock API] Fetching comments for chapter: ${chapterId}`);
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  let comments = commentsByChapter.get(chapterId);
-
-  // If no comments exist for this chapter, create some default ones for demonstration
-  if (!comments || comments.length === 0) {
-    const defaultComments: Comment[] = [
-      {
-        id: '1',
-        chapterId: chapterId,
-        name: 'Độc Giả Ẩn Danh',
-        message: 'Chương này hay quá! Hóng chương tiếp theo từng ngày.',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-      },
-      {
-        id: '2',
-        chapterId: chapterId,
-        name: 'Fan Cứng',
-        message: 'Art càng ngày càng lên tay, nội dung thì cuốn khỏi bàn. 10/10!',
-        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-      },
-    ];
-    commentsByChapter.set(chapterId, defaultComments);
-    comments = defaultComments;
+// Storage functions
+const saveToStorage = () => {
+  try {
+    const data = {
+      version: STORAGE_VERSION,
+      comments: Array.from(commentsByStory.entries()),
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (error) {
+    console.error('Failed to save comments:', error);
   }
-  
-  console.log(`[Mock API] Found ${comments.length} comments.`);
-  return [...comments].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
+const loadFromStorage = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (!stored) return;
+    
+    const data = JSON.parse(stored);
+    if (data.version !== STORAGE_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      return;
+    }
+    
+    const entries = data.comments as [string, Comment[]][];
+    entries.forEach(([slug, comments]) => {
+      commentsByStory.set(slug, comments);
+    });
+  } catch (error) {
+    console.error('Failed to load comments:', error);
+  }
+};
+
+loadFromStorage();
+
+// ✅ CHANGED: getComments nhận storySlug
+export const getComments = async (storySlug: string): Promise<Comment[]> => {
+  console.log(`Fetching comments for story: ${storySlug}`);
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  const comments = commentsByStory.get(storySlug) || [];
+  return [...comments].sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+};
+
+// ✅ CHANGED: postComment nhận storySlug
 export const postComment = async (
-  chapterId: string,
-  comment: { name: string; message: string }
+  storySlug: string,
+  comment: { name: string; message: string; storyTitle?: string }
 ): Promise<Comment> => {
-  console.log(`[Mock API] Posting comment for chapter: ${chapterId}`, comment);
-  // Simulate network delay
+  console.log(`Posting comment for story: ${storySlug}`);
+  
+  if (!storySlug || !comment.name.trim() || !comment.message.trim()) {
+    throw new Error('Invalid comment data');
+  }
+  
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  const existingComments = commentsByChapter.get(chapterId) || [];
+  const existingComments = commentsByStory.get(storySlug) || [];
+  const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  
   const newComment: Comment = {
-    id: (existingComments.length + 1).toString(),
-    chapterId,
-    ...comment,
+    id: newId,
+    storySlug,
+    storyTitle: comment.storyTitle,
+    name: comment.name.trim(),
+    message: comment.message.trim(),
     createdAt: new Date().toISOString(),
   };
 
-  commentsByChapter.set(chapterId, [...existingComments, newComment]);
-  console.log(`[Mock API] Comment posted successfully.`);
+  commentsByStory.set(storySlug, [...existingComments, newComment]);
+  saveToStorage();
+  
   return newComment;
+};
+
+// ✅ NEW: Helper functions
+export const getCommentCount = async (storySlug: string): Promise<number> => {
+  const comments = commentsByStory.get(storySlug) || [];
+  return comments.length;
+};
+
+export const deleteComment = async (
+  storySlug: string,
+  commentId: string
+): Promise<boolean> => {
+  const comments = commentsByStory.get(storySlug);
+  if (!comments) return false;
+  
+  const filtered = comments.filter(c => c.id !== commentId);
+  if (filtered.length === comments.length) return false;
+  
+  commentsByStory.set(storySlug, filtered);
+  saveToStorage();
+  return true;
+};
+
+export const clearStoryComments = async (storySlug: string): Promise<void> => {
+  commentsByStory.delete(storySlug);
+  saveToStorage();
+};
+
+export const getAllStoriesWithComments = (): string[] => {
+  return Array.from(commentsByStory.keys());
 };

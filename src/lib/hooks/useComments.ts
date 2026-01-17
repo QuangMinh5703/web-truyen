@@ -3,32 +3,43 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getComments, postComment, Comment } from '../api-comments';
 
+// ✅ CHANGED: Interface mới
 interface UseCommentsResult {
   comments: Comment[];
+  commentCount: number;
   loading: boolean;
   error: Error | null;
   addComment: (comment: { name: string; message: string }) => Promise<void>;
+  refreshComments: () => Promise<void>;
 }
 
-export const useComments = (chapterId: string): UseCommentsResult => {
+// ✅ CHANGED: Parameter từ chapterId → storySlug
+export const useComments = (storySlug: string): UseCommentsResult => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchComments = useCallback(async () => {
-    if (!chapterId) return;
+    if (!storySlug || !storySlug.trim()) {
+      setComments([]);
+      setLoading(false);
+      return;
+    }
 
     setLoading(true);
     setError(null);
+    
     try {
-      const fetchedComments = await getComments(chapterId);
+      const fetchedComments = await getComments(storySlug);
       setComments(fetchedComments);
     } catch (err: any) {
+      console.error('Error fetching comments:', err);
       setError(err);
+      setComments([]);
     } finally {
       setLoading(false);
     }
-  }, [chapterId]);
+  }, [storySlug]);
 
   useEffect(() => {
     fetchComments();
@@ -36,19 +47,35 @@ export const useComments = (chapterId: string): UseCommentsResult => {
 
   const addComment = useCallback(
     async (comment: { name: string; message: string }) => {
-      if (!chapterId) return;
+      if (!storySlug || !storySlug.trim()) {
+        throw new Error('Invalid storySlug');
+      }
+
+      if (!comment.name.trim() || !comment.message.trim()) {
+        throw new Error('Name and message are required');
+      }
 
       try {
-        const newComment = await postComment(chapterId, comment);
+        const newComment = await postComment(storySlug, comment);
         setComments(prevComments => [newComment, ...prevComments]);
       } catch (err: any) {
-        // Handle error (e.g., show a notification)
-        console.error("Failed to post comment:", err);
+        console.error('Failed to post comment:', err);
         throw err;
       }
     },
-    [chapterId]
+    [storySlug]
   );
 
-  return { comments, loading, error, addComment };
+  const refreshComments = useCallback(async () => {
+    await fetchComments();
+  }, [fetchComments]);
+
+  return { 
+    comments, 
+    commentCount: comments.length,
+    loading, 
+    error, 
+    addComment,
+    refreshComments,
+  };
 };

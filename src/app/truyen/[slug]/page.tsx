@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
+import { useInView } from 'react-intersection-observer';
 import { otruyenApi, Story, ApiChapter, getImageUrl, UiChapter } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
@@ -14,6 +16,16 @@ const getChapterId = (url: string | undefined): string => {
   if (!url) return '';
   return url.substring(url.lastIndexOf('/') + 1);
 };
+
+const DynamicCommentSection = dynamic(() => import('@/components/CommentSection'), {
+  loading: () => (
+    <div className="text-center py-12 bg-gray-50 rounded-lg">
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <p className="mt-2 text-gray-600">Đang tải bình luận...</p>
+    </div>
+  ),
+  ssr: false,
+});
 
 const StoryDetailPage = () => {
   const params = useParams();
@@ -27,6 +39,10 @@ const StoryDetailPage = () => {
 
   const { trackView } = useViewTracking();
   const trackedRef = useRef(false);
+  const { ref: commentsRef, inView: commentsInView } = useInView({
+    triggerOnce: true,
+    rootMargin: '200px 0px',
+  });
 
   // Effect for tracking story view
   useEffect(() => {
@@ -305,6 +321,16 @@ const StoryDetailPage = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* ✅ Comments Section */}
+        <div className="mt-12" id="comments" ref={commentsRef}>
+          {commentsInView && story && (
+            <DynamicCommentSection 
+              storySlug={slug} 
+              storyTitle={story.name}
+            />
+          )}
         </div>
       </main>
 
