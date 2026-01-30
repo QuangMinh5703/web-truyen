@@ -1,6 +1,6 @@
 'use client';
 
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, Chapter, getImageUrl } from '@/lib/api';
 import Image from "next/image";
@@ -90,11 +90,11 @@ const RecentUpdates = () => {
                     </h2>
                 </div>
 
-                <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div key={i} className="flex-shrink-0 w-[calc(50%-12px)] animate-pulse">
-                            <div className="bg-gray-800 rounded-lg h-64 mb-4"></div>
-                            <div className="h-6 bg-gray-800 rounded w-3/4 mb-2"></div>
+                <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                        <div key={i} className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] animate-pulse">
+                            <div className="bg-gray-800 rounded-xl h-64 mb-4"></div>
+                            <div className="h-5 bg-gray-800 rounded w-3/4 mb-2"></div>
                             <div className="h-4 bg-gray-800 rounded w-1/2"></div>
                         </div>
                     ))}
@@ -105,18 +105,17 @@ const RecentUpdates = () => {
 
     return (
         <section className="mb-12">
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="title-main space-x-2">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+                <h2 className="title-main">
                     Mới cập nhật
                 </h2>
-                <Link href={`/hoan-thanh`} passHref>
+                <Link href={`/hoan-thanh`} className="hover:scale-105 transition-transform active:scale-95">
                     <Image
                         src="/view_more.svg"
-                        alt=""
-                        onClick={() => {}}
+                        alt="View more"
                         width={116}
                         height={52}
-                        className="text-lime-400 cursor-pointer"
+                        className="cursor-pointer"
                     />
                 </Link>
             </div>
@@ -151,31 +150,33 @@ const RecentUpdates = () => {
                                 <Link
                                     key={storyId}
                                     href={`/truyen/${storySlug}`}
-                                    className="group block flex-shrink-0 w-[calc(50%-12px)] lg:w-[calc(20%-19.2px)] snap-start mr-[3px]"
+                                    className="group block flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] snap-start"
                                     onDragStart={(e) => e.preventDefault()}
                                 >
-                                    <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+                                    <div className="relative overflow-hidden rounded-xl mb-3 md:mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">
                                         <Image
                                             src={imageUrl}
                                             alt={storyTitle}
                                             fill
-                                            className="object-cover group-hover:scale-110 transition-transform duration-500"
+                                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                                            sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 20vw"
                                             onError={(e) => {
-                                              const target = e.target as HTMLImageElement;
-                                              target.src = '/placeholder-story.jpg';
+                                                const target = e.target as HTMLImageElement;
+                                                target.src = '/placeholder-story.jpg';
                                             }}
                                         />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                     </div>
 
-                                    <h3 className="mb-2 recent-update-title line-clamp-2">
+                                    <h3 className="mb-1 recent-update-title line-clamp-2 group-hover:text-lime-400 transition-colors">
                                         {storyTitle}
                                     </h3>
-                                    <h2 className="mb-2 recent-update-sup-title line-clamp-1">
+                                    <p className="recent-update-sup-title line-clamp-1 opacity-70">
                                         {update.story.category && Array.isArray(update.story.category) && update.story.category.length > 0
-                                            ? update.story.category.map(category => category.name).slice(0, 3).join(' | ')
-                                            : 'Thể loại đang được cập nhật.'
+                                            ? update.story.category.map(category => category.name).slice(0, 2).join(' | ')
+                                            : 'Truyện tranh'
                                         }
-                                    </h2>
+                                    </p>
                                 </Link>
                             );
                         })}

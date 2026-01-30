@@ -80,6 +80,14 @@ useEffect(() => {
 
 ## 🎯 FEATURES MỚI
 
+### Responsive UI Project (HIGH Priority)
+- [x] PHASE 1: Design System Foundation (globals.css, breakpoints.ts, useMediaQuery.ts)
+- [x] PHASE 2: Navbar Component (Mobile Drawer, Drawer Search, Responsive Genre)
+- [ ] PHASE 3: HeroBanner Component (Mobile layout, controls)
+- [ ] PHASE 4: TopRankings Component (Responsive list/grid)
+- [ ] PHASE 5: Home Sections (RecentUpdates, StoryGrid)
+- [x] PHASE 6: Reader & Details (MangaDetail, WebtoonReader)
+
 ### Backend Integration (HIGH Priority)
 
 **Authentication features are currently out of scope and have been removed from the TODO list.**
@@ -135,7 +143,7 @@ useEffect(() => {
 - [ ] Saved searches
 
 **8. Ranking Page Improvements**
-- See `HOT_MANGA_RANKING_TODO.md` and `STORY_COMMENTS_TODO.md` for details.
+- See `HOT_MANGA_RANKING_TODO.md` and `SEARCH_FEATURE_TODO.md` for details.
 
 **9. Recommendations**
 - [ ] Algorithm design
@@ -258,7 +266,9 @@ useEffect(() => {
 
 **Dependencies:**
 - [ ] npm audit fix
-- [ ] Update outdated packages
+- [x] Update documentation (TODO.md, RESPONSIVE_UI_TODO.md)
+- [/] Bug Fixes
+    - [x] Fix missing "Đã hoàn thành" section title on Home Page
 - [ ] Remove unused deps
 
 ---

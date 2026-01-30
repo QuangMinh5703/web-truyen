@@ -18,31 +18,31 @@ import screenfull from 'screenfull';
 import { useDrag } from '@use-gesture/react';
 import { useReaderSettings, PageWidth } from '@/lib/hooks/useReaderSettings';
 import { useChapterData } from '@/lib/hooks/useChapterData';
-import { Cloudy, CheckCircle, XCircle } from 'lucide-react';
+import { Cloudy, CheckCircle, XCircle, ChevronRight } from 'lucide-react';
 import { useReadingProgress } from '@/lib/hooks/useReadingProgress';
 import { useDebouncedCallback } from '@/lib/hooks/useDebouncedCallback';
 import { getImageUrl } from '@/lib/api';
 
 const SyncStatusIndicator = ({ status }: { status: 'idle' | 'syncing' | 'synced' | 'error' }) => {
-    switch (status) {
-        case 'syncing':
-            return <div className="text-xs text-yellow-400 flex items-center gap-1">
-                <Cloudy size={14} className="animate-spin" />
-                <span>Đang đồng bộ...</span>
-            </div>;
-        case 'synced':
-            return <div className="text-xs text-green-400 flex items-center gap-1">
-                <CheckCircle size={14} />
-                <span>Đã lưu</span>
-            </div>;
-        case 'error':
-            return <div className="text-xs text-red-400 flex items-center gap-1">
-                <XCircle size={14} />
-                <span>Lỗi đồng bộ</span>
-            </div>;
-        default:
-            return null;
-    }
+  switch (status) {
+    case 'syncing':
+      return <div className="text-[10px] md:text-xs text-yellow-400 flex items-center gap-1 font-bold uppercase tracking-wider">
+        <Cloudy size={14} className="animate-spin" />
+        <span>Đang đồng bộ</span>
+      </div>;
+    case 'synced':
+      return <div className="text-[10px] md:text-xs text-lime-400 flex items-center gap-1 font-bold uppercase tracking-wider">
+        <CheckCircle size={14} />
+        <span>Đã lưu</span>
+      </div>;
+    case 'error':
+      return <div className="text-[10px] md:text-xs text-red-500 flex items-center gap-1 font-bold uppercase tracking-wider">
+        <XCircle size={14} />
+        <span>Lỗi đồng bộ</span>
+      </div>;
+    default:
+      return null;
+  }
 };
 
 const DynamicWebtoonReader = dynamic(() => import('@/components/WebtoonReader'), {
@@ -86,7 +86,7 @@ const ChapterPage = () => {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
+
   const { ref: infiniteScrollRef, inView: infiniteScrollInView } = useInView({
     triggerOnce: false,
     rootMargin: '200px 0px',
@@ -126,7 +126,7 @@ const ChapterPage = () => {
 
   const handleNextPage = useCallback(() => {
     if (!nextPage()) {
-        handleChapterNavigation('next');
+      handleChapterNavigation('next');
     }
   }, [nextPage, handleChapterNavigation]);
 
@@ -140,10 +140,10 @@ const ChapterPage = () => {
 
     // Only respond to horizontal swipes
     if (Math.abs(mx) < Math.abs(my)) {
-      if(down) setSwipeOffset(0); // If scrolling vertically, don't allow horizontal movement
+      if (down) setSwipeOffset(0); // If scrolling vertically, don't allow horizontal movement
       return;
     }
-    
+
     if (down) {
       setSwipeOffset(mx);
     } else if (last) {
@@ -156,8 +156,8 @@ const ChapterPage = () => {
       setSwipeOffset(0);
     }
   });
-  
-    // Keyboard navigation
+
+  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -253,125 +253,122 @@ const ChapterPage = () => {
   return (
     <>
       {/* Navbar nằm NGOÀI container bị ảnh hưởng */}
-      <Navbar className={isFullscreen ? 'hidden' : ''}/>
-      
+      <Navbar className={isFullscreen ? 'hidden' : ''} />
+
       <div className={`min-h-screen ${bgClassMap[backgroundColor]}`} ref={chapterPageRef}>
         <Head>
-            {preloadImages.map((imgUrl) => (
-              <link key={imgUrl} rel="preload" as="image" href={imgUrl} />
-            ))}
+          {preloadImages.map((imgUrl) => (
+            <link key={imgUrl} rel="preload" as="image" href={imgUrl} />
+          ))}
         </Head>
-      <Suspense fallback={null}>
-        <DynamicChapterNav
-          isOpen={isChapterNavOpen}
-          onClose={() => setIsChapterNavOpen(false)}
-          chapters={allChapters}
-          currentChapterId={chapterId}
-          storySlug={slug}
-        />
-      </Suspense>
+        <Suspense fallback={null}>
+          <DynamicChapterNav
+            isOpen={isChapterNavOpen}
+            onClose={() => setIsChapterNavOpen(false)}
+            chapters={allChapters}
+            currentChapterId={chapterId}
+            storySlug={slug}
+          />
+        </Suspense>
 
-      {/* Fixed Navigation Arrows */}
-      {readerMode === 'single' && !isFullscreen &&(
-        <>
-          <button
-            onClick={debouncedPrevPage}
-            disabled={currentPage === 0 || isNavigating}
-            className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full flex items-center justify-center transition-all ${
-              currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
-            }`}
-            aria-label="Trang trước"
-          >
-            ←
-          </button>
-          <button
-            onClick={debouncedHandleNextPage}
-            disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
-            className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full flex items-center justify-center transition-all ${
-              (currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
-            }`}
-            aria-label="Trang sau"
-          >
-            →
-          </button>
-        </>
-      )}
+        {/* Fixed Navigation Arrows */}
+        {readerMode === 'single' && !isFullscreen && (
+          <>
+            <button
+              onClick={debouncedPrevPage}
+              disabled={currentPage === 0 || isNavigating}
+              className={`fixed left-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full flex items-center justify-center transition-all ${currentPage === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+                }`}
+              aria-label="Trang trước"
+            >
+              ←
+            </button>
+            <button
+              onClick={debouncedHandleNextPage}
+              disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
+              className={`fixed right-4 top-1/2 transform -translate-y-1/2 z-10 w-12 h-12 bg-black bg-opacity-50 hover:bg-opacity-75 text-white rounded-full flex items-center justify-center transition-all ${(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110'
+                }`}
+              aria-label="Trang sau"
+            >
+              →
+            </button>
+          </>
+        )}
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Breadcrumb */}
-        <nav className={`mb-6 ${isFullscreen ? 'hidden' : ''}`}>
-          <ol className="flex items-center space-x-2 text-sm text-gray-600">
-            <li>
-              <Link href="/" className="hover:text-blue-600">Trang chủ</Link>
-            </li>
-            <li>/</li>
-            <li>
-              <Link href="/truyen" className="hover:text-blue-600">Truyện tranh</Link>
-            </li>
-            <li>/</li>
-            <li>
-              <Link href={`/truyen/${slug}`} className="hover:text-blue-600">
-                {story?.name || 'Truyện'}
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-gray-900 font-medium">
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Breadcrumb */}
+          <nav className={`mb-6 ${isFullscreen ? 'hidden' : ''}`}>
+            <ol className="flex flex-wrap items-center space-x-2 text-xs md:text-sm text-gray-500 font-medium uppercase tracking-widest">
+              <li>
+                <Link href="/" className="hover:text-lime-400 transition-colors">TRANG CHỦ</Link>
+              </li>
+              <li>/</li>
+              <li>
+                <Link href={`/truyen/${slug}`} className="hover:text-lime-400 transition-colors truncate max-w-[120px] md:max-w-none">
+                  {story?.name || 'Truyện'}
+                </Link>
+              </li>
+              <li>/</li>
+              <li className="text-gray-300 font-bold">
+                CHƯƠNG {chapter.name}
+              </li>
+            </ol>
+          </nav>
+
+          {/* Chapter Header */}
+          <div className={`text-center mb-8 ${isFullscreen ? 'hidden' : ''}`}>
+            <h1 className="text-2xl md:text-4xl font-black text-white uppercase mb-2 leading-tight title-main">
+              {story?.name}
+            </h1>
+            <h2 className="text-lg md:text-xl text-lime-400 font-bold uppercase tracking-widest">
               Chương {chapter.name} {chapter.title && `- ${chapter.title}`}
-            </li>
-          </ol>
-        </nav>
+            </h2>
+            <p className="text-[10px] md:text-xs text-gray-500 mt-2 font-bold uppercase tracking-widest">
+              Cập nhật: {new Date(chapter.updatedAt ?? '').toLocaleDateString('vi-VN')}
+            </p>
+          </div>
 
-        {/* Chapter Header */}
-        <div className={`text-center mb-6 ${isFullscreen ? 'hidden' : ''}`}>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            {story?.name}
-          </h1>
-          <h2 className="text-xl text-gray-700 mb-2">
-            Chương {chapter.name} {chapter.title && `- ${chapter.title}`}
-          </h2>
-          <p className="text-sm text-gray-600">
-            Cập nhật: {new Date(chapter.updatedAt ?? '').toLocaleDateString('vi-VN')}
-          </p>
-        </div>
-        
-        {/* Progress Bar */}
-        <div className={`mb-6 ${isFullscreen ? 'hidden' : ''}`}>
+          {/* Progress Bar */}
+          <div className={`mb-6 ${isFullscreen ? 'hidden' : ''}`}>
             <ProgressBar progress={progress} />
-        </div>
+          </div>
 
-        {/* Navigation Controls */}
-        <ReaderControls
-          storySlug={slug}
-          chapterId={chapterId}
-          onPrevChapter={() => debouncedHandleChapterNavigation('prev')}
-          onNextChapter={() => debouncedHandleChapterNavigation('next')}
-          onChapterNavOpen={() => setIsChapterNavOpen(true)}
-          isFirstChapter={allChapters.findIndex(ch => ch.id === chapterId) === 0}
-          isLastChapter={allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1}
-          isNavigating={isNavigating}
-        />
+          {/* Navigation Controls */}
+          <ReaderControls
+            storySlug={slug}
+            chapterId={chapterId}
+            onPrevChapter={() => debouncedHandleChapterNavigation('prev')}
+            onNextChapter={() => debouncedHandleChapterNavigation('next')}
+            onChapterNavOpen={() => setIsChapterNavOpen(true)}
+            isFirstChapter={allChapters.findIndex(ch => ch.id === chapterId) === 0}
+            isLastChapter={allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1}
+            isNavigating={isNavigating}
+          />
 
-        {/* Page/Sync Status Display */}
-        <div className="fixed bottom-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg flex flex-col gap-1">
-            <div className="text-sm font-bold">
-                Trang {currentPage + 1} / {chapter.images?.length || 0}
+          {/* Page/Sync Status Display */}
+          <div className="fixed bottom-6 left-6 z-40 bg-black/80 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-2xl border border-white/10 flex flex-col gap-1.5 min-w-[120px]">
+            <div className="text-xs font-black uppercase tracking-wider">
+              Trang {currentPage + 1} / {chapter.images?.length || 0}
             </div>
-            <div className="text-xs opacity-80">
-                {Math.round(progress)}% đã đọc
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-lime-400 transition-all duration-300"
+                style={{ width: `${progress}%` }}
+              ></div>
             </div>
             <SyncStatusIndicator status={syncStatus} />
-        </div>
+          </div>
 
-        {/* Chapter Content */}
-        <div 
-          className={`mb-6 ${pageWidth} overflow-hidden`} 
-          ref={chapterPageRef} 
-          style={{ touchAction: 'pan-y' }} 
-          {...bind()}
-        >
-          {readerMode === 'single' ? (
-            isMounted && currentImageUrl ? (
-              <DynamicTransformWrapper key={currentImageUrl}>
+          {/* Chapter Content */}
+          <div
+            className={`mb-6 ${pageWidth} overflow-hidden`}
+            ref={chapterPageRef}
+            style={{ touchAction: 'pan-y' }}
+            {...bind()}
+          >
+            {readerMode === 'single' ? (
+              isMounted && currentImageUrl ? (
+                <DynamicTransformWrapper key={currentImageUrl}>
                   <DynamicTransformComponent>
                     <div
                       style={{
@@ -380,168 +377,153 @@ const ChapterPage = () => {
                       }}
                     >
                       <div className="relative mx-auto max-w-full">
-                          <div className="relative">
-                              {/* Loading skeleton */}
-                              <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
-                                  <div className="text-gray-500">Đang tải...</div>
-                              </div>
-                              <Image
-                                  src={currentImageUrl}
-                                  alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
-                                  width={800}
-                                  height={1200}
-                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                                  className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
-                                  priority
-                                  placeholder="blur"
-                                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
-                                  onLoad={(e) => {
-                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                      if (skeleton) skeleton.style.display = 'none';
-                                  }}
-                                  onError={(e) => {
-                                      console.error('Image load error:', currentImageUrl);
-                                      e.currentTarget.src = '/placeholder-image.svg';
-                                      const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
-                                      if (skeleton) skeleton.style.display = 'none';
-                                  }}
-                              />
-                              <button 
-                                onClick={() => handleReportError(currentImageUrl)} 
-                                className="absolute bottom-4 right-4 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-50 hover:opacity-100 transition-opacity"
-                              >
-                                Báo lỗi
-                              </button>
+                        <div className="relative">
+                          {/* Loading skeleton */}
+                          <div className="absolute inset-0 bg-gray-200 animate-pulse rounded-lg flex items-center justify-center">
+                            <div className="text-gray-500">Đang tải...</div>
                           </div>
+                          <Image
+                            src={currentImageUrl}
+                            alt={`Trang ${currentPage + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
+                            width={800}
+                            height={1200}
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+                            className="w-full h-auto mx-auto rounded-lg shadow-lg relative z-10"
+                            priority
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R+IRjWjBqO6O2mhP//Z"
+                            onLoad={(e) => {
+                              const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                              if (skeleton) skeleton.style.display = 'none';
+                            }}
+                            onError={(e) => {
+                              console.error('Image load error:', currentImageUrl);
+                              e.currentTarget.src = '/placeholder-image.svg';
+                              const skeleton = e.currentTarget.previousElementSibling as HTMLElement;
+                              if (skeleton) skeleton.style.display = 'none';
+                            }}
+                          />
+                          <button
+                            onClick={() => handleReportError(currentImageUrl)}
+                            className="absolute bottom-4 right-4 bg-red-600 text-white px-2 py-1 text-xs rounded opacity-50 hover:opacity-100 transition-opacity"
+                          >
+                            Báo lỗi
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </DynamicTransformComponent>
-              </DynamicTransformWrapper>
-            ) : (
-              <div className="w-full aspect-[2/3] bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-gray-500">{loading || isNavigating ? 'Đang tải...' : 'Không có hình ảnh'}</span>
-              </div>
-            )
-          ) : (
-            // Continuous scroll mode - Hiển thị ảnh dài liên tục
-            <div className="space-y-2">
-              {chapter.images?.map((imagePath, index) => {
-                const imageUrl = getImageUrl(imagePath);
-                return (
-                  <WebtoonImage
-                    key={`${chapterId}-${index}`}
-                    src={imageUrl}
-                    alt={`Trang ${index + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
-                    index={index}
-                    priority={index < 3}
-                    onHeightMeasured={(height) => handleImageHeightMeasured(index, height)}
-                  />
-                );
-              })}
-              
-              {/* Trigger for infinite scroll */}
-              <div ref={infiniteScrollRef} />
-              {isLoadingNextChapter && (
-                <div className="text-center py-8">
-                  <p>Đang tải chương tiếp theo...</p>
+                </DynamicTransformWrapper>
+              ) : (
+                <div className="w-full aspect-[2/3] bg-gray-200 rounded-lg flex items-center justify-center">
+                  <span className="text-gray-500">{loading || isNavigating ? 'Đang tải...' : 'Không có hình ảnh'}</span>
                 </div>
-              )}
+              )
+            ) : (
+              // Continuous scroll mode - Hiển thị ảnh dài liên tục
+              <div className="space-y-2">
+                {chapter.images?.map((imagePath, index) => {
+                  const imageUrl = getImageUrl(imagePath);
+                  return (
+                    <WebtoonImage
+                      key={`${chapterId}-${index}`}
+                      src={imageUrl}
+                      alt={`Trang ${index + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
+                      index={index}
+                      priority={index < 3}
+                      onHeightMeasured={(height) => handleImageHeightMeasured(index, height)}
+                    />
+                  );
+                })}
+
+                {/* Trigger for infinite scroll */}
+                <div ref={infiniteScrollRef} />
+                {isLoadingNextChapter && (
+                  <div className="text-center py-8">
+                    <p>Đang tải chương tiếp theo...</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Page Navigation Dots - Only show for single page mode */}
+          {readerMode === 'single' && (chapter.images?.length || 0) > 1 && (
+            <div className={`flex justify-center mb-10 ${isFullscreen ? 'hidden' : ''}`}>
+              <div className="flex space-x-2.5 overflow-x-auto max-w-full px-6 py-2 pb-4 scrollbar-hide">
+                {chapter.images?.map((_, index) => (
+                  <div key={index} className="relative flex-shrink-0">
+                    <button
+                      onClick={() => goToPage(index)}
+                      className={`w-9 h-9 rounded-xl text-xs font-bold transition-all border ${index === currentPage
+                        ? 'bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(168,227,0,0.3)]'
+                        : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20 hover:text-white'
+                        }`}
+                    >
+                      {index + 1}
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-        </div>
 
-        {/* Page Navigation Dots - Only show for single page mode */}
-        {readerMode === 'single' && (chapter.images?.length || 0) > 1 && (
-          <div className={`flex justify-center mb-6 ${isFullscreen ? 'hidden' : ''}`}>
-            <div className="flex space-x-2 overflow-x-auto max-w-full px-4">
-              {chapter.images?.map((_, index) => (
-                <div key={index} className="relative">
-                  <button
-                    onClick={() => goToPage(index)}
-                    className={`flex-shrink-0 w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                      index === currentPage
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                  {/* Mini thumbnail preview on hover */}
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 hover:opacity-100 transition-opacity pointer-events-none z-20">
-                    <div className="bg-black bg-opacity-75 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                      Trang {index + 1}
-                    </div>
-                    <div className="w-16 h-20 bg-gray-300 rounded overflow-hidden border-2 border-white shadow-lg">
-                      <img
-                        src={getImageUrl(chapter.images![index])}
-                        alt={`Preview trang ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Bottom Navigation - Only show for single page mode */}
+          {readerMode === 'single' && (
+            <div className={`flex items-center justify-between p-2 md:p-4 bg-black/60 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl ${isFullscreen ? 'hidden' : ''}`}>
+              <button
+                onClick={debouncedPrevPage}
+                disabled={currentPage === 0 || isNavigating}
+                className={`px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${currentPage === 0
+                  ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                  : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+              >
+                ← TRƯỚC
+              </button>
+
+              <Link
+                href={`/truyen/${slug}`}
+                className="px-4 md:px-6 py-2.5 bg-white/5 text-gray-400 rounded-xl hover:bg-white/10 text-xs md:text-sm font-bold uppercase tracking-widest transition-all"
+              >
+                MỤC LỤC
+              </Link>
+
+              <button
+                onClick={debouncedHandleNextPage}
+                disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
+                className={`px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
+                  ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                  : 'bg-lime-500 text-black hover:bg-lime-400'
+                  }`}
+              >
+                SAU →
+              </button>
+            </div>
+          )}
+
+          {/* Link to story comments */}
+          <div className="mt-12 p-8 bg-white/5 rounded-[2rem] border border-white/10 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-lime-400/5 blur-3xl -mr-16 -mt-16 group-hover:bg-lime-400/10 transition-colors"></div>
+            <div className="text-center relative z-10">
+              <p className="text-gray-400 font-bold uppercase tracking-[0.2em] text-xs mb-4">
+                Cộng đồng bàn luận
+              </p>
+              <p className="text-white font-black text-lg md:text-xl mb-6">
+                Và nhiều người khác đang chia sẻ suy nghĩ...
+              </p>
+              <Link
+                href={`/truyen/${slug}#comments`}
+                className="inline-flex items-center gap-3 px-8 py-3.5 bg-lime-500 text-black rounded-xl font-black uppercase tracking-widest text-sm hover:bg-lime-400 hover:scale-105 active:scale-95 transition-all shadow-lg shadow-lime-500/20"
+              >
+                XEM BÌNH LUẬN <ChevronRight size={18} />
+              </Link>
             </div>
           </div>
-        )}
+        </main>
 
-        {/* Bottom Navigation - Only show for single page mode */}
-        {readerMode === 'single' && (
-          <div className={`flex items-center justify-between p-4 bg-white rounded-lg shadow-sm ${isFullscreen ? 'hidden' : ''}`}>
-            <button
-              onClick={debouncedPrevPage}
-              disabled={currentPage === 0 || isNavigating}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentPage === 0
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              ← Trang trước
-            </button>
-
-            <Link
-              href={`/truyen/${slug}`}
-              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Danh sách chương
-            </Link>
-
-            <button
-              onClick={debouncedHandleNextPage}
-              disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                (currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              Trang sau →
-            </button>
-          </div>
-        )}
-        
-        {/* Link to story comments */}
-        <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
-          <div className="text-center">
-            <p className="text-gray-700 font-medium mb-3">
-              💬 Muốn chia sẻ suy nghĩ về truyện này?
-            </p>
-            <Link 
-              href={`/truyen/${slug}#comments`}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition-all duration-200"
-            >
-              Đến trang truyện để bình luận →
-            </Link>
-          </div>
-        </div>
-      </main>
-
-      <FooterComponent className={isFullscreen ? 'hidden' : ''}/>
-    </div>
+        <FooterComponent className={isFullscreen ? 'hidden' : ''} />
+      </div>
     </>
   );
 };

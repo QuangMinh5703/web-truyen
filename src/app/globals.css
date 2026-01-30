@@ -50,49 +50,210 @@
 
 
 :root {
+    /* ============================================
+       DESIGN SYSTEM FOUNDATION - RESPONSIVE
+       ============================================ */
+
+    /* === Core Colors === */
     --background: #000000;
-    --foreground: #FFFFFF;;
-
+    --foreground: #FFFFFF;
     --main-color-gradient: linear-gradient(to bottom, #A8E300 0%, #EAF6C6 100%);
-
-    /*Logo*/
-    --height-logo: 65px;
-    --width-logo: 65px;
-
-    /*Text*/
+    --main-color-start: #A8E300;
+    --main-color-end: #EAF6C6;
     --text-white: #FFFFFF;
+    --gray-100: #F5F5F5;
+    --gray-200: #E5E5E5;
+    --gray-300: #D5D5D5;
+    --gray-400: #A0A0A0;
+    --gray-500: #6B6B6B;
+    --gray-600: #4A4A4A;
+    --gray-700: #303030;
+    --gray-800: #212121;
+    --gray-900: #1A1A1A;
+
+    /* === Typography - Fonts === */
     --font-black-ops-one: 'Black Ops One';
     --font-lexend-exa: 'Lexend Exa', 'Lexend Exa Fallback';
 
+    /* === Typography Scale (Responsive with clamp) === */
+    /* Format: clamp(min, preferred, max) */
+    --font-size-xs: clamp(0.625rem, 0.6rem + 0.15vw, 0.75rem);
+    /* 10px → 12px */
+    --font-size-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    /* 12px → 14px */
+    --font-size-base: clamp(0.8125rem, 0.75rem + 0.3vw, 0.9375rem);
+    /* 13px → 15px */
+    --font-size-lg: clamp(0.875rem, 0.8rem + 0.4vw, 1.125rem);
+    /* 14px → 18px */
+    --font-size-xl: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+    /* 16px → 20px */
+    --font-size-2xl: clamp(1.25rem, 1rem + 1.25vw, 1.75rem);
+    /* 20px → 28px */
+    --font-size-3xl: clamp(1.5rem, 1.2rem + 1.5vw, 2.1875rem);
+    /* 24px → 35px */
+    --font-size-4xl: clamp(1.5rem, 1.25rem + 1.75vw, 2.4375rem);
+    /* 24px → 39px */
+    --font-size-5xl: clamp(1.5rem, 1.2rem + 2vw, 2.5rem);
+    /* 24px → 40px */
 
-    /*Navbar*/
+    /* === Spacing Scale === */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    /* 4px */
+    --space-2: 0.5rem;
+    /* 8px */
+    --space-3: 0.75rem;
+    /* 12px */
+    --space-4: 1rem;
+    /* 16px */
+    --space-5: 1.25rem;
+    /* 20px */
+    --space-6: 1.5rem;
+    /* 24px */
+    --space-8: 2rem;
+    /* 32px */
+    --space-10: 2.5rem;
+    /* 40px */
+    --space-12: 3rem;
+    /* 48px */
+    --space-16: 4rem;
+    /* 64px */
+    --space-20: 5rem;
+    /* 80px */
+    --space-24: 6rem;
+    /* 96px */
+
+    /* === Container Widths === */
+    --container-xs: 320px;
+    --container-sm: 480px;
+    --container-md: 640px;
+    --container-lg: 768px;
+    --container-xl: 1024px;
+    --container-2xl: 1280px;
+    --container-3xl: 1536px;
+
+    /* === Component: Logo (Responsive) === */
+    --height-logo: 40px;
+    --width-logo: 40px;
+
+    /* === Component: Navbar (Responsive) === */
     --color-background-navbar: rgba(0, 0, 0, 1);
-
     --color-background-search: #212121;
-    --navbar-height: 84px;
+    --navbar-height: 60px;
+    --dropdown-width-navbar: min(90vw, 800px);
 
-    --dropdown-width-navbar: 800px;
+    /* === Component: HeroBanner (Responsive) === */
+    --herobanner-height: 350px;
+    --herobanner-width: 100%;
+    --herobanner-max-width: 1300px;
 
-
-    /* HeroBanner   */
-    --herobanner-height: 650px;
-    --herobanner-width: 1300px;
-
-    /* Main Content */
+    /* === Component: Main Content === */
     --main-content-width: 1300px;
+    --main-content-max-width: 1300px;
     --pagination-hover-shift: 12px;
 
-
-    /*TopRanking*/
-    --ranking-width: 1200px;
-    --ranking-height: 547px;
+    /* === Component: TopRanking (Responsive) === */
+    --ranking-width: 100%;
+    --ranking-max-width: 1200px;
+    --ranking-height: 300px;
+    --ranking-featured-width: 100%;
+    --ranking-list-width: 100%;
+    --ranking-thumbnail-width: 200px;
+    --ranking-thumbnail-height: 250px;
     --ranking-banner-color: linear-gradient(to bottom, #B7F700 0%, #FCFF00 100%);
     --ranking-banner-color-start: #FCFF00;
 
+    /* === Component: Footer (Responsive) === */
+    --footer-logo-width: 32px;
+    --footer-logo-height: 32px;
+    --footer-margin-left: 0;
 
-    /*Footer */
-    --footer-logo-width: 40px;
-    --footer-logo-height: 40px;
+    /* === Touch Target === */
+    --touch-target-min: 44px;
+
+    /* === Transitions === */
+    --transition-fast: 150ms ease;
+    --transition-base: 200ms ease;
+    --transition-slow: 300ms ease;
+
+    /* === Border Radius === */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+    --radius-full: 9999px;
+
+    /* === Shadows === */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   RESPONSIVE VARIABLES - TABLET (≥768px)
+   ============================================ */
+@media (min-width: 768px) {
+    :root {
+        /* Logo */
+        --height-logo: 45px;
+        --width-logo: 45px;
+
+        /* Navbar */
+        --navbar-height: 64px;
+
+        /* HeroBanner */
+        --herobanner-height: 500px;
+
+        /* TopRanking */
+        --ranking-height: 420px;
+        --ranking-featured-width: 60%;
+        --ranking-list-width: 40%;
+        --ranking-thumbnail-width: 260px;
+        --ranking-thumbnail-height: 320px;
+
+        /* Footer */
+        --footer-logo-width: 36px;
+        --footer-logo-height: 36px;
+        --footer-margin-left: 60px;
+
+        /* Pagination */
+        --pagination-hover-shift: 10px;
+    }
+}
+
+/* ============================================
+   RESPONSIVE VARIABLES - DESKTOP (≥1024px)
+   ============================================ */
+@media (min-width: 1024px) {
+    :root {
+        /* Logo */
+        --height-logo: 65px;
+        --width-logo: 65px;
+
+        /* Navbar */
+        --navbar-height: 84px;
+
+        /* HeroBanner */
+        --herobanner-height: 650px;
+        --herobanner-width: 1300px;
+
+        /* TopRanking */
+        --ranking-height: 547px;
+        --ranking-featured-width: 75%;
+        --ranking-list-width: 25%;
+        --ranking-thumbnail-width: 330px;
+        --ranking-thumbnail-height: 400px;
+
+        /* Footer */
+        --footer-logo-width: 40px;
+        --footer-logo-height: 40px;
+        --footer-margin-left: 120px;
+
+        /* Pagination */
+        --pagination-hover-shift: 12px;
+    }
 }
 
 .parallelogram-indicator {
@@ -112,18 +273,21 @@
 
 
 @layer utilities {
+
+    /* === Title Styles === */
     .title-main {
-        font-size: 40px;
+        font-size: var(--font-size-5xl);
         font-family: var(--font-black-ops-one);
     }
 
+    /* === Navbar Styles === */
     .navbar-size {
         height: var(--navbar-height);
         width: 100%;
     }
 
     .navbar-search {
-        background-color: #212121;
+        background-color: var(--gray-800);
     }
 
     .navbar-dropdown {
@@ -131,26 +295,26 @@
     }
 
     .navbar-dropdown-text {
-        font-size: 15px;
+        font-size: var(--font-size-base);
         font-family: var(--font-lexend-exa);
-        background-color: #303030;
+        background-color: var(--gray-700);
     }
 
     .navbar-dropdown-text:hover {
-        color: #303030;
-        background-color: #FFFFFF;
-        font-size: 15px;
+        color: var(--gray-700);
+        background-color: var(--foreground);
+        font-size: var(--font-size-base);
         font-family: var(--font-lexend-exa);
     }
 
     .navbar-search-input {
         font-family: var(--font-lexend-exa);
-        font-size: 16px;
-        background-color: #303030;
+        font-size: var(--font-size-lg);
+        background-color: var(--gray-700);
     }
 
     .navbar-text {
-        font-size: 15px;
+        font-size: var(--font-size-base);
         font-weight: 400;
         line-height: 100%;
         font-family: var(--font-lexend-exa);
@@ -165,7 +329,7 @@
     }
 
     .navbar-text-gradient {
-        font-size: 30px;
+        font-size: var(--font-size-2xl);
         font-weight: 400;
         line-height: 100%;
         font-family: var(--font-lexend-exa);
@@ -176,48 +340,50 @@
         color: transparent;
     }
 
+    /* === HeroBanner Styles === */
     .black-ops-one-text {
-        font-size: 39px;
+        font-size: var(--font-size-4xl);
         font-family: var(--font-black-ops-one);
         text-shadow: -7px 4px 8.6px rgba(0, 0, 0, 0.75);
     }
 
     .herobanner-description-text {
-        font-size: 20px;
+        font-size: var(--font-size-xl);
         font-family: var(--font-lexend-exa);
         text-shadow: -7px 4px 8.6px rgba(0, 0, 0, 0.75) !important;
         -webkit-box-decoration-break: clone;
         box-decoration-break: clone;
     }
 
+    /* === Recent Updates Styles === */
     .recent-update-title {
         background-image: var(--main-color-gradient);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
         font-weight: bold;
-        font-size: 15px;
-        font-family:  var(--font-lexend-exa);
+        font-size: var(--font-size-base);
+        font-family: var(--font-lexend-exa);
     }
 
     .recent-update-sup-title {
-        font-size: 15px;
-        font-family:  var(--font-lexend-exa);
+        font-size: var(--font-size-base);
+        font-family: var(--font-lexend-exa);
     }
 
+    /* === TopRanking Styles === */
     .top-ranking-title {
-        font-size: 35px;
+        font-size: var(--font-size-3xl);
         font-family: var(--font-black-ops-one);
         filter: drop-shadow(-4px 4px 6px rgba(0, 0, 0, 0.75));
     }
 
-
     .top-ranking-stories-list {
-        background: #1A1A1A;
+        background: var(--gray-900);
     }
 
     .top-ranking-stories-list-text {
-        font-size: 15px;
+        font-size: var(--font-size-base);
     }
 
     .top-ranking-banner {
@@ -226,7 +392,7 @@
     }
 
     .top-ranking-banner-text {
-        font-size: 15px;
+        font-size: var(--font-size-base);
         color: #000000;
         font-weight: bold;
     }
@@ -258,47 +424,50 @@
         border-color: transparent currentColor transparent currentColor;
     }
 
-
+    /* === Story List Styles === */
     .story-list-name {
         background-image: var(--main-color-gradient);
         -webkit-background-clip: text;
         background-clip: text;
         color: transparent;
         font-weight: bold;
-        font-size: 15px;
-        font-family:  var(--font-lexend-exa);
+        font-size: var(--font-size-base);
+        font-family: var(--font-lexend-exa);
     }
 
-    .genres-text{
-        font-size: 20px;
+    /* === Genres Styles === */
+    .genres-text {
+        font-size: var(--font-size-xl);
         font-family: var(--font-lexend-exa);
-        color: #FFFFFF;
+        color: var(--foreground);
         text-shadow: 0px 2px 7.6px rgba(0, 0, 0, 0.25);
     }
 
-    .color-main{
+    .color-main {
         background-image: var(--main-color-gradient);
         color: transparent;
     }
 
+    /* === Footer Styles === */
     .footer {
         background-color: #202020;
         box-shadow: 0px -14px 40.1px rgba(128, 128, 128, 0.25);
     }
 
     .footer-text {
-        font-style: var(--font-lexend-exa);
-        font-size: 15px;
-        color: #D5D5D5;
+        font-family: var(--font-lexend-exa);
+        font-size: var(--font-size-base);
+        color: var(--gray-300);
     }
 
     .footer-line {
-        border-top: 3px solid #D5D5D5;
-        margin-bottom: 1.5rem;
+        border-top: 3px solid var(--gray-300);
+        margin-bottom: var(--space-6);
     }
 
+    /* === Pagination Styles === */
     .pagination-button {
-        transition: all 0.3s ease;
+        transition: all var(--transition-slow);
     }
 
     .pagination-button:hover {
@@ -306,10 +475,63 @@
     }
 
     .pagination-container {
-        max-width: var(--main-content-width);
+        max-width: var(--main-content-max-width);
         margin: 0 auto;
     }
 
+    /* === Common Utilities === */
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Touch-friendly target sizing */
+    .touch-target {
+        min-width: var(--touch-target-min);
+        min-height: var(--touch-target-min);
+    }
+
+    /* Gradient text utility */
+    .text-gradient {
+        background-image: var(--main-color-gradient);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        color: transparent;
+    }
+
+    /* === Animations === */
+    @keyframes slide-in-left {
+        from {
+            transform: translateX(-100%);
+        }
+
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    .animate-slide-in-left {
+        animation: slide-in-left var(--transition-slow) forwards;
+    }
+
+    .animate-fade-in {
+        animation: fade-in var(--transition-base) forwards;
+    }
 }
 
 
@@ -389,6 +611,3 @@ body {
     max-width: none;
     max-height: none;
 }
-
-
-

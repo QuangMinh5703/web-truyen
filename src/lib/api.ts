@@ -386,14 +386,18 @@ class OtruyenApi {
    * @returns {Promise<ListResponse<Genre> | undefined>} A list of genres with pagination.
    */
   async getGenres(): Promise<ListResponse<Genre> | undefined> {
-    const response = await this.fetch<Genre[]>(ENDPOINTS.CATEGORY);
-    // The genre endpoint returns data directly, not in a `data` property.
-    const items = response as any as Genre[];
-    const pagination = response.pagination ?? { page: 1, limit: items.length, total: items.length, totalPages: 1 };
-    
-    if (items) {
+    const response = await this.fetch<any>(ENDPOINTS.CATEGORY); // Fetched as any to inspect structure
+
+    // The API might return an object with an 'items' property, or a raw array.
+    const items = response.items || (Array.isArray(response) ? response : undefined);
+
+    if (Array.isArray(items)) {
+      // Create a default pagination object as this endpoint likely doesn't have one.
+      const pagination = response.pagination ?? { page: 1, limit: items.length, total: items.length, totalPages: 1 };
       return { items, pagination };
     }
+
+    console.warn("[API] getGenres response was not in the expected format (array or {items: array}).", response);
     return undefined;
   }
 

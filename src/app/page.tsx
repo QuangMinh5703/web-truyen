@@ -14,12 +14,12 @@ export default function HomePage() {
 
       <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <HeroBanner />
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <TopRankings />
-              <RecentUpdates />
-              <StoryList />
-              <PopularGenres/>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <TopRankings />
+          <RecentUpdates />
+          <StoryList title="Đã hoàn thành" />
+          <PopularGenres />
+        </div>
       </main>
 
       <FooterComponent />

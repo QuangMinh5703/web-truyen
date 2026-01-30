@@ -84,9 +84,9 @@ export default function WebtoonReader({
    * @state {number} scrollSpeed - The speed of auto-scrolling (1-5).
    */
   const [scrollSpeed, setScrollSpeed] = useState(1);
-    /**
-   * @state {number} readingProgress - The user's reading progress as a percentage.
-   */
+  /**
+ * @state {number} readingProgress - The user's reading progress as a percentage.
+ */
   const [readingProgress, setReadingProgress] = useState(0);
 
   const { backgroundColor } = useReaderSettings();
@@ -95,7 +95,7 @@ export default function WebtoonReader({
    * @state {boolean} isWebtoon - True if the content is detected as a vertical webtoon.
    */
   const [isWebtoon, setIsWebtoon] = useState(false);
-  
+
   /**
    * @effect Initializes the pages state from the images prop.
    */
@@ -105,7 +105,7 @@ export default function WebtoonReader({
       imageUrl: getImageUrl(image),
       height: 800, // Default height, will be updated after image loads
     }));
-    
+
     setPages(initialPages);
   }, [images]);
 
@@ -139,7 +139,7 @@ export default function WebtoonReader({
     root: containerRef.current,
     rootMargin: '500px 0px', // Trigger when 500px away from the viewport
   });
-  
+
   /**
    * @effect Tracks reading progress and sends analytics events.
    */
@@ -158,20 +158,20 @@ export default function WebtoonReader({
    */
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
-    
+
     const virtualItems = rowVirtualizer.getVirtualItems();
-    if(virtualItems.length === 0) return;
+    if (virtualItems.length === 0) return;
 
     // Find the topmost visible item
     const topVisibleIndex = virtualItems.reduce((prev, curr) => {
-        return curr.start < prev.start ? curr : prev;
+      return curr.start < prev.start ? curr : prev;
     }).index;
 
     if (topVisibleIndex !== currentPageIndex) {
       setCurrentPageIndex(topVisibleIndex);
     }
   }, [rowVirtualizer, currentPageIndex]);
-  
+
   /**
    * @callback startAutoScroll
    * @description Initiates auto-scrolling.
@@ -258,7 +258,7 @@ export default function WebtoonReader({
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full h-screen overflow-auto scrollbar-hide"
       style={{ backgroundColor }}
@@ -269,29 +269,28 @@ export default function WebtoonReader({
           Chế độ Webtoon
         </div>
       )}
-      
-      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
-        <div 
-          className="h-full bg-blue-500 transition-all duration-300"
+
+      <div className="fixed top-0 left-0 w-full h-1 bg-white/5 z-50">
+        <div
+          className="h-full bg-lime-400 shadow-[0_0_10px_rgba(168,227,0,0.5)] transition-all duration-300"
           style={{ width: `${readingProgress}%` }}
         />
       </div>
 
-      <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
         <button
           onClick={isAutoScroll ? stopAutoScroll : startAutoScroll}
-          className={`px-4 py-2 rounded-full font-medium transition-colors shadow-lg ${
-            isAutoScroll
-              ? 'bg-red-500 hover:bg-red-600 text-white'
-              : 'bg-blue-500 hover:bg-blue-600 text-white'
-          }`}
+          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl border ${isAutoScroll
+              ? 'bg-red-600 text-white border-red-500'
+              : 'bg-lime-500 text-black border-lime-400'
+            }`}
         >
-          {isAutoScroll ? 'Dừng' : 'Tự động'}
+          {isAutoScroll ? 'DỪNG' : 'TỰ ĐỘNG'}
         </button>
-        
+
         {isAutoScroll && (
-          <div className="bg-black bg-opacity-75 text-white p-2 rounded-lg shadow-lg">
-            <label className="block text-xs mb-1">Tốc độ:</label>
+          <div className="bg-gray-900/90 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-white/10 min-w-[140px]">
+            <label className="block text-[10px] font-black uppercase tracking-widest mb-3 text-gray-400">Tốc độ cuộn</label>
             <input
               type="range"
               min="1"
@@ -299,18 +298,21 @@ export default function WebtoonReader({
               step="0.5"
               value={scrollSpeed}
               onChange={(e) => setScrollSpeed(Number(e.target.value))}
-              className="w-24"
+              className="w-full accent-lime-400 bg-white/10 h-1.5 rounded-full appearance-none cursor-pointer"
             />
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-4 left-4 z-50 bg-black bg-opacity-75 text-white px-3 py-2 rounded-lg shadow-lg">
-        <div className="text-sm font-bold">
+      <div className="fixed bottom-6 left-6 z-40 bg-black/80 backdrop-blur-md text-white px-4 py-3 rounded-2xl shadow-2xl border border-white/10 flex flex-col gap-1.5 min-w-[120px]">
+        <div className="text-xs font-black uppercase tracking-wider">
           Trang {currentPageIndex + 1} / {pages.length}
         </div>
-        <div className="text-xs opacity-80">
-          {Math.round(readingProgress)}% đã đọc
+        <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-lime-400 transition-all duration-300"
+            style={{ width: `${readingProgress}%` }}
+          />
         </div>
       </div>
 
@@ -353,18 +355,18 @@ export default function WebtoonReader({
 
       {/* Trigger to load more content */}
       <div ref={loadMoreRef} className="h-1" />
-      
+
       {currentPageIndex >= pages.length - 1 && onChapterComplete && (
-        <div className="text-center py-16">
-          <div className="text-xl font-bold mb-4">
-            Đã hoàn thành chương!
+        <div className="text-center py-20 px-6">
+          <div className="text-xl md:text-2xl font-black uppercase tracking-widest mb-6 title-main">
+            HẾT CHƯƠNG RỒI!
           </div>
           <button
-              onClick={onChapterComplete}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold transition-transform transform hover:scale-105"
-            >
-              Chương tiếp theo
-            </button>
+            onClick={onChapterComplete}
+            className="bg-lime-500 hover:bg-lime-400 text-black px-10 py-4 rounded-xl font-black uppercase tracking-widest text-sm transition-all transform hover:scale-105 active:scale-95 shadow-xl shadow-lime-500/20"
+          >
+            CHƯƠNG TIẾP THEO
+          </button>
         </div>
       )}
 

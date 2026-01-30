@@ -39,16 +39,16 @@ export function WebtoonImage({ src, alt, index, onHeightMeasured, priority = fal
     const img = e.currentTarget;
     const height = img.naturalHeight;
     const width = img.naturalWidth;
-    
+
     // Calculate actual rendered height based on container width
     if (containerRef.current && width > 0) {
       const containerWidth = containerRef.current.offsetWidth;
       const renderedHeight = (height / width) * containerWidth;
-      
+
       setNaturalHeight(renderedHeight);
       setIsLoading(false);
       setRetryCount(0); // Reset retry count on success
-      
+
       // Notify parent about the actual height
       if (onHeightMeasured) {
         onHeightMeasured(renderedHeight);
@@ -74,7 +74,7 @@ export function WebtoonImage({ src, alt, index, onHeightMeasured, priority = fal
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative w-full"
       style={{
@@ -84,28 +84,29 @@ export function WebtoonImage({ src, alt, index, onHeightMeasured, priority = fal
     >
       {/* Loading skeleton */}
       {isLoading && (
-        <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
-          <div className="text-gray-500 dark:text-gray-400 text-sm">Đang tải trang {index + 1}...</div>
+        <div className="absolute inset-0 bg-gray-900 animate-pulse flex flex-col items-center justify-center p-6 text-center">
+          <div className="w-12 h-12 rounded-full border-b-2 border-lime-400 animate-spin mb-4"></div>
+          <div className="text-gray-500 text-[10px] font-black uppercase tracking-widest">Đang tải trang {index + 1}</div>
         </div>
       )}
-      
+
       {/* Error state */}
       {hasError && (
-        <div className="absolute inset-0 bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center text-center p-4">
-          <div className="text-red-500 text-sm mb-2">Không thể tải ảnh trang {index + 1}.</div>
-          <p className="text-gray-500 dark:text-gray-400 text-xs mb-3">
-            Vui lòng kiểm tra lại kết nối mạng.
+        <div className="absolute inset-0 bg-gray-900 flex flex-col items-center justify-center text-center p-6 border border-red-500/20 rounded-2xl">
+          <div className="text-red-500 text-xs font-black uppercase tracking-widest mb-3">Lỗi tải ảnh trang {index + 1}</div>
+          <p className="text-gray-500 text-[10px] font-bold uppercase tracking-widest mb-4">
+            Vui lòng kiểm tra lại kết nối
           </p>
-          <button 
+          <button
             onClick={handleRetry}
             disabled={retryCount >= MAX_RETRIES}
-            className="text-blue-600 dark:text-blue-400 text-sm font-semibold hover:underline disabled:text-gray-400 disabled:cursor-not-allowed disabled:no-underline"
+            className="px-6 py-2 bg-white/5 text-gray-300 text-[10px] font-black uppercase tracking-widest rounded-xl border border-white/10 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
-            {retryCount >= MAX_RETRIES ? 'Tải lại thất bại' : `Thử lại (${retryCount}/${MAX_RETRIES})`}
+            {retryCount >= MAX_RETRIES ? 'THẤT BẠI' : `THỬ LẠI (${retryCount}/${MAX_RETRIES})`}
           </button>
         </div>
       )}
-      
+
       {/* Actual image, hidden if there is an error */}
       {!hasError && (
         <Image

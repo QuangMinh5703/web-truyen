@@ -12,7 +12,7 @@ const StoryCard = ({ story }: { story: Story }) => {
   const storyId = story._id || story.id || '';
   const storySlug = story.slug || storyId;
   const storyTitle = story.name || story.title || 'Truyện tranh';
-  
+
   const imageUrl = getImageUrl(story.thumb_url || story.cover || story.thumbnail || '');
 
   const getStatusText = (status?: string) => {
@@ -39,30 +39,29 @@ const StoryCard = ({ story }: { story: Story }) => {
               <span className="text-6xl">📖</span>
             </div>
           )}
-          
+
           {/* Status Badge */}
           <div className="absolute top-2 right-2">
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-              story.status === 'ongoing' 
-                ? 'bg-green-500 text-white' 
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${story.status === 'ongoing'
+                ? 'bg-green-500 text-white'
                 : 'bg-blue-500 text-white'
-            }`}>
+              }`}>
               {getStatusText(story.status)}
             </span>
           </div>
         </div>
-        
+
         <div className="p-4">
           <h3 className="font-semibold text-gray-900 line-clamp-2 mb-2">
             {storyTitle}
           </h3>
-          
+
           {story.author && story.author.length > 0 && (
             <p className="text-sm text-gray-600 mb-2">
               {story.author.join(', ')}
             </p>
           )}
-          
+
           {story.category && story.category.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {story.category.slice(0, 2).map((cat, index) => (
@@ -75,7 +74,7 @@ const StoryCard = ({ story }: { story: Story }) => {
               ))}
             </div>
           )}
-          
+
           {story.chaptersLatest && story.chaptersLatest.length > 0 && (
             <p className="text-sm text-blue-600">
               Chương mới nhất: {story.chaptersLatest[0].chapter_name}
@@ -90,7 +89,7 @@ const StoryCard = ({ story }: { story: Story }) => {
 const GenrePage = () => {
   const params = useParams();
   const slug = params?.slug as string;
-  
+
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -121,17 +120,17 @@ const GenrePage = () => {
   useEffect(() => {
     const fetchGenreStories = async () => {
       if (!slug) return;
-      
+
       try {
         setLoading(true);
         setError(null);
-        
+
         console.log('[Genre] Fetching stories for genre:', slug);
-        
+
         // Try to get genre name
         const displayName = genreNames[slug] || slug;
         setGenreName(displayName);
-        
+
         // Fetch stories by genre (we'll use search as fallback)
         let listResponse;
         try {
@@ -141,15 +140,15 @@ const GenrePage = () => {
           console.log('[Genre] Genre endpoint failed, trying search:', genreError);
           listResponse = await otruyenApi.searchStories(displayName, { page: 1, limit: 20 });
         }
-        
+
         console.log('[Genre] Response:', listResponse);
-        
+
         if (listResponse && listResponse.items) {
           setStories(listResponse.items);
         } else {
           console.warn('[Genre] No stories found for genre:', slug);
         }
-        
+
       } catch (err) {
         console.error('[Genre] Error:', err);
         setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
@@ -207,29 +206,29 @@ const GenrePage = () => {
   return (
     <div className="min-h-screen --background">
       <Navbar />
-      
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Breadcrumb */}
         <nav className="mb-6">
-          <ol className="flex items-center space-x-2 text-sm text-gray-600">
+          <ol className="flex items-center space-x-2 text-sm text-gray-400 font-lexend-exa">
             <li>
-              <Link href="/" className="hover:text-blue-600">Trang chủ</Link>
+              <Link href="/" className="hover:text-blue-600 transition-colors">Trang chủ</Link>
             </li>
             <li>/</li>
             <li>
-              <Link href="/the-loai" className="hover:text-blue-600">Thể loại</Link>
+              <Link href="/the-loai" className="hover:text-blue-600 transition-colors">Thể loại</Link>
             </li>
             <li>/</li>
-            <li className="text-gray-900 font-medium">{genreName}</li>
+            <li className="text-white font-medium">{genreName}</li>
           </ol>
         </nav>
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="title-main mb-2">
             Thể loại: {genreName}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-400 font-lexend-exa">
             Tìm thấy {stories.length} truyện
           </p>
         </div>
@@ -237,13 +236,13 @@ const GenrePage = () => {
         {/* Stories Grid */}
         {stories.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-gray-500 mb-4">Không có truyện nào trong thể loại này</p>
-            <Link href="/" className="text-blue-600 hover:underline">
+            <p className="text-gray-500 mb-4 font-lexend-exa">Không có truyện nào trong thể loại này</p>
+            <Link href="/" className="text-blue-600 hover:underline font-lexend-exa">
               Quay lại trang chủ
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {stories.map((story) => (
               <StoryCard key={story._id || story.id} story={story} />
             ))}

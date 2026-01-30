@@ -2,7 +2,7 @@
 
 ## Overview
 
-D? ·n Comic Reader s? d?ng API t? `otruyenapi.com` ?? cung c?p d? li?u truy?n tranh. Th? m?c n‡y ch?a t?t c? c·c utilities, types, v‡ API client functions.
+D? √°n Comic Reader s? d?ng API t? `otruyenapi.com` ?? cung c?p d? li?u truy?n tranh. Th? m?c n√†y ch?a t?t c? c√°c utilities, types, v√† API client functions.
 
 ## File Structure
 
@@ -54,7 +54,7 @@ src/lib/
 
 ### OtruyenApi Class
 
-Main API client class v?i c·c methods:
+Main API client class v?i c√°c methods:
 
 ```typescript
 class OtruyenApi {

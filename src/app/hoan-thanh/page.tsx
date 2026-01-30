@@ -20,7 +20,7 @@ export default function HoanThanhPage() {
         setLoading(true);
         setError(null);
         const listResponse = await otruyenApi.getStoriesByType('hoan-thanh', { page: currentPage });
-        
+
         if (listResponse) {
           setStories(listResponse.items);
           setTotalPages(listResponse.pagination.totalPages);
@@ -68,9 +68,9 @@ export default function HoanThanhPage() {
     <div className="min-h-screen --background">
       <Navbar />
 
-      <main className="max-w-[var(--main-content-width)] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="title-main mb-8">Truyện Hoàn Thành</h1>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
           {stories.map((story) => {
             const imageUrl = getImageUrl(story.cover || story.thumbnail || story.thumb_url || '');
             const storyTitle = story.name || story.title || 'Untitled Story';
@@ -121,7 +121,7 @@ export default function HoanThanhPage() {
           >
             ← Trước
           </button>
-          
+
           <div className="flex gap-1">
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               const pageNum = i + 1;
@@ -129,27 +129,25 @@ export default function HoanThanhPage() {
                 <button
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
-                  className={`pagination-button px-3 py-2 rounded-md ${
-                    currentPage === pageNum
+                  className={`pagination-button px-3 py-2 rounded-md ${currentPage === pageNum
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-white hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {pageNum}
                 </button>
               );
             })}
-            
+
             {totalPages > 5 && (
               <>
                 <span className="px-2 py-2 text-white">...</span>
                 <button
                   onClick={() => setCurrentPage(totalPages)}
-                  className={`pagination-button px-3 py-2 rounded-md ${
-                    currentPage === totalPages
+                  className={`pagination-button px-3 py-2 rounded-md ${currentPage === totalPages
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-white hover:bg-gray-600'
-                  }`}
+                    }`}
                 >
                   {totalPages}
                 </button>

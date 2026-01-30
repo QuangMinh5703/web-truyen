@@ -2,80 +2,89 @@ import Link from 'next/link';
 import Image from "next/image";
 
 interface FooterComponentProps {
-  className?: string;
+    className?: string;
 }
 
 const FooterComponent = ({ className }: FooterComponentProps) => {
     return (
-        <footer className={`footer mt-20 ${className || ''}`}>
-            <div className="max-w-7xl ml-[120px] px-4 sm:px-6 lg:px-8 py-8">
-                <div className="flex flex-wrap items-center gap-x-8 gap-y-4 text-sm mb-6">
-                    <Link href="/gioi-thieu" className="footer-text transition-colors">
+        <footer className={`footer mt-12 md:mt-20 border-t border-white/5 ${className || ''}`}>
+            <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+                {/* Navigation Links */}
+                <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center sm:justify-start gap-x-8 gap-y-4 text-sm mb-8">
+                    <Link href="/gioi-thieu" className="footer-text hover:text-white transition-colors">
                         About Sketcha
                     </Link>
-                    <Link href="/dieu-khoan" className="footer-text transition-colors">
+                    <Link href="/dieu-khoan" className="footer-text hover:text-white transition-colors">
                         Terms of Use
                     </Link>
-                    <Link href="/chinh-sach" className="footer-text transition-colors">
+                    <Link href="/chinh-sach" className="footer-text hover:text-white transition-colors">
                         Privacy Policy
                     </Link>
-                    <Link href="/ho-tro" className="footer-text transition-colors">
+                    <Link href="/ho-tro" className="footer-text hover:text-white transition-colors">
                         Customer Support
                     </Link>
-                    <Link href="/yeu-cau" className="footer-text transition-colors">
+                    <Link href="/yeu-cau" className="footer-text hover:text-white transition-colors">
                         Submission
                     </Link>
                 </div>
 
-                <div className="mb-6">
+                {/* Contact Info */}
+                <div className="mb-8 text-center sm:text-left">
                     <p className="footer-text">
-                        Contact Us: <a href="mailto:contact@sketcha.com">contact@sketcha.com</a>
+                        Contact Us: <a href="mailto:contact@sketcha.com" className="hover:text-lime-400 transition-colors">contact@sketcha.com</a>
                     </p>
                 </div>
 
-                <div className="border-t footer-line mb-6"></div>
+                {/* Divider */}
+                <div className="border-t footer-line mb-8 opacity-50"></div>
 
-                <div className="flex items-center space-x-4">
-                    <a
-                        href="mailto:contact@sketcha.com"
-                        className="w-10 h-10 rounded-md flex items-center justify-center hover:opacity-80 transition-opacity"
-                        aria-label="Email"
-                    >
-                        <Image
-                            src="/ig_logo/ig_logo-mail.png"
-                            alt="Email"
-                            width={40}
-                            height={40}
-                            className="object-contain "
-                        />
-                    </a>
-                    <a
-                        href="#"
-                        className="w-10 h-10 rounded-md flex items-center justify-center hover:opacity-80 transition-opacity"
-                        aria-label="Facebook"
-                    >
-                        <Image
-                            src="/ig_logo/ig_logo-fb.png"
-                            alt="Facebook"
-                            width={40}
-                            height={40}
-                            className="object-contain"
-                        />
-                    </a>
+                {/* Social Icons & Copyright */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center space-x-6">
+                        <a
+                            href="mailto:contact@sketcha.com"
+                            className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
+                            aria-label="Email"
+                        >
+                            <Image
+                                src="/ig_logo/ig_logo-mail.png"
+                                alt="Email"
+                                width={40}
+                                height={40}
+                                className="object-contain"
+                            />
+                        </a>
+                        <a
+                            href="#"
+                            className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
+                            aria-label="Facebook"
+                        >
+                            <Image
+                                src="/ig_logo/ig_logo-fb.png"
+                                alt="Facebook"
+                                width={40}
+                                height={40}
+                                className="object-contain"
+                            />
+                        </a>
+                        <a
+                            href="#"
+                            className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform active:scale-95"
+                            aria-label="Discord"
+                        >
+                            <Image
+                                src="/ig_logo/ig_logo-dis.png"
+                                alt="Discord"
+                                width={40}
+                                height={40}
+                                className="object-contain"
+                            />
+                        </a>
+                    </div>
 
-                    <a
-                        href="#"
-                        className="w-10 h-10 rounded-md flex items-center justify-center hover:opacity-80 transition-opacity"
-                        aria-label="Discord"
-                    >
-                        <Image
-                            src="/ig_logo/ig_logo-dis.png"
-                            alt="Discord"
-                            width={40}
-                            height={40}
-                            className="object-contain"
-                        />
-                    </a>
+                    <div className="footer-text text-sm opacity-60">
+                        © 2026 Sketcha. All rights reserved.
+                    </div>
                 </div>
             </div>
         </footer>

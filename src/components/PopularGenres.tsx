@@ -1,6 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
+import { useResponsive } from '@/lib/hooks/useMediaQuery';
 
 interface GenreItem {
     id: string;
@@ -23,45 +25,50 @@ const genres: GenreItem[] = [
     { id: '10', name: 'Supernatural', slug: 'supernatural', image: '/ig_themes/themes4.png', color: '#E8C4D8' },
     { id: '11', name: 'Comedy', slug: 'comedy', image: '/ig_themes/themes5.png', color: '#FFE5B4' },
     { id: '12', name: 'Action', slug: 'action', image: '/ig_themes/themes6.png', color: '#2A5F4F' },
-    { id: '13', name: 'Mystery', slug: 'mystery', image: '/ig_themes/themes1.png', color: '#5C4B6B' },
-    { id: '14', name: 'Tragedy', slug: 'tragedy', image: '/ig_themes/themes2.png', color: '#A8B5B8' },
-    { id: '15', name: 'Drama', slug: 'drama', image: '/ig_themes/themes3.png', color: '#3D3D3D' },
 ];
 
 const PopularGenres = () => {
+    const { isMobile } = useResponsive();
+
+    // clip-path geometry scales with screen size
+    const cornerSize = isMobile ? '10px' : '20px';
+    const bottomCut = isMobile ? '30px' : '40px';
+    const clipPathValue = `polygon(${cornerSize} 0, 100% 0, 100% calc(100% - ${bottomCut}), calc(100% - ${bottomCut}) 100%, 0 100%, 0 ${cornerSize})`;
+
     return (
-        <section className="mb-12 bg-black py-8 px-4 rounded-lg">
-            <div className="mb-8">
+        <section className="mb-8 md:mb-12 bg-black py-6 md:py-8 px-4 rounded-2xl">
+            <div className="mb-6 md:mb-8">
                 <h2 className="title-main">Thể loại</h2>
             </div>
 
-            <div className="grid grid-cols-4 gap-6">
-                {genres.slice(0, 12).map((genre) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                {genres.map((genre) => (
                     <Link
                         key={genre.id}
                         href={`/the-loai/${genre.slug}`}
                         className="group block"
                     >
-                        <div className="relative h-[200px] w-full">
+                        <div className="relative h-[150px] md:h-[175px] lg:h-[200px] w-full transform transition-transform duration-300 group-hover:-translate-y-1">
+                            {/* Outer Border with dynamic clipPath */}
                             <div
-                                className="absolute inset-0 color-main transition-all duration-300"
+                                className="absolute inset-0 transition-all duration-300 shadow-lg"
                                 style={{
-                                    clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%, 0 20px)',
+                                    clipPath: clipPathValue,
                                     backgroundColor: genre.color
                                 }}
                             ></div>
 
-                            {/* Content với viền đen bên trong */}
+                            {/* Inner Content Container */}
                             <div
-                                className="absolute inset-[3px] bg-black overflow-hidden pl-[15px]"
+                                className="absolute inset-[2px] md:inset-[3px] bg-black overflow-hidden flex flex-col justify-center"
                                 style={{
-                                    clipPath: 'polygon(20px 0, 100% 0, 100% calc(100% - 40px), calc(100% - 40px) 100%, 0 100%, 0 20px)'
+                                    clipPath: clipPathValue
                                 }}
                             >
-                                <div className="flex h-[136px] w-[calc(100%-30px)] mt-[45px] rounded-lg overflow-hidden">
+                                <div className="flex h-[110px] md:h-[120px] lg:h-[136px] w-[calc(100%-20px)] md:w-[calc(100%-30px)] mx-auto rounded-lg overflow-hidden relative">
                                     <div
                                         className="w-1/2"
-                                        style={{background: genre.color}}
+                                        style={{ backgroundColor: genre.color }}
                                     >
                                     </div>
                                     <div className="relative w-1/2 h-full">
@@ -71,20 +78,22 @@ const PopularGenres = () => {
                                                 background: `linear-gradient(to right, ${genre.color}, transparent)`
                                             }}
                                         ></div>
-                                        <img
+                                        <Image
                                             src={genre.image}
                                             alt={genre.name}
-                                            className="w-full h-full object-cover transition-transform duration-500"
+                                            fill
+                                            className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                            sizes="(max-width: 768px) 25vw, (max-width: 1024px) 20vw, 15vw"
                                         />
                                     </div>
-                                </div>
-                                {/* Genre name */}
-                                <div className="absolute top-[100px] left-[50%] -translate-x-1/2 z-20">
-                                    <h3 className="genres-text text-center whitespace-nowrap">
-                                        {genre.name}
-                                    </h3>
-                                </div>
 
+                                    {/* Overlay Text for centered alignment across the colored/image split */}
+                                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                        <h3 className="genres-text text-center px-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                                            {genre.name}
+                                        </h3>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </Link>
