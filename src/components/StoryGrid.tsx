@@ -18,7 +18,7 @@ interface StoryGridProps {
    */
   stories?: Story[];
   /**
-   * @property {number} [limit=24] - The maximum number of stories to fetch and display (only used if `stories` prop is not provided).
+   * @property {number} [limit=20] - The maximum number of stories to fetch and display (only used if `stories` prop is not provided).
    */
   limit?: number;
   /**
@@ -90,7 +90,7 @@ export default function StoryGrid(props: StoryGridProps) {
   return <SelfFetchingStoryGrid limit={props.limit} type={props.type} />;
 }
 
-function SelfFetchingStoryGrid({ limit = 24, type = 'truyen-moi' }: StoryGridProps) {
+function SelfFetchingStoryGrid({ limit = 20, type = 'truyen-moi' }: StoryGridProps) {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -101,7 +101,7 @@ function SelfFetchingStoryGrid({ limit = 24, type = 'truyen-moi' }: StoryGridPro
         setLoading(true);
         setError(null);
         const response = await otruyenApi.getStoriesByType(type, { page: 1, limit });
-        setStories(response?.items || []);
+        setStories(response?.items?.slice(0, limit) || []);
       } catch (err) {
         console.error('Error fetching stories:', err);
         setError('Không thể tải danh sách truyện. Vui lòng thử lại sau.');

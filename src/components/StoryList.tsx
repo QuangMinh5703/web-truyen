@@ -31,7 +31,7 @@ interface StoryListProps {
  * @param {StoryListProps} props - The component props.
  * @returns {JSX.Element} A section containing a list of stories.
  */
-const StoryList = ({ title, type = 'hoan-thanh', limit = 10 }: StoryListProps) => {
+const StoryList = ({ title, type = 'hoan-thanh', limit = 20 }: StoryListProps) => {
   return (
     <section className="mb-8 md:mb-12">
       <div className="flex items-center justify-between mb-4 md:mb-6">

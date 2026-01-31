@@ -82,7 +82,7 @@ const GenrePage = () => {
         console.log('[Genre] Response:', listResponse);
 
         if (listResponse && listResponse.items) {
-          setStories(listResponse.items);
+          setStories(listResponse.items.slice(0, 20));
         } else {
           console.warn('[Genre] No stories found for genre:', slug);
         }

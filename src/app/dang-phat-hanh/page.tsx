@@ -20,10 +20,10 @@ export default function DangPhatHanhPage() {
       try {
         setLoading(true);
         setError(null);
-        const listResponse = await otruyenApi.getStoriesByType('dang-phat-hanh', { page: currentPage });
+        const listResponse = await otruyenApi.getStoriesByType('dang-phat-hanh', { page: currentPage, limit: 20 });
 
         if (listResponse) {
-          setStories(listResponse.items);
+          setStories(listResponse.items.slice(0, 20));
           setTotalPages(listResponse.pagination.totalPages);
         } else {
           throw new Error('Không thể tải danh sách truyện.');
