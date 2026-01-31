@@ -19,7 +19,7 @@ interface ReaderState {
 
 export const useReaderStore = create<ReaderState>((set) => ({
     readerMode: 'single',
-    backgroundColor: 'white',
+    backgroundColor: 'black',
     pageWidth: 'fit-width',
     isFullscreen: false,
     swipeThreshold: 50,

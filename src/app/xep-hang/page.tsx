@@ -88,15 +88,15 @@ const RankingPage = () => {
 
                 return (
                   <Link key={storySlug} href={`/truyen/${storySlug}`} className="group block flex-shrink-0 snap-start">
-                    <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+                    <div className="relative mb-4 aspect-[2/3] hover:scale-105 transition-transform">
                       <Image
                         src={imageUrl || '/placeholder-story.jpg'}
                         alt={storyName || 'Truyện tranh'}
                         fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        className="object-cover rounded-lg shadow-md"
                       />
-                      <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
-                        #{indexOfFirstStory + index + 1}
+                      <div className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100 z-10">
+                        <span className="top-ranking-banner-text text-xs md:text-sm">{indexOfFirstStory + index + 1}</span>
                       </div>
                     </div>
 

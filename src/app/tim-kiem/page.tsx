@@ -174,7 +174,7 @@ function SearchPageComponentContent() { // Renamed to avoid confusion with the e
   };
 
   return (
-    <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-12 max-w-2xl mx-auto">
         <SearchBar initialQuery={query} />
       </div>

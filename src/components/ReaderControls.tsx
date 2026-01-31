@@ -85,11 +85,7 @@ const DesktopControls = ({
                 </button>
             </div>
 
-            <div className="flex items-center gap-1.5 px-3 py-2 bg-white/5 rounded-xl border border-white/5">
-                <button title="Nền trắng" onClick={() => setBackgroundColor('white')} className={`w-5 h-5 rounded-full bg-white border border-transparent transition-transform hover:scale-110 ${backgroundColor === 'white' ? 'ring-2 ring-lime-400 ring-offset-2 ring-offset-black' : ''}`}></button>
-                <button title="Nền đen" onClick={() => setBackgroundColor('black')} className={`w-5 h-5 rounded-full bg-gray-900 border border-gray-700 transition-transform hover:scale-110 ${backgroundColor === 'black' ? 'ring-2 ring-lime-400 ring-offset-2 ring-offset-black' : ''}`}></button>
-                <button title="Nền sepia" onClick={() => setBackgroundColor('sepia')} className={`w-5 h-5 rounded-full bg-[#fbf0d9] border border-transparent transition-transform hover:scale-110 ${backgroundColor === 'sepia' ? 'ring-2 ring-lime-400 ring-offset-2 ring-offset-black' : ''}`}></button>
-            </div>
+            {/* Background toggle removed */}
 
             <select
                 onChange={(e) => setPageWidth(e.target.value as PageWidth)}
@@ -238,15 +234,7 @@ const MobileControls = ({
                             </div>
                         </div>
 
-                        {/* Background Themes */}
-                        <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
-                            <span className="text-gray-400 text-xs font-bold uppercase tracking-wider">Màu nền</span>
-                            <div className="flex items-center gap-4">
-                                <button onClick={() => setBackgroundColor('white')} className={`w-8 h-8 rounded-full bg-white transition-transform ${backgroundColor === 'white' ? 'ring-2 ring-lime-400 ring-offset-4 ring-offset-gray-900 scale-110' : ''}`}></button>
-                                <button onClick={() => setBackgroundColor('black')} className={`w-8 h-8 rounded-full bg-black border border-white/10 transition-transform ${backgroundColor === 'black' ? 'ring-2 ring-lime-400 ring-offset-4 ring-offset-gray-900 scale-110' : ''}`}></button>
-                                <button onClick={() => setBackgroundColor('sepia')} className={`w-8 h-8 rounded-full bg-[#fbf0d9] transition-transform ${backgroundColor === 'sepia' ? 'ring-2 ring-lime-400 ring-offset-4 ring-offset-gray-900 scale-110' : ''}`}></button>
-                            </div>
-                        </div>
+                        {/* Background Themes removed */}
 
                         {/* Page Width */}
                         <div className="flex justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/5">
