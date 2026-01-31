@@ -8,6 +8,7 @@ import { useViewTracking } from '@/lib/hooks/useViewTracking';
 import { StoryStats } from '@/lib/view-tracking';
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
 import ErrorDisplay from './ui/ErrorDisplay';
+import EyeIcon from './icons/EyeIcon';
 
 interface MangaItemProps {
     number: number;
@@ -37,15 +38,15 @@ const shuffleArray = <T,>(array: T[]): T[] => {
 const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
     return (
         <Link href={`/truyen/${slug || ''}`} className="flex-shrink-0 w-full sm:w-auto md:w-full">
-            <div className="flex gap-3 md:gap-4 p-2 md:p-3 cursor-pointer hover:bg-white/5 rounded-xl transition-colors">
+            <div className="flex gap-3 md:gap-4 p-2 md:p-3 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group">
                 {/* Thumbnail with badge */}
-                <div className="relative flex-shrink-0 hover:scale-105 transition-transform">
+                <div className="relative flex-shrink-0 hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
                     <Image
                         src={image}
                         alt={title}
                         width={80}
                         height={96}
-                        className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg shadow-md"
+                        className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg"
                     />
                     <div
                         className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100"
@@ -59,7 +60,12 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
                     <h3 className="story-list-name line-clamp-2 text-sm md:text-base font-medium text-white group-hover:text-lime-400">
                         {title}
                     </h3>
-                    {views !== undefined && <p className="text-xs md:text-sm text-gray-500 mt-1">👁️ {views.toLocaleString('vi-VN')}</p>}
+                    {views !== undefined && (
+                        <div className="flex items-center gap-1.5 mt-1">
+                            <EyeIcon width={16} height={16} className="flex-shrink-0" />
+                            <span className="text-xs md:text-sm text-gray-500">{views.toLocaleString('vi-VN')}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </Link>
@@ -174,7 +180,7 @@ const TopRankings = () => {
                             <div className="relative h-full flex flex-col md:flex-row items-center md:items-end p-6 md:p-8 gap-6 md:gap-8">
                                 {/* Story Thumbnail */}
                                 <div
-                                    className="relative flex-shrink-0 bg-gray-800 rounded-xl overflow-hidden shadow-2xl transform transition-all duration-300 group-hover:-translate-y-2 herobanner-card-3d"
+                                    className="relative flex-shrink-0 bg-gray-800 rounded-xl overflow-hidden shadow-2xl transform transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-lime-400/20 herobanner-card-3d"
                                     style={{
                                         width: 'var(--ranking-thumbnail-width)',
                                         height: 'var(--ranking-thumbnail-height)'
@@ -196,9 +202,12 @@ const TopRankings = () => {
                                         🔥 {movieName}
                                     </h2>
                                     {'totalViews' in movie && (
-                                        <p className="text-lg md:text-xl text-lime-400 font-medium drop-shadow">
-                                            👁️ {movie.totalViews.toLocaleString('vi-VN')}
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <EyeIcon width={20} height={20} className="flex-shrink-0" />
+                                            <span className="text-lg md:text-xl text-lime-400 font-medium drop-shadow">
+                                                {movie.totalViews.toLocaleString('vi-VN')}
+                                            </span>
+                                        </div>
                                     )}
                                     <div className="pt-2">
                                         <Image

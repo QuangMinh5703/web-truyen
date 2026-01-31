@@ -53,7 +53,7 @@ function StoryCard({ story }: { story: Story }) {
       href={`/truyen/${story.slug}`}
       className="group block"
     >
-      <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+      <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">
         <Image
           src={storyImage}
           alt={`Bìa truyện ${storyTitle}`}

@@ -99,6 +99,9 @@ useEffect(() => {
 - [x] Replace mock API in `api-sync.ts`
 - [ ] Real backend endpoints
 - [x] Conflict resolution
+- [x] Ranking Page: Sync badge style, fix clipping, enhance image border
+- [x] Bug Fix: Vietnamese Genre Links (Navbar & GenrePage mapping)
+- [x] UI Polish: Replace View Icon with reusable EyeIcon component (Gradient SVG)ction
 - [x] Reading history page
 - [x] Continue reading section
 
@@ -271,10 +274,6 @@ useEffect(() => {
 - [x] Verify the fix
 - [x] Update TODO.md if necessary
 - [x] Proposed commit message
-- [x] Search Page UI: Sync layout width, refactor filters (remove genre, compact design)
-- [x] Comment Section: Modern dark UI, glassmorphism, floating inputs
-- [x] Theme Toggle: Remove broken 'white' background option, default to black
-- [x] Ranking Page: Sync badge style, fix clipping, enhance image border
 
 ---
 

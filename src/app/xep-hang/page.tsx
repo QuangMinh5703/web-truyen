@@ -88,7 +88,7 @@ const RankingPage = () => {
 
                 return (
                   <Link key={storySlug} href={`/truyen/${storySlug}`} className="group block flex-shrink-0 snap-start">
-                    <div className="relative mb-4 aspect-[2/3] hover:scale-105 transition-transform">
+                    <div className="relative mb-4 aspect-[2/3] hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
                       <Image
                         src={imageUrl || '/placeholder-story.jpg'}
                         alt={storyName || 'Truyện tranh'}

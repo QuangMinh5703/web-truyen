@@ -40,6 +40,19 @@ const GenrePage = () => {
     'manhwa': 'Manhwa',
     'martial-arts': 'Võ Thuật',
     'truyen-mau': 'Truyện Màu',
+    // Added from Navbar
+    'bl': 'BL',
+    'gl': 'GL',
+    'mature': 'Mature',
+    'adventure': 'Adventure',
+    'chuyen-sinh': 'Chuyển sinh',
+    'harem': 'Harem',
+    'ngon-tinh': 'Ngôn Tình',
+    'psychological': 'Psychological',
+    'romance': 'Romance',
+    'sci-fi': 'Sci-fi',
+    'trinh-tham': 'Trinh Thám',
+    'slice-of-life': 'Slice of Life'
   };
 
   useEffect(() => {
@@ -177,7 +190,7 @@ const GenrePage = () => {
                   className="group block flex-shrink-0 snap-start"
                   onDragStart={(e) => e.preventDefault()}
                 >
-                  <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+                  <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">
                     <Image
                       src={imageUrl}
                       alt={storyTitle}

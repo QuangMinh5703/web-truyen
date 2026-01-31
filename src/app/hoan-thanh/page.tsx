@@ -85,7 +85,7 @@ export default function HoanThanhPage() {
                 className="group block flex-shrink-0 snap-start"
                 onDragStart={(e) => e.preventDefault()}
               >
-                <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+                <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">
                   <Image
                     src={imageUrl}
                     alt={storyTitle}
@@ -130,8 +130,8 @@ export default function HoanThanhPage() {
                   key={pageNum}
                   onClick={() => setCurrentPage(pageNum)}
                   className={`pagination-button px-3 py-2 rounded-md ${currentPage === pageNum
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-white hover:bg-gray-600'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
                     }`}
                 >
                   {pageNum}
@@ -145,8 +145,8 @@ export default function HoanThanhPage() {
                 <button
                   onClick={() => setCurrentPage(totalPages)}
                   className={`pagination-button px-3 py-2 rounded-md ${currentPage === totalPages
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 text-white hover:bg-gray-600'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
                     }`}
                 >
                   {totalPages}

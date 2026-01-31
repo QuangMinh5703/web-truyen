@@ -24,7 +24,22 @@ const Navbar = ({ className }: NavbarProps) => {
     const mobileMenuRef = useRef<HTMLDivElement>(null);
 
     const genres = [
-        "BL", "GL", "Action", "Mature", "Adventure", "Chuyển sinh", "Comedy", "Drama", "Harem", "Historical", "Ngôn Tình", "Psychological", "Romance", "Sci-fi", "Trinh Thám", "Slice of Life"
+        { name: "BL", slug: "bl" },
+        { name: "GL", slug: "gl" },
+        { name: "Action", slug: "action" },
+        { name: "Mature", slug: "mature" },
+        { name: "Adventure", slug: "adventure" },
+        { name: "Chuyển sinh", slug: "chuyen-sinh" },
+        { name: "Comedy", slug: "comedy" },
+        { name: "Drama", slug: "drama" },
+        { name: "Harem", slug: "harem" },
+        { name: "Historical", slug: "historical" },
+        { name: "Ngôn Tình", slug: "ngon-tinh" },
+        { name: "Psychological", slug: "psychological" },
+        { name: "Romance", slug: "romance" },
+        { name: "Sci-fi", slug: "sci-fi" },
+        { name: "Trinh Thám", slug: "trinh-tham" },
+        { name: "Slice of Life", slug: "slice-of-life" }
     ];
 
     const menuItems = [
@@ -149,11 +164,11 @@ const Navbar = ({ className }: NavbarProps) => {
                                             {genres.map((genre, index) => (
                                                 <Link
                                                     key={index}
-                                                    href={`/the-loai/${genre.toLowerCase().replace(/\s+/g, '-')}`}
+                                                    href={`/the-loai/${genre.slug}`}
                                                     className="px-4 py-2 navbar-dropdown-text text-center rounded-full transition-all duration-200 hover:scale-105 active:scale-95 whitespace-nowrap overflow-hidden text-ellipsis shadow-sm"
                                                     onClick={() => setIsGenreOpen(false)}
                                                 >
-                                                    {genre}
+                                                    {genre.name}
                                                 </Link>
                                             ))}
                                         </div>
@@ -264,11 +279,11 @@ const Navbar = ({ className }: NavbarProps) => {
                                     {genres.map((genre, index) => (
                                         <Link
                                             key={index}
-                                            href={`/the-loai/${genre.toLowerCase().replace(/\s+/g, '-')}`}
+                                            href={`/the-loai/${genre.slug}`}
                                             className="flex items-center px-4 py-4 min-h-[44px] text-[14px] text-white/70 hover:text-white hover:bg-white/5 rounded-lg font-lexend-exa transition-colors"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
-                                            {genre}
+                                            {genre.name}
                                         </Link>
                                     ))}
                                 </div>
