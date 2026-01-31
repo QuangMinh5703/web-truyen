@@ -80,13 +80,8 @@ useEffect(() => {
 
 ## 🎯 FEATURES MỚI
 
-### Responsive UI Project (HIGH Priority)
-- [x] PHASE 1: Design System Foundation (globals.css, breakpoints.ts, useMediaQuery.ts)
-- [x] PHASE 2: Navbar Component (Mobile Drawer, Drawer Search, Responsive Genre)
-- [ ] PHASE 3: HeroBanner Component (Mobile layout, controls)
-- [ ] PHASE 4: TopRankings Component (Responsive list/grid)
-- [ ] PHASE 5: Home Sections (RecentUpdates, StoryGrid)
-- [x] PHASE 6: Reader & Details (MangaDetail, WebtoonReader)
+- [x] PHASE 11: Global UI Polish & Critical Bug Fixes ✅
+- [ ] PHASE 12: Testing & Validation
 
 ### Backend Integration (HIGH Priority)
 
@@ -268,8 +263,14 @@ useEffect(() => {
 - [ ] npm audit fix
 - [x] Update documentation (TODO.md, RESPONSIVE_UI_TODO.md)
 - [/] Bug Fixes
+    - [x] Standardize layout for Ongoing, Ranking, and Homepage (5 cols, 2/3 aspect ratio)
+    - [x] Fix Ranking Badge css shape and shadow
     - [x] Fix missing "Đã hoàn thành" section title on Home Page
-- [ ] Remove unused deps
+    - [x] Analyze type error in `ReaderControls.tsx`
+- [x] Fix the type mismatch between `BackgroundColor` and `string`
+- [x] Verify the fix
+- [x] Update TODO.md if necessary
+- [x] Proposed commit message
 
 ---
 

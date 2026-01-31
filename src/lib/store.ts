@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-type ReaderMode = 'single' | 'continuous';
-type BackgroundColor = 'white' | 'black' | 'sepia';
+export type ReaderMode = 'single' | 'continuous';
+export type BackgroundColor = 'white' | 'black' | 'sepia';
 export type PageWidth = 'fit-width' | 'fit-height' | 'original';
 
 interface ReaderState {

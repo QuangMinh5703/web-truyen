@@ -47,7 +47,6 @@ interface WebtoonReaderProps {
 interface WebtoonPage {
   id: string;
   imageUrl: string;
-  height: number;
 }
 
 /**
@@ -103,23 +102,14 @@ export default function WebtoonReader({
     const initialPages: WebtoonPage[] = images.map((image, index) => ({
       id: `page-${index}`,
       imageUrl: getImageUrl(image),
-      height: 800, // Default height, will be updated after image loads
     }));
 
     setPages(initialPages);
   }, [images]);
 
   const handleHeightMeasured = useCallback((index: number, height: number) => {
-    if (height > 0) {
-      setPages(prev => {
-        const newPages = [...prev];
-        if (newPages[index] && newPages[index].height !== height) {
-          newPages[index] = { ...newPages[index], height };
-          return newPages;
-        }
-        return prev;
-      });
-    }
+    // With rowVirtualizer.measureElement, we don't need to store heights in state.
+    // The virtualizer handles its own measurement cache.
   }, []);
 
   /**
@@ -128,8 +118,8 @@ export default function WebtoonReader({
   const rowVirtualizer = useVirtualizer({
     count: pages.length,
     getScrollElement: () => containerRef.current,
-    estimateSize: useCallback((index) => pages[index]?.height || 800, [pages]),
-    overscan: 3, // Reduce overscan to be more aggressive with memory
+    estimateSize: () => 800,
+    overscan: 5,
   });
 
   /**
@@ -280,9 +270,9 @@ export default function WebtoonReader({
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
         <button
           onClick={isAutoScroll ? stopAutoScroll : startAutoScroll}
-          className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl border ${isAutoScroll
-              ? 'bg-red-600 text-white border-red-500'
-              : 'bg-lime-500 text-black border-lime-400'
+          className={`flex items-center justify-center gap-2 min-h-[44px] min-w-[120px] px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-2xl border ${isAutoScroll
+            ? 'bg-red-600 text-white border-red-500'
+            : 'bg-lime-500 text-black border-lime-400'
             }`}
         >
           {isAutoScroll ? 'DỪNG' : 'TỰ ĐỘNG'}
@@ -342,8 +332,9 @@ export default function WebtoonReader({
               }}
             >
               <WebtoonImage
+                key={page.imageUrl} // Use src as key to reset state without useEffect
                 src={page.imageUrl}
-                alt={`${storyTitle} - ${chapterName} - Trang ${virtualItem.index + 1}`}
+                alt={`Trang ${virtualItem.index + 1}`}
                 index={virtualItem.index}
                 priority={virtualItem.index < 3}
                 onHeightMeasured={(height) => handleHeightMeasured(virtualItem.index, height)}

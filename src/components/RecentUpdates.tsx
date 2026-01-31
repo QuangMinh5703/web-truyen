@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, Chapter, getImageUrl } from '@/lib/api';
 import Image from "next/image";
+import ErrorDisplay from './ui/ErrorDisplay';
 
 interface RecentUpdate {
     story: Story;
@@ -13,6 +14,7 @@ interface RecentUpdate {
 const RecentUpdates = () => {
     const [updates, setUpdates] = useState<RecentUpdate[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [startX, setStartX] = useState(0);
     const [scrollLeft, setScrollLeft] = useState(0);
@@ -49,6 +51,7 @@ const RecentUpdates = () => {
                 }
             } catch (error) {
                 console.error('[RecentUpdates] Error fetching recent updates:', error);
+                setError('Không thể tải các truyện cập nhật mới nhất.');
             } finally {
                 setLoading(false);
             }
@@ -79,6 +82,15 @@ const RecentUpdates = () => {
         const walk = (x - startX) * 2; // Tốc độ kéo
         scrollContainerRef.current.scrollLeft = scrollLeft - walk;
     };
+
+    if (error) {
+        return (
+            <ErrorDisplay
+                message={error}
+                onRetry={() => window.location.reload()}
+            />
+        );
+    }
 
     if (loading) {
         return (

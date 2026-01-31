@@ -7,6 +7,7 @@ import Image from "next/image";
 import { useViewTracking } from '@/lib/hooks/useViewTracking';
 import { StoryStats } from '@/lib/view-tracking';
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
+import ErrorDisplay from './ui/ErrorDisplay';
 
 interface MangaItemProps {
     number: number;
@@ -47,7 +48,7 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
                         className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg shadow-md"
                     />
                     <div
-                        className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner rounded-full scale-75 md:scale-100"
+                        className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100"
                     >
                         <span className="top-ranking-banner-text text-xs md:text-sm">{number}</span>
                     </div>
@@ -55,7 +56,7 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
 
                 {/* Title */}
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <h3 className="story-list-name truncate text-sm md:text-base font-medium text-white group-hover:text-lime-400">
+                    <h3 className="story-list-name line-clamp-2 text-sm md:text-base font-medium text-white group-hover:text-lime-400">
                         {title}
                     </h3>
                     {views !== undefined && <p className="text-xs md:text-sm text-gray-500 mt-1">👁️ {views.toLocaleString('vi-VN')}</p>}
@@ -68,6 +69,7 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
 const TopRankings = () => {
     const [topStories, setTopStories] = useState<(Story | StoryStats)[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
     const { getHotStories } = useViewTracking();
     const { isMobile, isDesktop } = useResponsive();
@@ -92,6 +94,7 @@ const TopRankings = () => {
                 setTopStories(stories);
             } catch (error) {
                 console.error('Error fetching top stories:', error);
+                setError('Không thể tải bảng xếp hạng truyện.');
             } finally {
                 setLoading(false);
             }
@@ -108,6 +111,15 @@ const TopRankings = () => {
         );
     }
 
+    if (error) {
+        return (
+            <ErrorDisplay
+                message={error}
+                onRetry={() => window.location.reload()}
+            />
+        );
+    }
+
     if (!topStories || topStories.length === 0) return null;
 
     const movie = topStories[0];
@@ -117,7 +129,7 @@ const TopRankings = () => {
     const movieSlug = ('slug' in movie ? movie.slug : ('storySlug' in movie ? movie.storySlug : null)) || '';
     const imageBgUrl = backgroundImages[0] || localBackground[0];
 
-    let imageUrl = getImageUrl(('cover' in movie && movie.cover) || ('thumbnail' in movie && movie.thumbnail) || ('thumb_url' in movie && movie.thumb_url) || '');
+    const imageUrl = getImageUrl(('cover' in movie && movie.cover) || ('thumbnail' in movie && movie.thumbnail) || ('thumb_url' in movie && movie.thumb_url) || '');
 
     return (
         <section className="mb-8 md:mb-12">
@@ -125,12 +137,12 @@ const TopRankings = () => {
                 <h2 className="title-main">
                     Bảng xếp hạng
                 </h2>
-                <Link href={`/xep-hang`} className="hover:scale-105 transition-transform active:scale-95">
+                <Link href={`/xep-hang`} className="flex items-center justify-center min-w-[90px] min-h-[44px] hover:scale-105 transition-transform active:scale-95">
                     <Image
                         src="/view_more.svg"
                         alt="View more"
                         width={isMobile ? 90 : 116}
-                        height={isMobile ? 40 : 52}
+                        height={isMobile ? 44 : 52}
                         className="cursor-pointer"
                     />
                 </Link>
@@ -205,14 +217,14 @@ const TopRankings = () => {
 
                 {/* Right Side - Top Stories List */}
                 <div
-                    className="top-ranking-stories-list rounded-2xl flex flex-col p-2 md:p-4 overflow-hidden"
+                    className="top-ranking-stories-list rounded-2xl flex flex-col p-2 md:p-4 overflow-hidden shadow-xl"
                     style={{ flexBasis: isMobile ? '100%' : 'var(--ranking-list-width)' }}
                 >
                     <div className={`${isMobile ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : 'flex flex-col space-y-1'}`}>
                         {otherTopStories.map((story, index) => {
                             const storyName = ('name' in story ? story.name : ('storyTitle' in story ? story.storyTitle : null)) || 'Truyện tranh';
                             const storySlug = ('slug' in story ? story.slug : ('storySlug' in story ? story.storySlug : null)) || '';
-                            let storyImage = getImageUrl(('cover' in story && story.cover) || ('thumbnail' in story && story.thumbnail) || ('thumb_url' in story && story.thumb_url) || '');
+                            const storyImage = getImageUrl(('cover' in story && story.cover) || ('thumbnail' in story && story.thumbnail) || ('thumb_url' in story && story.thumb_url) || '');
                             const views = 'totalViews' in story ? story.totalViews : undefined;
 
                             return (

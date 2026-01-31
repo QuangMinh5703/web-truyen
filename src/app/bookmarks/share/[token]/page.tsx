@@ -49,13 +49,13 @@ const SharedBookmarksPage = ({ params }: { params: { token: string } }) => {
                 <LinkIcon className="mx-auto h-12 w-12 text-red-400" />
                 <h2 className="mt-4 text-2xl font-bold text-red-500">Link Invalid</h2>
                 <p className="mt-2 text-gray-500">{error.message}</p>
-                 <Link href="/bookmarks" className="mt-6 inline-block px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">
+                <Link href="/bookmarks" className="mt-6 inline-block px-5 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700">
                     Go to My Bookmarks
                 </Link>
             </div>
         );
     }
-    
+
     if (!sharedData) {
         return <div className="text-center py-20">No shared data found.</div>;
     }
@@ -71,7 +71,7 @@ const SharedBookmarksPage = ({ params }: { params: { token: string } }) => {
             </div>
 
             {sharedData.bookmarks.length > 0 ? (
-                 <ul className="space-y-4 max-w-2xl mx-auto">
+                <ul className="space-y-4 max-w-2xl mx-auto">
                     {sharedData.bookmarks.map(bookmark => (
                         <li key={bookmark.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex justify-between items-center">
                             <div>
@@ -79,10 +79,10 @@ const SharedBookmarksPage = ({ params }: { params: { token: string } }) => {
                                     {bookmark.storySlug}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                                   Chapter {bookmark.chapterId}
+                                    Chapter {bookmark.chapterId}
                                 </p>
                             </div>
-                            <Link 
+                            <Link
                                 href={`/truyen/${bookmark.storySlug}`}
                                 className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
                                 title={`Go to story ${bookmark.storySlug}`}
@@ -93,7 +93,7 @@ const SharedBookmarksPage = ({ params }: { params: { token: string } }) => {
                     ))}
                 </ul>
             ) : (
-                <p className="text-center text-gray-500">This shared folder is empty.</p>
+                <p className="mt-1 text-sm text-gray-500">The folder &quot;{sharedData.folderName}&quot; has no bookmarks yet.</p>
             )}
         </div>
     );

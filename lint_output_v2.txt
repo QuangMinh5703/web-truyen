@@ -1,0 +1,247 @@
+
+> m-truyen@0.1.0 lint
+> eslint
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\public\sw.js
+   26:7   warning  'API_ENDPOINTS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  204:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  260:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  291:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  306:12  warning  'error' is defined but never used                   @typescript-eslint/no-unused-vars
+  365:11  warning  'chapterId' is assigned a value but never used      @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\bookmarks\page.tsx
+   38:58   error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  235:84   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  235:101  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  235:138  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  235:155  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  246:59   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  246:86   error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  260:105  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\bookmarks\share\[token]\page.tsx
+  32:26  warning  'err' is defined but never used                                  @typescript-eslint/no-unused-vars
+  67:72  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  67:96  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\dang-phat-hanh\page.tsx
+   4:8   warning  'Link' is defined but never used          @typescript-eslint/no-unused-vars
+   5:8   warning  'Image' is defined but never used         @typescript-eslint/no-unused-vars
+   9:29  warning  'getImageUrl' is defined but never used   @typescript-eslint/no-unused-vars
+  32:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\history\page.tsx
+  7:19  warning  'BookOpen' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\hoan-thanh\page.tsx
+  31:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\page.tsx
+  8:10  warning  'ContinueReading' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\the-loai\[slug]\page.tsx
+  86:6  warning  React Hook useEffect has a missing dependency: 'genreNames'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\tim-kiem\page.tsx
+  142:6   warning  React Hook useEffect has missing dependencies: 'filters' and 'sort'. Either include them or remove the dependency array                   react-hooks/exhaustive-deps
+  142:20  warning  React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked  react-hooks/exhaustive-deps
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\truyen\[slug]\chuong\[chapterId]\page.tsx
+   18:8    warning  'screenfull' is defined but never used                     @typescript-eslint/no-unused-vars
+   20:29   warning  'PageWidth' is defined but never used                      @typescript-eslint/no-unused-vars
+   49:7    warning  'DynamicWebtoonReader' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   76:81   warning  'setReaderMode' is assigned a value but never used         @typescript-eslint/no-unused-vars
+   76:96   warning  'setBackgroundColor' is assigned a value but never used    @typescript-eslint/no-unused-vars
+   76:116  warning  'setPageWidth' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   76:130  warning  'toggleFullscreen' is assigned a value but never used      @typescript-eslint/no-unused-vars
+   78:76   warning  'setCurrentPage' is assigned a value but never used        @typescript-eslint/no-unused-vars
+   83:10   warning  'imageHeights' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   89:43   warning  'infiniteScrollInView' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  137:65   warning  'dx' is defined but never used                             @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\truyen\[slug]\page.tsx
+  9:29  warning  'ApiChapter' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\app\xep-hang\page.tsx
+  55:9    warning  'paginate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  83:77   error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  83:127  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  83:181  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\CommentSection.tsx
+  51:14  warning  'err' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\HeroBanner.tsx
+  39:23  warning  'isDesktop' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\Navbar.tsx
+  21:13  warning  'isMobile' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  64:9   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\Navbar.tsx:64:9
+  62 |     useEffect(() => {
+  63 |         // We only reset if they were truthy to avoid unnecessary re-renders
+> 64 |         setIsMobileMenuOpen(prev => prev ? false : prev);
+     |         ^^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  65 |         setIsGenreOpen(prev => prev ? false : prev);
+  66 |         setIsSearchModalOpen(prev => prev ? false : prev);
+  67 |     }, [pathname]);  react-hooks/set-state-in-effect
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\Pagination.tsx
+  25:11  warning  'maxPagesToShow' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\ReaderControls.tsx
+   5:56  warning  'Palette' is defined but never used        @typescript-eslint/no-unused-vars
+   5:65  warning  'Monitor' is defined but never used        @typescript-eslint/no-unused-vars
+  39:5   warning  'onNextChapter' is defined but never used  @typescript-eslint/no-unused-vars
+  40:5   warning  'isLastChapter' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\SearchFiltersPanel.tsx
+  55:6  warning  React Hook useEffect has a missing dependency: 'debouncedAuthorChange'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\StoryGrid.tsx
+  52:9  warning  'storyGenres' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\TopRankings.tsx
+  75:23  warning  'isDesktop' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\WebtoonImage.tsx
+  3:20  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\WebtoonReader.tsx
+    4:8   warning  'Image' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+   63:3   warning  'chapterName' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   96:21  warning  'setIsWebtoon' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  110:45  warning  'index' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-vars
+  110:60  warning  'height' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  118:26  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\components\WebtoonReader.tsx:118:26
+  116 |    * Virtualizer instance from @tanstack/react-virtual for performance.
+  117 |    */
+> 118 |   const rowVirtualizer = useVirtualizer({
+      |                          ^^^^^^^^^^^^^^ TanStack Virtual's `useVirtualizer()` API returns functions that cannot be memoized safely
+  119 |     count: pages.length,
+  120 |     getScrollElement: () => containerRef.current,
+  121 |     estimateSize: () => 800,  react-hooks/incompatible-library
+  218:11  warning  Expected an assignment or function call and instead saw an expression                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     @typescript-eslint/no-unused-expressions
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\analytics.ts
+   20:29  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  378:26  warning  'userId' is defined but never used                      @typescript-eslint/no-unused-vars
+  410:24  warning  'session' is defined but never used                     @typescript-eslint/no-unused-vars
+  480:53  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  481:18  error    Unexpected any. Specify a different type                @typescript-eslint/no-explicit-any
+  597:13  warning  'timeOnPage' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  632:11  warning  'handleRouteChange' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\api-bookmarks.ts
+  21:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\api-sync.ts
+  17:12  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\api-utils.ts
+    6:30  warning  'Genre' is defined but never used           @typescript-eslint/no-unused-vars
+    6:69  warning  'ChapterContent' is defined but never used  @typescript-eslint/no-unused-vars
+   36:31  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  233:58  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  249:49  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+  259:39  error    Unexpected any. Specify a different type    @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\api.ts
+  258:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  258:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  365:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  391:39  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\cache.ts
+  83:32  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useBookmarks.test.ts
+  2:36  warning  'beforeEach' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useBookmarks.ts
+   52:18  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+   68:18  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+   87:16  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  107:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  126:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  146:14  warning  'err' is defined but never used           @typescript-eslint/no-unused-vars
+  162:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useChapterData.test.ts
+  15:49  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useComments.ts
+  35:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  61:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useDebouncedCallback.ts
+  3:44  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  3:54  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  5:51  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  5:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useMediaQuery.ts
+  17:5  warning  'isMobile' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  18:5  warning  'isTablet' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           @typescript-eslint/no-unused-vars
+  19:5  warning  'isDesktop' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  41:9  error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useMediaQuery.ts:41:9
+  39 |
+  40 |         // Set initial value
+> 41 |         setMatches(mediaQuery.matches);
+     |         ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  42 |
+  43 |         // Handler for changes
+  44 |         const handler = (event: MediaQueryListEvent) => {  react-hooks/set-state-in-effect
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useReadingProgress.ts
+   5:83  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-explicit-any
+  62:9   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useReadingProgress.ts:62:9
+  60 |         const totalPages = chapter.images.length;
+  61 |         const calculatedProgress = ((currentPage + 1) / totalPages) * 100;
+> 62 |         setProgress(calculatedProgress);
+     |         ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  63 |
+  64 |         const progressData: ReadingProgress = {
+  65 |             storySlug,  react-hooks/set-state-in-effect
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\hooks\useTruyenMoiComic.ts
+  34:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\search-engine.ts
+  2:43  warning  'Genre' is defined but never used  @typescript-eslint/no-unused-vars
+
+C:\Users\QuangMinh\OneDrive - Kinal Games\Documents\Like\m-truyen\src\lib\types.ts
+  182:13  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+鉁?107 problems (42 errors, 65 warnings)
+

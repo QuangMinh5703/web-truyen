@@ -60,9 +60,10 @@ const Navbar = ({ className }: NavbarProps) => {
 
     // Close mobile menu on route change
     useEffect(() => {
-        setIsMobileMenuOpen(false);
-        setIsGenreOpen(false);
-        setIsSearchModalOpen(false);
+        // We only reset if they were truthy to avoid unnecessary re-renders
+        setIsMobileMenuOpen(prev => prev ? false : prev);
+        setIsGenreOpen(prev => prev ? false : prev);
+        setIsSearchModalOpen(prev => prev ? false : prev);
     }, [pathname]);
 
     const handleSearch = () => {
@@ -87,7 +88,7 @@ const Navbar = ({ className }: NavbarProps) => {
                         {!isDesktop && (
                             <button
                                 onClick={() => setIsMobileMenuOpen(true)}
-                                className="p-1.5 text-white hover:bg-white/10 rounded-md transition-colors"
+                                className="flex items-center justify-center w-11 h-11 text-white hover:bg-white/10 rounded-xl transition-colors"
                                 aria-label="Open menu"
                             >
                                 <Menu className="w-7 h-7" />
@@ -196,7 +197,7 @@ const Navbar = ({ className }: NavbarProps) => {
                         {!isDesktop && (
                             <button
                                 onClick={() => setIsSearchModalOpen(true)}
-                                className="p-2 text-white hover:bg-white/10 rounded-full transition-colors"
+                                className="flex items-center justify-center w-11 h-11 text-white hover:bg-white/10 rounded-full transition-colors"
                                 aria-label="Search"
                             >
                                 <Search className="w-6 h-6 hover:text-lime-400" />
@@ -233,7 +234,11 @@ const Navbar = ({ className }: NavbarProps) => {
                                 ></div>
                                 <span className="ml-3 font-lexend-exa font-bold text-lg text-gradient">M-TRUYEN</span>
                             </Link>
-                            <button onClick={() => setIsMobileMenuOpen(false)} className="p-1.5 text-gray-400 hover:text-white">
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="flex items-center justify-center w-11 h-11 text-gray-400 hover:text-white rounded-full hover:bg-white/5"
+                                aria-label="Close menu"
+                            >
                                 <X className="w-7 h-7" />
                             </button>
                         </div>
@@ -260,7 +265,7 @@ const Navbar = ({ className }: NavbarProps) => {
                                         <Link
                                             key={index}
                                             href={`/the-loai/${genre.toLowerCase().replace(/\s+/g, '-')}`}
-                                            className="px-4 py-3 text-[14px] text-white/70 hover:text-white hover:bg-white/5 rounded-lg font-lexend-exa transition-colors"
+                                            className="flex items-center px-4 py-4 min-h-[44px] text-[14px] text-white/70 hover:text-white hover:bg-white/5 rounded-lg font-lexend-exa transition-colors"
                                             onClick={() => setIsMobileMenuOpen(false)}
                                         >
                                             {genre}

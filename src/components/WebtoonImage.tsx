@@ -27,13 +27,10 @@ export function WebtoonImage({ src, alt, index, onHeightMeasured, priority = fal
   // Create a derived image source that changes on each retry attempt to bypass cache
   const imageSrc = `${src}?retry=${retryCount}`;
 
-  // Reset states when the original src changes
-  useEffect(() => {
-    setIsLoading(true);
-    setHasError(false);
-    setNaturalHeight(0);
-    setRetryCount(0); // Reset retry count on src change
-  }, [src]);
+  // No longer using reset effect here. 
+  // IMPORTANT: The parent component SHOULD use 'key={src}' on WebtoonImage 
+  // to ensure a clean remount when the source changes, which is the 
+  // standard React pattern for resetting state on prop change.
 
   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;

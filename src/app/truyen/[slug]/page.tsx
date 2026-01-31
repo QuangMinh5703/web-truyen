@@ -9,6 +9,7 @@ import { useInView } from 'react-intersection-observer';
 import { otruyenApi, Story, ApiChapter, getImageUrl, UiChapter } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
 import { useViewTracking } from '@/lib/hooks/useViewTracking';
 
 // Helper to extract chapter ID from a full API URL
@@ -165,16 +166,13 @@ const StoryDetailPage = () => {
 
   if (error || !story) {
     return (
-      <div className="min-h-screen --background">
+      <div className="min-h-screen --background flex flex-col">
         <Navbar />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Lỗi</h1>
-            <p className="text-gray-600 mb-4">{error || 'Không tìm thấy truyện'}</p>
-            <Link href="/" className="text-blue-600 hover:underline">
-              ← Quay lại trang chủ
-            </Link>
-          </div>
+        <main className="flex-1 flex items-center justify-center p-8">
+          <ErrorDisplay
+            message={error || 'Không tìm thấy truyện'}
+            onRetry={() => window.location.reload()}
+          />
         </main>
         <FooterComponent />
       </div>

@@ -1,11 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import {useState, useEffect, useRef} from 'react';
 import { otruyenApi, Story } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
-
-import { useResponsive } from '@/lib/hooks/useMediaQuery';
 
 const localBanners = [
     '/ig_banner/banner1.jpg',
@@ -36,24 +34,29 @@ const HeroBanner = () => {
     const [bannerImages, setBannerImages] = useState<string[]>([]);
     const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
-    const { isMobile, isDesktop } = useResponsive();
 
     useEffect(() => {
         const shuffledBanners = shuffleArray(localBanners);
         setBannerImages(shuffledBanners);
+        console.log('[HeroBanner] Banners shuffled:', shuffledBanners);
     }, []);
 
     useEffect(() => {
         const fetchPopularStories = async () => {
             try {
                 setLoading(true);
+                console.log('[HeroBanner] Fetching home stories...');
                 const listResponse = await otruyenApi.getHomeStories({
                     page: 1,
-                    limit: 6,
+                    limit: 5,
                 });
+
+                console.log('[HeroBanner] Response received:', listResponse);
 
                 if (listResponse && listResponse.items) {
                     setStories(listResponse.items);
+                } else {
+                    console.warn('[HeroBanner] No stories found in response');
                 }
             } catch (error) {
                 console.error('[HeroBanner] Error fetching popular stories:', error);
@@ -97,25 +100,21 @@ const HeroBanner = () => {
 
     if (loading) {
         return (
-            <div className="mb-8 md:mb-12">
-                <div
-                    className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl bg-gray-901 animate-pulse border border-white/5">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 lg:p-16">
-                        <div className="space-y-4">
-                            <div className="h-4 bg-gray-800 rounded w-1/4"></div>
-                            <div className="h-10 md:h-12 bg-gray-800 rounded w-3/4"></div>
-                            <div className="h-6 bg-gray-800 rounded w-1/2 opacity-70"></div>
-                            <div className="h-12 md:h-14 bg-gray-800 rounded w-40 mt-4"></div>
-                        </div>
-                    </div>
-                </div>
+            <div
+                className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-[var(--herobanner-height)] rounded-2xl overflow-hidden mb-12 shadow-2xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center">
+                <div className="text-white text-xl">Đang tải...</div>
             </div>
         );
     }
 
-    if (stories.length === 0) return null;
-
+    if (stories.length === 0) {
+        return (
+            <div
+                className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-[var(--herobanner-height)] rounded-2xl overflow-hidden mb-12 shadow-2xl bg-gradient-to-r from-purple-600 to-indigo-600 flex items-center justify-center">
+                <div className="text-white text-xl">Không có dữ liệu</div>
+            </div>
+        );
+    }
     const currentStory = stories[currentSlide];
     const storyId = currentStory._id || currentStory.id || '';
     const storySlug = currentStory.slug || storyId;
@@ -123,9 +122,9 @@ const HeroBanner = () => {
     const imageUrl = bannerImages[currentSlide % bannerImages.length] || bannerImages[0];
 
     return (
-        <div className="mb-8 md:mb-12">
+        <div className="mb-12">
             <div
-                className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl">
+                className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-[var(--herobanner-height)] overflow-hidden shadow-2xl">
 
                 {/* Background slide */}
                 <div
@@ -133,44 +132,43 @@ const HeroBanner = () => {
                     className="absolute inset-0 transition-opacity duration-1000 opacity-100"
                 >
                     {/* Background image */}
-                    <div className="absolute inset-0 w-full h-full">
-                        <Image
-                            src={imageUrl}
-                            alt={storyTitle}
-                            fill
-                            className="object-cover object-center"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1300px"
-                            quality={90}
-                            priority={true}
-                        />
-                        <div
-                            className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                    </div>
+                        <div className="absolute inset-0 w-full h-full">
+                            <Image
+                                src={imageUrl}
+                                alt={storyTitle}
+                                fill
+                                className="object-cover object-center"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, var(--herobanner-width)"
+                                quality={95}
+                                priority={true}
+                                unoptimized={false}
+                            />
+                            <div
+                                className="absolute bottom-0 left-0 right-0 h-1/4 bg-gradient-to-t from-black via-black/70 to-transparent"></div>
+                        </div>
 
                     {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 lg:p-16">
-                        <div className="text-white max-w-4xl animate-fade-in">
-                            <p className="herobanner-description-text mb-2 opacity-90 drop-shadow-md">
+                    <div className="absolute bottom-20 left-0 right-0 p-8 md:p-12 lg:p-16 pl-12 md:pl-16 lg:pl-20">
+                        <div className="text-white max-w-4xl">
+                            <p className="herobanner-description-text">
                                 {currentStory.category && Array.isArray(currentStory.category) && currentStory.category.length > 0
-                                    ? currentStory.category.map(category => category.name).slice(0, 3).join(' | ')
+                                    ? currentStory.category.map(category => category.name).join(' | ')
                                     : 'Thể loại đang được cập nhật.'
                                 }
                             </p>
-                            <h1 className="black-ops-one-text mb-4 md:mb-6 line-clamp-2 drop-shadow-lg">
+                            <h1 className="black-ops-one-text mb-6 animate-fade-in drop-shadow-lg">
                                 {storyTitle}
                             </h1>
                             {storySlug && (
-                                <div className="mt-2 md:mt-4">
-                                    <Link href={`/truyen/${storySlug}`} className="inline-block group">
-                                        <div className="relative overflow-hidden rounded-lg">
-                                            <Image
-                                                src="/read_now.svg"
-                                                alt="Đọc ngay"
-                                                width={isMobile ? 120 : 157}
-                                                height={isMobile ? 45 : 59}
-                                                className="cursor-pointer group-hover:scale-105 transition-transform duration-200"
-                                            />
-                                        </div>
+                                <div className=" mt-[10px]">
+                                    <Link href={`/truyen/${storySlug}`}>
+                                        <Image
+                                            src="/read_now.svg"
+                                            alt="Đọc ngay"
+                                            width={157}
+                                            height={59}
+                                            className="cursor-pointer hover:scale-105 transition-transform duration-200"
+                                        />
                                     </Link>
                                 </div>
                             )}
@@ -179,9 +177,19 @@ const HeroBanner = () => {
                 </div>
             </div>
 
-            <div className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-8">
+            <div className="relative w-full max-w-[var(--herobanner-width)] mx-auto h-8">
+                {/* Indicators */}
                 <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-[300px] px-4 z-20">
                     <div className="relative">
+                        {/* Fade overlay left */}
+                        <div
+                            className="absolute left-0 top-0 bottom-0 w-6  from-black/50 to-transparent z-10 pointer-events-none rounded-l"/>
+
+                        {/* Fade overlay right */}
+                        <div
+                            className="absolute right-0 top-0 bottom-0 w-6  from-black/50 to-transparent z-10 pointer-events-none rounded-r"/>
+
+                        {/* Scrollable indicators */}
                         <div
                             ref={scrollContainerRef}
                             className="flex space-x-1.5 overflow-x-auto scrollbar-hide px-6"
@@ -198,11 +206,11 @@ const HeroBanner = () => {
                                         buttonRefs.current[index] = el;
                                     }}
                                     onClick={() => setCurrentSlide(index)}
-                                    className={`parallelogram-indicator transition-all duration-300 flex-shrink-0 ${index === currentSlide
-                                        ? 'bg-white w-8 h-3'
-                                        : 'bg-gray-400/50 hover:bg-gray-400/75 w-6 h-2'
-                                        }`}
-                                    aria-label={`Go to slide ${index + 1}`}
+                                    className={`parallelogram-indicator transition-all duration-300 flex-shrink-0 ${
+                                        index === currentSlide
+                                            ? 'bg-white w-8 h-3'
+                                            : 'bg-gray-400/50 hover:bg-gray-400/75 w-6 h-2'
+                                    }`}
                                 />
                             ))}
                         </div>

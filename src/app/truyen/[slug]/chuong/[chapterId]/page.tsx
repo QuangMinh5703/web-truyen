@@ -11,6 +11,7 @@ import FooterComponent from '@/components/FooterComponent';
 import ProgressBar from '@/components/ProgressBar';
 import { useInView } from 'react-intersection-observer';
 import { WebtoonImage } from '@/components/WebtoonImage';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
 
 import { ReaderControls } from '@/components/ReaderControls';
 
@@ -76,16 +77,14 @@ const ChapterPage = () => {
   const { chapter, allChapters, story, loading, error } = useChapterData(slug, chapterId);
   const { currentPage, progress, syncStatus, nextPage, prevPage, goToPage, setCurrentPage } = useReadingProgress(slug, chapterId, chapter);
 
-  const [isMounted, setIsMounted] = useState(false);
+  // No need for setIsMounted since we use dynamic with ssr: false for components that need window.
   const [isNavigating, setIsNavigating] = useState(false);
   const [isChapterNavOpen, setIsChapterNavOpen] = useState(false);
   const [imageHeights, setImageHeights] = useState<Record<number, number>>({});
   const [swipeOffset, setSwipeOffset] = useState(0);
   const isLoadingNextChapter = isNavigating;
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  // isMounted useEffect removed
 
   const { ref: infiniteScrollRef, inView: infiniteScrollInView } = useInView({
     triggerOnce: false,
@@ -228,16 +227,13 @@ const ChapterPage = () => {
 
   if (error || !chapter) {
     return (
-      <div className="min-h-screen --background">
+      <div className="min-h-screen --background flex flex-col">
         <Navbar />
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Lỗi</h1>
-            <p className="text-gray-600 mb-4">{error || 'Không tìm thấy chương'}</p>
-            <Link href={`/truyen/${slug}`} className="text-blue-600 hover:underline">
-              ← Quay lại truyện
-            </Link>
-          </div>
+        <main className="flex-1 flex items-center justify-center p-8">
+          <ErrorDisplay
+            message={error || 'Không tìm thấy chương'}
+            onRetry={() => window.location.reload()}
+          />
         </main>
         <FooterComponent />
       </div>
@@ -367,7 +363,7 @@ const ChapterPage = () => {
             {...bind()}
           >
             {readerMode === 'single' ? (
-              isMounted && currentImageUrl ? (
+              currentImageUrl ? (
                 <DynamicTransformWrapper key={currentImageUrl}>
                   <DynamicTransformComponent>
                     <div
@@ -426,7 +422,7 @@ const ChapterPage = () => {
                   const imageUrl = getImageUrl(imagePath);
                   return (
                     <WebtoonImage
-                      key={`${chapterId}-${index}`}
+                      key={`${chapterId}-${index}-${imageUrl}`}
                       src={imageUrl}
                       alt={`Trang ${index + 1} - ${story?.name} Chương ${chapter.name ?? chapterId}`}
                       index={index}
@@ -455,7 +451,7 @@ const ChapterPage = () => {
                   <div key={index} className="relative flex-shrink-0">
                     <button
                       onClick={() => goToPage(index)}
-                      className={`w-9 h-9 rounded-xl text-xs font-bold transition-all border ${index === currentPage
+                      className={`w-11 h-11 rounded-xl text-xs font-bold transition-all border ${index === currentPage
                         ? 'bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(168,227,0,0.3)]'
                         : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/20 hover:text-white'
                         }`}
@@ -474,7 +470,7 @@ const ChapterPage = () => {
               <button
                 onClick={debouncedPrevPage}
                 disabled={currentPage === 0 || isNavigating}
-                className={`px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${currentPage === 0
+                className={`px-4 md:px-6 py-3.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${currentPage === 0
                   ? 'bg-white/5 text-gray-600 cursor-not-allowed'
                   : 'bg-white/10 text-white hover:bg-white/20'
                   }`}
@@ -484,7 +480,7 @@ const ChapterPage = () => {
 
               <Link
                 href={`/truyen/${slug}`}
-                className="px-4 md:px-6 py-2.5 bg-white/5 text-gray-400 rounded-xl hover:bg-white/10 text-xs md:text-sm font-bold uppercase tracking-widest transition-all"
+                className="px-4 md:px-6 py-3.5 bg-white/5 text-gray-400 rounded-xl hover:bg-white/10 text-xs md:text-sm font-bold uppercase tracking-widest transition-all"
               >
                 MỤC LỤC
               </Link>
@@ -492,7 +488,7 @@ const ChapterPage = () => {
               <button
                 onClick={debouncedHandleNextPage}
                 disabled={(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1) || isNavigating}
-                className={`px-4 md:px-6 py-2.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
+                className={`px-4 md:px-6 py-3.5 rounded-xl text-xs md:text-sm font-bold uppercase tracking-widest transition-all ${(currentPage === ((chapter.images?.length || 0) - 1) && allChapters.findIndex(ch => ch.id === chapterId) === allChapters.length - 1)
                   ? 'bg-white/5 text-gray-600 cursor-not-allowed'
                   : 'bg-lime-500 text-black hover:bg-lime-400'
                   }`}

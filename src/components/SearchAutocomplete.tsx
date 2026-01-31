@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { otruyenApi, Story } from '@/lib/api';
 import { API_CONFIG } from '@/lib/api-config';
@@ -74,12 +75,12 @@ export default function SearchAutocomplete({
         e.preventDefault();
         setSelectedIndex(prev => (prev < totalItems - 1 ? prev + 1 : prev));
         break;
-      
+
       case 'ArrowUp':
         e.preventDefault();
         setSelectedIndex(prev => (prev > 0 ? prev - 1 : 0));
         break;
-      
+
       case 'Enter':
         e.preventDefault();
         if (selectedIndex === -1) {
@@ -92,7 +93,7 @@ export default function SearchAutocomplete({
           setIsOpen(false);
         }
         break;
-      
+
       case 'Escape':
         e.preventDefault();
         setIsOpen(false);
@@ -109,14 +110,14 @@ export default function SearchAutocomplete({
     SearchHistory.add(trimmedQuery);
     setIsOpen(false);
     setQuery('');
-    
+
     if (onSelect) {
       onSelect(trimmedQuery);
     } else {
       router.push(`/tim-kiem?q=${encodeURIComponent(trimmedQuery)}`);
     }
   };
-  
+
   // Click outside to close
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -138,26 +139,26 @@ export default function SearchAutocomplete({
   return (
     <div className={`relative ${className}`}>
       <div className="relative">
-         <input
-              ref={inputRef}
-              type="text"
-              placeholder="Tìm kiếm..."
-              value={query}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              onFocus={() => setIsOpen(true)}
-              className="w-full h-10 p-2 pl-4 pr-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-              onClick={() => handleSearch(query)}
-              className="absolute right-0 top-0 h-10 px-3 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-blue-500"
-          >
-              {isLoading ? (
-                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              )}
-          </button>
+        <input
+          ref={inputRef}
+          type="text"
+          placeholder="Tìm kiếm..."
+          value={query}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          onFocus={() => setIsOpen(true)}
+          className="w-full h-10 p-2 pl-4 pr-10 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={() => handleSearch(query)}
+          className="absolute right-0 top-0 h-10 px-3 flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-blue-500"
+        >
+          {isLoading ? (
+            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          )}
+        </button>
       </div>
 
       {(showHistory || showSuggestions) && (
@@ -184,7 +185,7 @@ export default function SearchAutocomplete({
                   className={`w-full text-left px-3 py-2 rounded text-gray-800 dark:text-gray-300 ${selectedIndex === index ? 'bg-gray-100 dark:bg-gray-700' : ''}`}
                 >
                   <div className="flex items-center gap-2">
-                     <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     <span>{item}</span>
                   </div>
                 </button>
@@ -217,7 +218,7 @@ export default function SearchAutocomplete({
                       <p className="text-sm font-medium truncate text-gray-900 dark:text-white">
                         {story.name}
                       </p>
-                       <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                         {story.author?.join(', ')}
                       </p>
                     </div>

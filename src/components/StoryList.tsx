@@ -38,12 +38,12 @@ const StoryList = ({ title, type = 'hoan-thanh', limit = 10 }: StoryListProps) =
         <h2 className="title-main">
           {title}
         </h2>
-        <Link href={`/${type}`} className="hover:scale-105 transition-transform active:scale-95">
+        <Link href={`/${type}`} className="flex items-center justify-center min-w-[90px] min-h-[44px] hover:scale-105 transition-transform active:scale-95">
           <Image
             src="/view_more.svg"
             alt="View more"
             width={116}
-            height={52}
+            height={44}
             className="cursor-pointer"
           />
         </Link>

@@ -3,7 +3,7 @@
  * @author Gemini
  * @see https://docs.otruyenapi.com/
  */
-import { getCache, setCache } from '@/lib/cache';
+import { getCache, setCache, removeCache, clearCache } from '@/lib/cache';
 import { API_CONFIG } from './api-config';
 
 const { BASE_URL, ENDPOINTS } = API_CONFIG;
@@ -85,7 +85,7 @@ export interface ApiResponse<T> {
     totalPages: number;
   };
   // Nếu API trả về trực tiếp array
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface SearchParams {
@@ -174,14 +174,14 @@ class OtruyenApi {
     options?: RequestInit,
   ): Promise<ApiResponse<T>> {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
-    
+
     // Do not return from cache if the request is specifically for non-cached data
     const cache_policy = options?.cache;
     if (cache_policy !== 'no-store') {
-        const cachedData = getCache<ApiResponse<T>>(url);
-        if (cachedData) {
-            return cachedData;
-        }
+      const cachedData = getCache(url);
+      if (cachedData) {
+        return cachedData;
+      }
     }
 
     try {
@@ -201,7 +201,7 @@ class OtruyenApi {
       }
 
       const data = await response.json();
-      
+
       // Extract and normalize pagination info from the diverse API responses
       const apiPagination = data.data?.params?.pagination;
       if (apiPagination) {
@@ -220,7 +220,7 @@ class OtruyenApi {
       } else {
         setCache(url, data);
       }
-      
+
       return data as ApiResponse<T>;
 
     } catch (error) {
@@ -241,7 +241,8 @@ class OtruyenApi {
    * @private
    */
   private extractSingleData<T>(response: ApiResponse<T>): T | undefined {
-    return (response.data as any)?.item;
+    const data = response.data as { item?: T } | undefined;
+    return data?.item;
   }
 
   /**
@@ -253,7 +254,8 @@ class OtruyenApi {
    */
   private extractListData<T>(response: ApiResponse<T[]>): ListResponse<T> | undefined {
     // The API returns lists in different properties, so we check multiple possibilities.
-    const items = (response.data as any)?.items || (response.data as any)?.stories || (Array.isArray(response.data) ? response.data : undefined);
+    const data = response.data as { items?: T[]; stories?: T[] } | T[] | undefined;
+    const items = (data as any)?.items || (data as any)?.stories || (Array.isArray(data) ? data : undefined);
     const pagination = response.pagination;
 
     if (items && pagination) {
@@ -271,13 +273,13 @@ class OtruyenApi {
    */
   async getHomeStories(params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
     const queryString = queryParams.toString();
     const endpoint = `${ENDPOINTS.HOME}${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await this.fetch<Story[]>(endpoint);
     return this.extractListData(response);
   }
@@ -295,13 +297,13 @@ class OtruyenApi {
     params?: { page?: number; limit?: number }
   ): Promise<ListResponse<Story> | undefined> {
     const queryParams = new URLSearchParams();
-    
+
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
     const queryString = queryParams.toString();
     const endpoint = `${ENDPOINTS.LIST}/${type}${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await this.fetch<Story[]>(endpoint);
     return this.extractListData(response);
   }
@@ -317,6 +319,16 @@ class OtruyenApi {
   }
 
   /**
+   * Fetches the detailed information for a single story by its slug.
+   * @param {string} slug - The story's unique slug.
+   * @returns {Promise<Story | undefined>} The story object or undefined if not found.
+   */
+  async getCategory(slug: string, params: SearchParams = {}): Promise<ApiResponse<Story[]>> {
+    const response = await this.fetch<Story>(`${ENDPOINTS.DETAIL}/${slug}`); // Removed 'options' as it's not in signature
+    return this.extractSingleData(response) as unknown as ApiResponse<Story[]>; // Cast to match return type
+  }
+
+  /**
    * Searches for stories based on a keyword.
    * @param {string} keyword - The search term.
    * @param {object} [params] - Optional parameters.
@@ -327,13 +339,13 @@ class OtruyenApi {
   async searchStories(keyword: string, params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     const queryParams = new URLSearchParams();
     queryParams.append('keyword', keyword);
-    
+
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
     const queryString = queryParams.toString();
     const endpoint = `${ENDPOINTS.SEARCH}?${queryString}`;
-    
+
     const response = await this.fetch<Story[]>(endpoint);
     return this.extractListData(response);
   }
@@ -357,22 +369,22 @@ class OtruyenApi {
    */
   async getChapterByUrl(chapterApiUrl: string, options?: RequestInit): Promise<Chapter | undefined> {
     if (!chapterApiUrl) {
-        console.error("[API] getChapterByUrl received an empty URL.");
-        return undefined;
+      console.error("[API] getChapterByUrl received an empty URL.");
+      return undefined;
     }
-    const response = await this.fetch<any>(chapterApiUrl, options); // Fetch as any to handle raw structure
+    const response = await this.fetch<unknown>(chapterApiUrl, options); // Fetch as unknown to handle raw structure
     const rawData = this.extractSingleData(response);
-    const domainCdn = response.data?.domain_cdn;
+    const domainCdn = (response.data as { domain_cdn?: string })?.domain_cdn;
 
     if (rawData && domainCdn) {
       // Transform the raw data to match the application's Chapter type
       const chapter: Chapter = {
-        id: rawData._id,
-        _id: rawData._id,
-        name: rawData.chapter_name,
-        title: rawData.chapter_title,
-        images: rawData.chapter_image.map(
-          (img: { image_file: string }) => `${domainCdn}/${rawData.chapter_path}/${img.image_file}`
+        id: (rawData as { _id: string })._id,
+        _id: (rawData as { _id: string })._id,
+        name: (rawData as { chapter_name: string }).chapter_name,
+        title: (rawData as { chapter_title: string }).chapter_title,
+        images: (rawData as { chapter_image: { image_file: string }[]; chapter_path: string }).chapter_image.map(
+          (img: { image_file: string }) => `${domainCdn}/${(rawData as { chapter_path: string }).chapter_path}/${img.image_file}`
         ),
       };
       return chapter;
@@ -380,73 +392,63 @@ class OtruyenApi {
 
     return undefined;
   }
-  
+
   /**
    * Fetches the list of all available genres.
-   * @returns {Promise<ListResponse<Genre> | undefined>} A list of genres with pagination.
+   * @returns {Promise<Genre[] | undefined>} A list of genres.
    */
-  async getGenres(): Promise<ListResponse<Genre> | undefined> {
-    const response = await this.fetch<any>(ENDPOINTS.CATEGORY); // Fetched as any to inspect structure
-
-    // The API might return an object with an 'items' property, or a raw array.
-    const items = response.items || (Array.isArray(response) ? response : undefined);
-
-    if (Array.isArray(items)) {
-      // Create a default pagination object as this endpoint likely doesn't have one.
-      const pagination = response.pagination ?? { page: 1, limit: items.length, total: items.length, totalPages: 1 };
-      return { items, pagination };
-    }
-
-    console.warn("[API] getGenres response was not in the expected format (array or {items: array}).", response);
-    return undefined;
+  async getGenres(): Promise<Genre[] | undefined> {
+    const response = await this.fetch<unknown>(ENDPOINTS.CATEGORY);
+    const items = (response as { items?: Genre[] }).items || (Array.isArray(response) ? response : undefined);
+    return items as Genre[];
   }
 
   /**
-   * Fetches a list of stories belonging to a specific genre.
+   * Fetches data for the home page (v1).
+   * @returns {Promise<ApiResponse<Story[]>>}
+   */
+  async getAppHomeV1(): Promise<ApiResponse<Story[]>> {
+    const response = await this.fetch<unknown>(ENDPOINTS.HOME);
+    return response as ApiResponse<Story[]>;
+  }
+
+  /**
+   * Fetches stories belonging to a specific genre.
    * @param {string} genreSlug - The slug of the genre.
    * @param {object} [params] - Optional parameters for pagination.
-   * @param {number} [params.page] - The page number to fetch.
-   * @param {number} [params.limit] - The number of items per page.
-   * @returns {Promise<ListResponse<Story> | undefined>} A list of stories in that genre with pagination.
+   * @returns {Promise<ListResponse<Story> | undefined>}
    */
   async getStoriesByGenre(genreSlug: string, params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     const queryParams = new URLSearchParams();
-    
     if (params?.page) queryParams.append('page', params.page.toString());
     if (params?.limit) queryParams.append('limit', params.limit.toString());
 
     const queryString = queryParams.toString();
     const endpoint = `${ENDPOINTS.CATEGORY}/${genreSlug}${queryString ? `?${queryString}` : ''}`;
-    
+
     const response = await this.fetch<Story[]>(endpoint);
     return this.extractListData(response);
   }
 
-  /**
-   * Fetches newly updated stories. Alias for `getStoriesByType('truyen-moi')`.
-   * @param {object} [params] - Optional pagination parameters.
-   * @returns {Promise<ListResponse<Story> | undefined>} A list of stories.
-   */
   async getLatestStories(params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     return this.getStoriesByType('truyen-moi', params);
   }
 
-  /**
-   * Fetches stories that are currently being released. Alias for `getStoriesByType('dang-phat-hanh')`.
-   * @param {object} [params] - Optional pagination parameters.
-   * @returns {Promise<ListResponse<Story> | undefined>} A list of stories.
-   */
   async getOngoingStories(params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     return this.getStoriesByType('dang-phat-hanh', params);
   }
 
-  /**
-   * Fetches stories that are completed. Alias for `getStoriesByType('hoan-thanh')`.
-   * @param {object} [params] - Optional pagination parameters.
-   * @returns {Promise<ListResponse<Story> | undefined>} A list of stories.
-   */
   async getCompletedStories(params?: { page?: number; limit?: number }): Promise<ListResponse<Story> | undefined> {
     return this.getStoriesByType('hoan-thanh', params);
+  }
+
+  invalidateCache(endpoint: string): void {
+    const url = endpoint.startsWith('http') ? endpoint : `${this.baseUrl}${endpoint}`;
+    removeCache(url);
+  }
+
+  clearAllCache(): void {
+    clearCache();
   }
 }
 

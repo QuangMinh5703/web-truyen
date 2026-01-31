@@ -97,19 +97,8 @@ const HeroBanner = () => {
 
     if (loading) {
         return (
-            <div className="mb-8 md:mb-12">
-                <div
-                    className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl bg-gray-901 animate-pulse border border-white/5">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 lg:p-16">
-                        <div className="space-y-4">
-                            <div className="h-4 bg-gray-800 rounded w-1/4"></div>
-                            <div className="h-10 md:h-12 bg-gray-800 rounded w-3/4"></div>
-                            <div className="h-6 bg-gray-800 rounded w-1/2 opacity-70"></div>
-                            <div className="h-12 md:h-14 bg-gray-800 rounded w-40 mt-4"></div>
-                        </div>
-                    </div>
-                </div>
+            <div
+                className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] rounded-2xl overflow-hidden mb-8 md:mb-12 shadow-2xl bg-gray-900 animate-pulse flex items-center justify-center">
             </div>
         );
     }
@@ -202,7 +191,6 @@ const HeroBanner = () => {
                                         ? 'bg-white w-8 h-3'
                                         : 'bg-gray-400/50 hover:bg-gray-400/75 w-6 h-2'
                                         }`}
-                                    aria-label={`Go to slide ${index + 1}`}
                                 />
                             ))}
                         </div>

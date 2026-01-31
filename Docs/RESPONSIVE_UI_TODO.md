@@ -233,35 +233,39 @@
 
 ---
 
-## 🔍 PHASE 10: Search & Other Pages (Priority: LOW)
-
+## ✅ PHASE 10: Search & Other Pages (Priority: LOW)
+[DONE]
 ### 10.1 Search Page (`/tim-kiem`)
-- [ ] `SearchFiltersPanel.tsx` responsive
-- [ ] `SearchAutocomplete.tsx` responsive
-- [ ] `SearchSortBar.tsx` responsive
+- [x] `SearchFiltersPanel.tsx` responsive
+- [x] `SearchAutocomplete.tsx` responsive
+- [x] `SearchSortBar.tsx` responsive
 
 ### 10.2 Genre Page (`/the-loai/[slug]`)
-- [ ] Review layout responsive
+- [x] Review layout responsive
 
 ### 10.3 Ranking Page (`/xep-hang`)
-- [ ] Review layout responsive
+- [x] Review layout responsive
 
 ---
 
 ## 🎯 PHASE 11: Global UI Polish (Priority: MEDIUM)
 
 ### 11.1 Touch Targets
-- [ ] Audit tất cả buttons/links cho minimum 44×44px trên mobile
+- [x] Standardized Navbar mobile buttons (44px)
+- [x] Standardized ReaderControls mobile buttons (44px)
+- [x] Audit all story cards and pagination buttons for 44px touch targets
 
 ### 11.2 Loading States
-- [ ] Đảm bảo skeletons responsive
+- [x] Verified Skeletons in Genre/Ranking pages
+- [x] Implement responsive skeleton height for HeroBanner
 
 ### 11.3 Error States
-- [ ] Đảm bảo error messages hiển thị tốt trên mobile
+- [x] Standardize Error UI with brand colors and responsive layout across all pages
 
 ### 11.4 Scroll Behavior
-- [ ] `scrollbar-hide` utility đồng bộ
-- [ ] Horizontal scroll containers cần snap behavior
+- [x] Added `snap-x` utilities in `globals.css`
+- [x] Apply `snap-x` to `RecentUpdates.tsx` and horizontal carousels
+- [x] Fixed `scrollbar-hide` standardization
 
 ---
 
@@ -339,8 +343,8 @@
 - [x] PHASE 8: Footer Component ✅
 
 ### Sprint 3 (Tuần 3) - Pages & Polish
-- [ ] PHASE 9: Story Detail & Reader Pages
-- [ ] PHASE 10: Search & Other Pages
+- [x] PHASE 9: Story Detail & Reader Pages ✅
+- [x] PHASE 10: Search & Other Pages ✅
 - [ ] PHASE 11: Global UI Polish
 
 ### Sprint 4 (Tuần 4) - Testing & Finalize

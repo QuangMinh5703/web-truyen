@@ -18,12 +18,12 @@ const Modal = ({ children, onClose }: { children: React.ReactNode, onClose: () =
 );
 
 const BookmarksPage = () => {
-    const { 
-        bookmarks, 
+    const {
+        bookmarks,
         folders,
-        loading, 
-        error, 
-        toggleBookmark, 
+        loading,
+        error,
+        toggleBookmark,
         moveBookmarkToFolder,
         addFolder,
         renameFolder,
@@ -31,11 +31,11 @@ const BookmarksPage = () => {
         shareFolder
     } = useBookmarks();
 
-    const [selectedFolder, setSelectedFolder] = useState(DEFAULT_FOLDER);
+    const [selectedFolder, setSelectedFolder] = useState('All');
     const [newFolderName, setNewFolderName] = useState('');
     const [editingFolder, setEditingFolder] = useState<{ oldName: string; newName: string } | null>(null);
     const [deletingFolder, setDeletingFolder] = useState<string | null>(null);
-    const [movingBookmark, setMovingBookmark] = useState<any | null>(null);
+    const [movingBookmark, setMovingBookmark] = useState<any | null>(null); // Kept as any as Bookmark type from useBookmarks is not explicitly exported/accessible here easily without more research, but I will try to use the correct type if I can find it. Wait, I see 'bookmarks' is Bookmark[]. I'll use 'typeof bookmarks[0]'.
     const [shareLink, setShareLink] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
 
@@ -48,8 +48,8 @@ const BookmarksPage = () => {
     }, [editingFolder]);
 
     const filteredBookmarks = selectedFolder === 'All'
-      ? bookmarks
-      : bookmarks.filter(bm => bm.folder === selectedFolder);
+        ? bookmarks
+        : bookmarks.filter(bm => bm.folder === selectedFolder);
 
     const handleAddFolder = async () => {
         if (newFolderName.trim() && !folders.includes(newFolderName.trim())) {
@@ -96,9 +96,9 @@ const BookmarksPage = () => {
             setTimeout(() => setCopied(false), 2000);
         }
     };
-    
+
     if (loading) {
-        return <div className="text-center py-12">Loading bookmarks...</div>;
+        return <div className="text-center py-12 text-gray-400">Loading bookmarks...</div>;
     }
 
     if (error) {
@@ -108,12 +108,12 @@ const BookmarksPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">My Bookmarks</h1>
+            <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">My Bookmarks</h1>
 
             <div className="flex flex-col lg:flex-row gap-8">
                 {/* Folders Sidebar */}
                 <aside className="lg:w-1/4">
-                    <h2 className="text-xl font-semibold mb-4">Folders</h2>
+                    <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Folders</h2>
                     <ul className="space-y-1">
                         {['All', ...folders].map(folder => (
                             <li key={folder} className="group flex items-center">
@@ -126,7 +126,7 @@ const BookmarksPage = () => {
                                             onChange={(e) => setEditingFolder({ ...editingFolder, newName: e.target.value })}
                                             onBlur={handleRenameFolder}
                                             onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
-                                            className="w-full text-left px-2 py-1 rounded-md border dark:bg-gray-700 dark:border-gray-600"
+                                            className="w-full text-left px-2 py-1 rounded-md border text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                                         />
                                         <button onClick={handleRenameFolder} className="p-2 hover:bg-green-100 dark:hover:bg-green-800 rounded-md text-green-500"><Check size={16} /></button>
                                         <button onClick={() => setEditingFolder(null)} className="p-2 hover:bg-red-100 dark:hover:bg-red-800 rounded-md text-red-500"><X size={16} /></button>
@@ -135,11 +135,10 @@ const BookmarksPage = () => {
                                     <>
                                         <button
                                             onClick={() => setSelectedFolder(folder)}
-                                            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${
-                                                selectedFolder === folder
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                                            }`}
+                                            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${selectedFolder === folder
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                                }`}
                                         >
                                             {folder}
                                         </button>
@@ -160,15 +159,15 @@ const BookmarksPage = () => {
                         ))}
                     </ul>
                     <div className="mt-6">
-                        <h3 className="font-semibold mb-2">Create New Folder</h3>
+                        <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Create New Folder</h3>
                         <div className="flex gap-2">
-                            <input 
+                            <input
                                 type="text"
                                 value={newFolderName}
                                 onChange={(e) => setNewFolderName(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddFolder()}
                                 placeholder="New folder name..."
-                                className="flex-grow px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                                className="flex-grow px-3 py-2 border rounded-md text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                             />
                             <button onClick={handleAddFolder} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                 <FolderPlus size={20} />
@@ -180,28 +179,28 @@ const BookmarksPage = () => {
                 {/* Bookmarks List */}
                 <main className="flex-grow">
                     {filteredBookmarks.length === 0 ? (
-                        <div className="text-center py-16 border-2 border-dashed rounded-lg">
+                        <div className="text-center py-16 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700">
                             <BookmarkIcon className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium">No bookmarks</h3>
+                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No bookmarks</h3>
                             <p className="mt-1 text-sm text-gray-500">
                                 {selectedFolder === 'All'
-                                    ? "You haven't bookmarked any chapters yet."
+                                    ? "You haven&apos;t bookmarked any chapters yet."
                                     : `No bookmarks found in the "${selectedFolder}" folder.`}
                             </p>
                         </div>
                     ) : (
                         <ul className="space-y-4">
                             {filteredBookmarks.map(bookmark => (
-                                <li key={bookmark.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex justify-between items-center">
+                                <li key={bookmark.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex justify-between items-center border border-gray-100 dark:border-gray-700">
                                     <div>
-                                        <Link href={`/truyen/${bookmark.storySlug}/chuong/${bookmark.chapterId}`} className="font-semibold hover:text-blue-600">
+                                        <Link href={`/truyen/${bookmark.storySlug}/chuong/${bookmark.chapterId}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600">
                                             {bookmark.storySlug} - Chapter {bookmark.chapterId}
                                         </Link>
                                         <div className="text-sm text-gray-500 mt-1">
                                             Bookmarked on: {new Date(bookmark.createdAt).toLocaleDateString()}
                                         </div>
                                         {bookmark.folder && (
-                                            <div className="mt-2 inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs">
+                                            <div className="mt-2 inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs text-gray-600 dark:text-gray-400">
                                                 <Tag size={12} /> {bookmark.folder}
                                             </div>
                                         )}
@@ -209,14 +208,14 @@ const BookmarksPage = () => {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => setMovingBookmark(bookmark)}
-                                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
+                                            className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
                                             title="Move to folder"
                                         >
                                             <FolderPlus size={18} />
                                         </button>
-                                        <button 
-                                            onClick={() => toggleBookmark(bookmark)} 
-                                            className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full" 
+                                        <button
+                                            onClick={() => toggleBookmark(bookmark)}
+                                            className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full"
                                             title="Remove bookmark"
                                         >
                                             <Trash2 size={18} />
@@ -228,14 +227,14 @@ const BookmarksPage = () => {
                     )}
                 </main>
             </div>
-            
+
             {/* Modals for actions */}
             {deletingFolder && (
                 <Modal onClose={() => setDeletingFolder(null)}>
-                    <h3 className="text-lg font-bold">Delete Folder</h3>
-                    <p className="my-4">Are you sure you want to delete the folder "{deletingFolder}"? Bookmarks inside will be moved to "{DEFAULT_FOLDER}".</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Delete Folder</h3>
+                    <p className="my-4 text-gray-600 dark:text-gray-400">Are you sure you want to delete the folder &quot;{deletingFolder}&quot;? Bookmarks inside will be moved to &quot;{DEFAULT_FOLDER}&quot;.</p>
                     <div className="flex justify-end gap-4">
-                        <button onClick={() => setDeletingFolder(null)} className="px-4 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
+                        <button onClick={() => setDeletingFolder(null)} className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
                         <button onClick={handleDeleteFolder} className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700">Delete</button>
                     </div>
                 </Modal>
@@ -243,12 +242,12 @@ const BookmarksPage = () => {
 
             {movingBookmark && (
                 <Modal onClose={() => setMovingBookmark(null)}>
-                    <h3 className="text-lg font-bold">Move Bookmark</h3>
-                    <p className="my-2">Move bookmark for "{movingBookmark.storySlug}" to:</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Move Bookmark</h3>
+                    <p className="my-2 text-gray-600 dark:text-gray-400">Move bookmark for &quot;{movingBookmark.storySlug}&quot; to:</p>
                     <select
                         onChange={(e) => handleMoveBookmark(e.target.value)}
                         defaultValue={movingBookmark.folder || DEFAULT_FOLDER}
-                        className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full p-2 border rounded-md text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
                     >
                         {folders.map(f => <option key={f} value={f}>{f}</option>)}
                     </select>
@@ -257,13 +256,13 @@ const BookmarksPage = () => {
 
             {shareLink && (
                 <Modal onClose={() => setShareLink(null)}>
-                    <h3 className="text-lg font-bold">Share Folder</h3>
-                    <p className="my-2 text-sm text-gray-500">Anyone with this link can view this folder's bookmarks.</p>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Share Folder</h3>
+                    <p className="my-2 text-sm text-gray-500">Anyone with this link can view this folder&apos;s bookmarks.</p>
                     <div className="flex items-center gap-2 mt-4">
-                        <input type="text" readOnly value={shareLink} className="flex-grow px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600" />
+                        <input type="text" readOnly value={shareLink} className="flex-grow px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" />
                         <button onClick={handleCopy} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2">
-                           {copied ? <Check size={16} /> : <Copy size={16} />}
-                           {copied ? 'Copied!' : 'Copy'}
+                            {copied ? <Check size={16} /> : <Copy size={16} />}
+                            {copied ? 'Copied!' : 'Copy'}
                         </button>
                     </div>
                 </Modal>

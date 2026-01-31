@@ -84,3 +84,5 @@ const storyCache = createCache<any>(STORY_CACHE_TTL);
 
 export const getCache = storyCache.get;
 export const setCache = storyCache.set;
+export const removeCache = storyCache.remove;
+export const clearCache = storyCache.clear;

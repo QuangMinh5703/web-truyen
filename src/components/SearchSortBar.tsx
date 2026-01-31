@@ -63,32 +63,33 @@ export default function SearchSortBar({
   const currentOption = SORT_OPTIONS.find(opt => opt.field === sort.field);
 
   return (
-    <div className={`flex items-center gap-2 ${className}`} ref={dropdownRef}>
-      <span className="text-sm text-gray-600 dark:text-gray-400 shrink-0">
-        Sắp xếp theo:
+    <div className={`flex items-center gap-3 ${className}`} ref={dropdownRef}>
+      <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 shrink-0">
+        Sắp xếp:
       </span>
-      
+
       {/* Sort Field Dropdown */}
       <div className="relative">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center justify-between w-48 gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          className="flex items-center justify-between w-44 gap-2 px-4 py-2.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 transition-all"
         >
-          <span className="text-gray-900 dark:text-white">{currentOption?.label}</span>
+          <span className="text-xs font-bold text-white uppercase tracking-widest">{currentOption?.label}</span>
           <svg className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
           </svg>
         </button>
 
         {isOpen && (
-          <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg z-10">
+          <div className="absolute top-full right-0 mt-2 w-48 bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 overflow-hidden">
             {SORT_OPTIONS.map(option => (
               <button
                 key={option.field}
                 onClick={() => handleSortChange(option.field)}
-                className={`w-full text-left px-4 py-2 text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                  sort.field === option.field ? 'font-bold bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300' : ''
-                }`}
+                className={`w-full text-left px-5 py-3 text-xs font-bold uppercase tracking-widest transition-all ${sort.field === option.field
+                    ? 'bg-lime-400 text-black'
+                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                  }`}
               >
                 {option.label}
               </button>
@@ -100,12 +101,12 @@ export default function SearchSortBar({
       {/* Order Toggle */}
       <button
         onClick={handleOrderToggle}
-        className="p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+        className="p-2.5 bg-white/5 border border-white/5 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-all active:scale-95"
         title={sort.order === 'desc' ? 'Sắp xếp giảm dần' : 'Sắp xếp tăng dần'}
       >
-        {sort.order === 'desc' 
-            ? <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3z" /></svg>
-            : <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3z" /></svg>
+        {sort.order === 'desc'
+          ? <svg className="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3z" /></svg>
+          : <svg className="w-5 h-5 transform rotate-180" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 000 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3zm0 4a1 1 0 100 2h14a1 1 0 100-2H3z" /></svg>
         }
       </button>
     </div>

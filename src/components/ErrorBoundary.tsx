@@ -7,6 +7,7 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  error?: Error;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -14,9 +15,9 @@ class ErrorBoundary extends Component<Props, State> {
     hasError: false
   };
 
-  public static getDerivedStateFromError(_: Error): State {
+  public static getDerivedStateFromError(error: Error): State {
     // Update state so the next render will show the fallback UI.
-    return { hasError: true };
+    return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
@@ -33,7 +34,9 @@ class ErrorBoundary extends Component<Props, State> {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-red-100 text-red-800 p-4">
           <h1 className="text-2xl font-bold mb-4">Oops! Something went wrong.</h1>
-          <p className="text-lg text-center mb-4">We're sorry for the inconvenience. Please try refreshing the page or navigating back.</p>
+          <p className="text-lg text-center mb-4">
+            Có lỗi xảy ra. Vui lòng làm mới trang hoặc quay lại sau. {this.state.error?.message && `(${this.state.error.message})`}
+          </p>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"

@@ -6,21 +6,24 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
     const [currentPage, setCurrentPage] = useState(0);
     const [progress, setProgress] = useState(0);
     const [syncStatus, setSyncStatus] = useState<SyncStatus>('idle');
-    
+
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     // Effect to fetch initial progress from local and "remote"
     useEffect(() => {
+        const controller = new AbortController();
         let isMounted = true;
-        
+
         const fetchInitialProgress = async () => {
             setSyncStatus('syncing');
             const localProgressStr = localStorage.getItem(`reading-progress-${chapterId}`);
             const localProgress = localProgressStr ? JSON.parse(localProgressStr) as ReadingProgress : null;
 
             try {
+                // Pass signal if the API supports it
                 const remoteProgress = await getReadingProgress(chapterId);
-                if (!isMounted) return;
+
+                if (!isMounted || controller.signal.aborted) return;
 
                 if (remoteProgress && (!localProgress || remoteProgress.lastRead > localProgress.lastRead)) {
                     // Remote is newer, use it
@@ -32,7 +35,7 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
                 }
                 setSyncStatus('synced');
             } catch (error) {
-                if (!isMounted) return;
+                if (!isMounted || controller.signal.aborted) return;
                 console.error("Failed to fetch remote progress:", error);
                 setSyncStatus('error');
                 // Fallback to local if remote fetch fails
@@ -46,6 +49,7 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
 
         return () => {
             isMounted = false;
+            controller.abort();
         };
     }, [chapterId]);
 
@@ -74,14 +78,20 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
             clearTimeout(debounceTimeout.current);
         }
 
+        const controller = new AbortController();
+
         setSyncStatus('syncing');
         debounceTimeout.current = setTimeout(async () => {
             try {
                 await saveReadingProgress(chapterId, progressData);
-                setSyncStatus('synced');
+                if (!controller.signal.aborted) {
+                    setSyncStatus('synced');
+                }
             } catch (error) {
-                console.error("Failed to save progress:", error);
-                setSyncStatus('error');
+                if (!controller.signal.aborted) {
+                    console.error("Failed to save progress:", error);
+                    setSyncStatus('error');
+                }
             }
         }, 2000); // Debounce for 2 seconds
 
@@ -90,6 +100,7 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
             if (debounceTimeout.current) {
                 clearTimeout(debounceTimeout.current);
             }
+            controller.abort();
         };
     }, [currentPage, chapter, chapterId, storySlug]);
 
@@ -113,13 +124,13 @@ export const useReadingProgress = (storySlug: string, chapterId: string, chapter
         }
     }, [chapter]);
 
-    return { 
-        currentPage, 
-        progress, 
+    return {
+        currentPage,
+        progress,
         syncStatus,
-        nextPage, 
-        prevPage, 
-        goToPage, 
-        setCurrentPage 
+        nextPage,
+        prevPage,
+        goToPage,
+        setCurrentPage
     };
 }

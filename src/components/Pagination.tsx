@@ -1,7 +1,7 @@
-// src/components/Pagination.tsx
 'use client';
 
 import React from 'react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 interface PaginationProps {
   currentPage: number;
@@ -20,97 +20,112 @@ const Pagination: React.FC<PaginationProps> = ({
     return null;
   }
 
-  const handlePrevious = () => {
-    if (currentPage > 1) {
-      onPageChange(currentPage - 1);
-    }
-  };
+  const generatePageNumbers = () => {
+    const pageNumbers: (number | string)[] = [];
+    const maxPagesToShow = 3; // Number of page buttons to show near current page
 
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      onPageChange(currentPage + 1);
-    }
-  };
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
 
-  const renderPageNumbers = () => {
-    const pages = [];
-    const maxPagesToShow = 5;
-    const halfMaxPages = Math.floor(maxPagesToShow / 2);
-    
-    let startPage = Math.max(1, currentPage - halfMaxPages);
-    let endPage = Math.min(totalPages, currentPage + halfMaxPages);
-
-    if (currentPage - 1 <= halfMaxPages) {
-      endPage = Math.min(totalPages, maxPagesToShow);
+    if (currentPage <= 3) {
+      endPage = Math.min(totalPages - 1, 4);
+    } else if (currentPage >= totalPages - 2) {
+      startPage = Math.max(2, totalPages - 3);
     }
 
-    if (totalPages - currentPage <= halfMaxPages) {
-      startPage = Math.max(1, totalPages - maxPagesToShow + 1);
-    }
-    
-    if (startPage > 1) {
-      pages.push(
-        <button key={1} onClick={() => onPageChange(1)} className="px-4 py-2 mx-1 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
-          1
-        </button>
-      );
-      if (startPage > 2) {
-        pages.push(<span key="start-ellipsis" className="px-4 py-2 mx-1">...</span>);
-      }
+    // Always add first page
+    pageNumbers.push(1);
+
+    if (startPage > 2) {
+      pageNumbers.push('...');
     }
 
     for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => onPageChange(i)}
-          className={`px-4 py-2 mx-1 rounded-md ${
-            i === currentPage
-              ? 'bg-blue-600 text-white'
-              : 'text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700'
-          }`}
-        >
-          {i}
-        </button>
-      );
-    }
-
-    if (endPage < totalPages) {
-      if (endPage < totalPages - 1) {
-        pages.push(<span key="end-ellipsis" className="px-4 py-2 mx-1">...</span>);
+      if (i > 1 && i < totalPages) {
+        pageNumbers.push(i);
       }
-      pages.push(
-        <button key={totalPages} onClick={() => onPageChange(totalPages)} className="px-4 py-2 mx-1 rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700">
-          {totalPages}
-        </button>
-      );
     }
 
-    return pages;
-  }
+    if (endPage < totalPages - 1) {
+      pageNumbers.push('...');
+    }
+
+    // Always add last page if totalPages > 1
+    if (totalPages > 1) {
+      pageNumbers.push(totalPages);
+    }
+
+    return pageNumbers;
+  };
+
+  const pageNumbers = generatePageNumbers();
 
   return (
-    <div className={`flex justify-center items-center mt-8 ${className}`}>
-      <button
-        onClick={handlePrevious}
-        disabled={currentPage === 1}
-        className="px-4 py-2 mx-1 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Trang trước
-      </button>
-
-      <div className="hidden md:flex">
-        {renderPageNumbers()}
+    <nav className={`flex flex-col sm:flex-row items-center justify-center gap-4 mt-12 py-8 border-t border-white/5 ${className}`}>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPageChange(1)}
+          disabled={currentPage === 1}
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 text-gray-400 disabled:opacity-20 hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-90"
+          title="Trang đầu"
+        >
+          <ChevronsLeft size={18} />
+        </button>
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 text-gray-400 disabled:opacity-20 hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-90"
+          title="Trang trước"
+        >
+          <ChevronLeft size={18} />
+        </button>
       </div>
 
-      <button
-        onClick={handleNext}
-        disabled={currentPage === totalPages}
-        className="px-4 py-2 mx-1 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        Trang sau
-      </button>
-    </div>
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-hide px-4 max-w-full">
+        {pageNumbers.map((page, index) => {
+          if (page === '...') {
+            return (
+              <span key={`ellipsis-${index}`} className="w-11 h-11 flex items-center justify-center text-gray-600 font-black">
+                ...
+              </span>
+            );
+          }
+
+          const pageNum = page as number;
+          return (
+            <button
+              key={pageNum}
+              onClick={() => onPageChange(pageNum)}
+              className={`w-11 h-11 shrink-0 flex items-center justify-center rounded-xl text-xs font-black transition-all border ${currentPage === pageNum
+                ? 'bg-lime-400 text-black border-lime-400 shadow-[0_0_15px_rgba(168,227,0,0.3)]'
+                : 'bg-white/5 text-gray-400 border-white/5 hover:border-white/20 hover:text-white'
+                }`}
+            >
+              {pageNum}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 text-gray-400 disabled:opacity-20 hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-90"
+          title="Trang sau"
+        >
+          <ChevronRight size={18} />
+        </button>
+        <button
+          onClick={() => onPageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="w-11 h-11 flex items-center justify-center rounded-xl bg-white/5 text-gray-400 disabled:opacity-20 hover:bg-white/10 hover:text-white transition-all border border-white/5 active:scale-90"
+          title="Trang cuối"
+        >
+          <ChevronsRight size={18} />
+        </button>
+      </div>
+    </nav>
   );
 };
 

@@ -3,29 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Story, getImageUrl } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
 
 export default function OfflinePage() {
   const [isOnline, setIsOnline] = useState(false);
-  const [cachedStories, setCachedStories] = useState<any[]>([]);
-
-  useEffect(() => {
-    // Check online status
-    const checkOnline = () => setIsOnline(navigator.onLine);
-    checkOnline();
-    
-    window.addEventListener('online', checkOnline);
-    window.addEventListener('offline', checkOnline);
-
-    // Load cached stories from service worker
-    loadCachedStories();
-
-    return () => {
-      window.removeEventListener('online', checkOnline);
-      window.removeEventListener('offline', checkOnline);
-    };
-  }, []);
+  const [cachedStories, setCachedStories] = useState<Story[]>([]);
 
   const loadCachedStories = async () => {
     try {
@@ -39,9 +23,35 @@ export default function OfflinePage() {
         }
       }
     } catch (error) {
-      console.error('Failed to load cached stories:', error);
+      console.error('Error loading cached stories:', error);
     }
   };
+
+  useEffect(() => {
+    // Check online status
+    const checkOnline = () => setIsOnline(navigator.onLine);
+    checkOnline();
+
+    window.addEventListener('online', checkOnline);
+    window.addEventListener('offline', checkOnline);
+
+    // Load cached stories from service worker
+    loadCachedStories();
+
+    // Message listener for service worker communication
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'CACHED_STORIES') {
+        setCachedStories(event.data.stories || []);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('online', checkOnline);
+      window.removeEventListener('offline', checkOnline);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
 
   const downloadForOffline = async () => {
     try {
@@ -77,7 +87,7 @@ export default function OfflinePage() {
                 Ban dang online! Truy cap trang chu de kham pha truyen moi.
               </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/"
@@ -102,7 +112,7 @@ export default function OfflinePage() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Offline Header */}
         <div className="text-center mb-12">
@@ -138,7 +148,7 @@ export default function OfflinePage() {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
             Truyen da luu ({cachedStories.length})
           </h2>
-          
+
           {cachedStories.length === 0 ? (
             <div className="text-center py-8">
               <div className="text-4xl mb-4">?</div>
@@ -152,27 +162,27 @@ export default function OfflinePage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {cachedStories.map((story, index) => (
-                <div key={index} className="group cursor-pointer">
+                <Link key={index} href={`/truyen/${story.slug}`} className="group">
                   <div className="relative aspect-[3/4] bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden mb-2">
                     <Image
-                      src={story.cover || '/placeholder-story.jpg'}
-                      alt={story.title}
+                      src={getImageUrl(story.thumb_url || '')}
+                      alt={story.name || 'Truyen tranh'}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform"
                     />
                     <div className="absolute top-2 right-2">
                       <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">
-                        ? Da luu
+                        ✓ Da luu
                       </span>
                     </div>
                   </div>
                   <h3 className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
-                    {story.title}
+                    {story.name || 'Truyen tranh'}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    {story.chapters || 0} chuong
+                    {story.status || 'Dang cap nhat'}
                   </p>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -199,7 +209,7 @@ export default function OfflinePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -215,7 +225,7 @@ export default function OfflinePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
@@ -231,7 +241,7 @@ export default function OfflinePage() {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-start space-x-3">
               <div className="flex-shrink-0">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">

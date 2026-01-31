@@ -91,7 +91,7 @@ class AnalyticsService {
 
   private loadStoredEvents(): void {
     if (!this.storage) return;
-    
+
     try {
       const stored = this.storage.getItem('analytics_events');
       if (stored) {
@@ -104,7 +104,7 @@ class AnalyticsService {
 
   private saveEvents(): void {
     if (!this.storage) return;
-    
+
     try {
       this.storage.setItem('analytics_events', JSON.stringify(this.events));
     } catch (error) {
@@ -130,7 +130,7 @@ class AnalyticsService {
   // Reading session tracking
   public startReadingSession(data: Omit<ReadingSession, 'sessionId' | 'startTime'>): string {
     const sessionId = `reading_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const session: ReadingSession = {
       ...data,
       sessionId,
@@ -161,16 +161,16 @@ class AnalyticsService {
     if (!session) return;
 
     const updatedSession = { ...session, ...updates };
-    
+
     // Calculate derived metrics
     if (updatedSession.pagesViewed > 0) {
       updatedSession.averagePageTime = updatedSession.totalTimeSpent / updatedSession.pagesViewed;
     }
-    
+
     if (updatedSession.totalPages > 0) {
       updatedSession.completionRate = (updatedSession.pagesViewed / updatedSession.totalPages) * 100;
     }
-    
+
     if (updatedSession.totalTimeSpent > 0) {
       const minutes = updatedSession.totalTimeSpent / 60;
       updatedSession.readingSpeed = minutes > 0 ? updatedSession.pagesViewed / minutes : 0;
@@ -185,7 +185,7 @@ class AnalyticsService {
 
     session.endTime = Date.now();
     session.totalTimeSpent = (session.endTime - session.startTime) / 1000; // convert to seconds
-    
+
     this.updateReadingSession(sessionId, session);
 
     // Track completion event
@@ -267,7 +267,7 @@ class AnalyticsService {
     const recentSessions = sessions.filter(session => session.startTime >= timeThreshold);
 
     const storyMetrics: Record<string, ContentMetrics> = {};
-      
+
     recentSessions.forEach(session => {
       if (!storyMetrics[session.storyId]) {
         storyMetrics[session.storyId] = {
@@ -282,12 +282,12 @@ class AnalyticsService {
           lastUpdated: Date.now(),
         };
       }
-      
+
       const metric = storyMetrics[session.storyId];
       metric.totalViews += 1;
     });
 
-    return Object.values(storyMetrics).sort((a,b) => b.totalViews - a.totalViews).slice(0, limit);
+    return Object.values(storyMetrics).sort((a, b) => b.totalViews - a.totalViews).slice(0, limit);
   }
 
 
@@ -341,7 +341,7 @@ class AnalyticsService {
 
   private getActiveSession(sessionId: string): ReadingSession | null {
     if (!this.storage) return null;
-    
+
     try {
       const stored = this.storage.getItem(`active_session_${sessionId}`);
       return stored ? JSON.parse(stored) : null;
@@ -357,17 +357,17 @@ class AnalyticsService {
 
   private storeCompletedSession(session: ReadingSession): void {
     if (!this.storage) return;
-    
+
     try {
       const completed = this.storage.getItem('completed_reading_sessions');
       const sessions = completed ? JSON.parse(completed) : [];
       sessions.push(session);
-      
+
       // Keep only last 100 sessions
       if (sessions.length > 100) {
         sessions.splice(0, sessions.length - 100);
       }
-      
+
       this.storage.setItem('completed_reading_sessions', JSON.stringify(sessions));
     } catch (error) {
       console.warn('Failed to store completed session:', error);
@@ -397,12 +397,12 @@ class AnalyticsService {
     try {
       const completed = this.storage.getItem('completed_reading_sessions');
       const sessions: ReadingSession[] = completed ? JSON.parse(completed) : [];
-      
+
       const totalReadingTime = sessions.reduce((sum, s) => sum + s.totalTimeSpent, 0);
       const uniqueStories = new Set(sessions.map(s => s.storyId));
       const totalChaptersCompleted = sessions.filter(s => s.completionRate >= 90).length;
-      const averageReadingSpeed = sessions.length > 0 
-        ? sessions.reduce((sum, s) => sum + s.readingSpeed, 0) / sessions.length 
+      const averageReadingSpeed = sessions.length > 0
+        ? sessions.reduce((sum, s) => sum + s.readingSpeed, 0) / sessions.length
         : 0;
 
       // Calculate favorite genres (simplified)
@@ -411,9 +411,9 @@ class AnalyticsService {
         // This would need to be enhanced with actual genre data
         genreCounts['Unknown'] = (genreCounts['Unknown'] || 0) + 1;
       });
-      
+
       const favoriteGenres = Object.entries(genreCounts)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
         .map(([genre]) => genre);
 
@@ -439,13 +439,13 @@ class AnalyticsService {
 
   public getPopularContent(): ContentMetrics[] {
     if (!this.storage) return [];
-    
+
     try {
       const completed = this.storage.getItem('completed_reading_sessions');
       const sessions: ReadingSession[] = completed ? JSON.parse(completed) : [];
-      
+
       const storyMetrics: Record<string, ContentMetrics> = {};
-      
+
       sessions.forEach(session => {
         if (!storyMetrics[session.storyId]) {
           storyMetrics[session.storyId] = {
@@ -460,13 +460,13 @@ class AnalyticsService {
             lastUpdated: Date.now(),
           };
         }
-        
+
         const metric = storyMetrics[session.storyId];
         metric.totalViews += 1;
         metric.averageReadingTime = (metric.averageReadingTime + session.totalTimeSpent) / 2;
         metric.completionRate = (metric.completionRate + session.completionRate) / 2;
       });
-      
+
       return Object.values(storyMetrics)
         .sort((a, b) => b.popularityScore - a.popularityScore);
     } catch {
@@ -484,7 +484,7 @@ class AnalyticsService {
         value: event.value,
       });
     }
-    
+
     // Custom analytics endpoint
     // This would send to your analytics backend
     // fetch('/api/analytics', { method: 'POST', body: JSON.stringify(event) });
@@ -496,16 +496,15 @@ class AnalyticsService {
   public consolidateAndStoreData(): void {
     if (!this.storage) return;
 
-    console.log('Consolidating analytics data for export...');
     const dataToExport = {
-        events: this.events,
-        completedSessions: JSON.parse(this.storage.getItem('completed_reading_sessions') || '[]'),
-        exportDate: new Date().toISOString(),
+      events: this.events,
+      completedSessions: JSON.parse(this.storage.getItem('completed_reading_sessions') || '[]'),
+      exportDate: new Date().toISOString(),
     };
-    
+
     this.storage.setItem(this.ANALYTICS_EXPORT_BUNDLE_KEY, JSON.stringify(dataToExport));
   }
-  
+
   /**
    * Starts a periodic job to consolidate analytics data.
    * @param {number} intervalInHours - The interval in hours to run the consolidation.
@@ -514,10 +513,10 @@ class AnalyticsService {
     if (this.periodicExportIntervalId) {
       clearInterval(this.periodicExportIntervalId);
     }
-    
+
     const intervalInMillis = intervalInHours * 60 * 60 * 1000;
     this.periodicExportIntervalId = setInterval(() => {
-        this.consolidateAndStoreData();
+      this.consolidateAndStoreData();
     }, intervalInMillis);
 
     // Also run once on startup
@@ -527,12 +526,12 @@ class AnalyticsService {
   // Export data for analysis
   public exportData(): string {
     if (this.storage) {
-        const bundledData = this.storage.getItem(this.ANALYTICS_EXPORT_BUNDLE_KEY);
-        if (bundledData) {
-            return bundledData;
-        }
+      const bundledData = this.storage.getItem(this.ANALYTICS_EXPORT_BUNDLE_KEY);
+      if (bundledData) {
+        return bundledData;
+      }
     }
-    
+
     // Fallback to generate on the fly if bundle not found
     return JSON.stringify({
       events: this.events,
@@ -545,7 +544,7 @@ class AnalyticsService {
   public clearAllData(): void {
     this.events = [];
     this.saveEvents();
-    
+
     if (this.storage) {
       const keys = Object.keys(this.storage);
       keys.forEach(key => {
@@ -592,21 +591,21 @@ export function useReadingAnalytics() {
 
   const trackPageView = useCallback((pageNumber: number) => {
     if (!sessionRef.current) return;
-    
+
     const now = Date.now();
     if (pageViewTimesRef.current.length > 0) {
       const timeOnPage = now - pageViewTimesRef.current[pageViewTimesRef.current.length - 1];
       // Could track time per page here
     }
-    
+
     pageViewTimesRef.current.push(now);
-    
+
     analytics.trackPageView(
       'current_story_id', // Would get from context
       'current_chapter_id', // Would get from context
       pageNumber
     );
-    
+
     analytics.updateReadingSession(sessionRef.current, {
       pagesViewed: pageNumber + 1,
     });
@@ -614,17 +613,17 @@ export function useReadingAnalytics() {
 
   const endReading = useCallback(() => {
     if (!sessionRef.current) return;
-    
+
     const endTime = Date.now();
     const totalTime = (endTime - startTimeRef.current) / 1000;
-    
+
     analytics.updateReadingSession(sessionRef.current, {
       totalTimeSpent: totalTime,
     });
-    
+
     const session = analytics.endReadingSession(sessionRef.current);
     sessionRef.current = null;
-    
+
     return session;
   }, []);
 
@@ -637,7 +636,7 @@ export function useReadingAnalytics() {
         action: 'navigate',
         label: url,
       });
-      
+
       // End reading session if navigating away from reader
       if (url.includes('/chuong/') && sessionRef.current) {
         endReading();
@@ -646,7 +645,7 @@ export function useReadingAnalytics() {
 
     // This would integrate with Next.js router events
     // router.events.on('routeChangeComplete', handleRouteChange);
-    
+
     return () => {
       // router.events.off('routeChangeComplete', handleRouteChange);
     };

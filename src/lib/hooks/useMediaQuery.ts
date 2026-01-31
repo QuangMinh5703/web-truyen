@@ -38,7 +38,10 @@ export function useMediaQuery(query: string): boolean {
         const mediaQuery = window.matchMedia(query);
 
         // Set initial value
-        setMatches(mediaQuery.matches);
+        const initialMatches = mediaQuery.matches;
+        if (matches !== initialMatches) {
+            setMatches(initialMatches);
+        }
 
         // Handler for changes
         const handler = (event: MediaQueryListEvent) => {

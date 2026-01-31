@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useReaderStore, PageWidth, ReaderMode, BackgroundColor } from '@/lib/store';
 
-export type { PageWidth };
+export type { PageWidth, ReaderMode, BackgroundColor };
 
 /**
  * @typedef {object} UseReaderSettingsReturn
@@ -25,15 +25,15 @@ export type { PageWidth };
  * @returns {UseReaderSettingsReturn} An object containing the reader settings and functions to update them.
  */
 export const useReaderSettings = () => {
-    const { 
-        readerMode, 
-        backgroundColor, 
-        pageWidth, 
+    const {
+        readerMode,
+        backgroundColor,
+        pageWidth,
         isFullscreen,
         swipeThreshold,
-        setReaderMode, 
-        setBackgroundColor, 
-        setPageWidth, 
+        setReaderMode,
+        setBackgroundColor,
+        setPageWidth,
         toggleFullscreen,
         setSwipeThreshold
     } = useReaderStore();
@@ -51,7 +51,7 @@ export const useReaderSettings = () => {
         if (savedPageWidth && ['fit-width', 'fit-height', 'original'].includes(savedPageWidth)) {
             setPageWidth(savedPageWidth);
         }
-        
+
         const savedMode = localStorage.getItem('reader-readerMode') as ReaderMode;
         if (savedMode && ['single', 'continuous'].includes(savedMode)) {
             setReaderMode(savedMode);
@@ -69,7 +69,7 @@ export const useReaderSettings = () => {
     useEffect(() => {
         localStorage.setItem('reader-backgroundColor', backgroundColor);
     }, [backgroundColor]);
-    
+
     /**
      * @effect Persists the page width setting to localStorage.
      */

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { PageWidth, useReaderSettings } from '@/lib/hooks/useReaderSettings';
+import { PageWidth, ReaderMode, BackgroundColor, useReaderSettings } from '@/lib/hooks/useReaderSettings';
 import BookmarkButton from './BookmarkButton';
 import { Settings, X, ChevronLeft, ChevronRight, List, Palette, Monitor, BookOpen, Maximize2, Minimize2 } from 'lucide-react';
 
@@ -9,10 +9,10 @@ interface DesktopControlsProps {
     isFirstChapter: boolean;
     isNavigating: boolean;
     onChapterNavOpen: () => void;
-    readerMode: 'single' | 'continuous';
-    setReaderMode: (mode: 'single' | 'continuous') => void;
-    backgroundColor: string;
-    setBackgroundColor: (color: string) => void;
+    readerMode: ReaderMode;
+    setReaderMode: (mode: ReaderMode) => void;
+    backgroundColor: BackgroundColor;
+    setBackgroundColor: (color: BackgroundColor) => void;
     pageWidth: PageWidth;
     setPageWidth: (width: PageWidth) => void;
     chapterId: string;
@@ -113,14 +113,7 @@ const DesktopControls = ({
             </div>
         </div>
 
-        <button
-            onClick={onNextChapter}
-            disabled={isLastChapter || isNavigating}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-black text-xs transition-all bg-lime-500 text-black hover:bg-lime-400 disabled:opacity-30 disabled:cursor-not-allowed shadow-lg shadow-lime-500/20 uppercase tracking-widest"
-        >
-            <span>TIẾP THEO</span>
-            <ChevronRight size={18} />
-        </button>
+
     </div>
 );
 
@@ -133,10 +126,10 @@ interface MobileControlsProps {
     onChapterNavOpen: () => void;
     isMobileMenuOpen: boolean;
     setIsMobileMenuOpen: (isOpen: boolean) => void;
-    readerMode: 'single' | 'continuous';
-    setReaderMode: (mode: 'single' | 'continuous') => void;
-    backgroundColor: string;
-    setBackgroundColor: (color: string) => void;
+    readerMode: ReaderMode;
+    setReaderMode: (mode: ReaderMode) => void;
+    backgroundColor: BackgroundColor;
+    setBackgroundColor: (color: BackgroundColor) => void;
     pageWidth: PageWidth;
     setPageWidth: (width: PageWidth) => void;
     chapterId: string;
@@ -216,7 +209,11 @@ const MobileControls = ({
                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Tùy chỉnh trải nghiệm</p>
                             </div>
                         </div>
-                        <button onClick={() => setIsMobileMenuOpen(false)} className="p-2.5 bg-white/5 rounded-full text-gray-500 hover:text-white transition-colors">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center justify-center w-11 h-11 bg-white/5 rounded-full text-gray-500 hover:text-white transition-colors"
+                            aria-label="Close settings"
+                        >
                             <X size={20} />
                         </button>
                     </div>

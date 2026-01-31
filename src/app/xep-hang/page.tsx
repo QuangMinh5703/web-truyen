@@ -61,10 +61,10 @@ const RankingPage = () => {
         <h1 className="title-main text-center mb-8">Bảng Xếp Hạng Tháng</h1>
 
         {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
             {Array.from({ length: 15 }).map((_, index) => (
               <div key={index} className="animate-pulse">
-                <div className="bg-gray-300 aspect-[3/4] rounded-lg"></div>
+                <div className="bg-gray-300 aspect-[2/3] rounded-lg"></div>
                 <div className="h-4 bg-gray-300 rounded mt-2"></div>
                 <div className="h-4 bg-gray-300 rounded w-1/2 mt-1"></div>
               </div>
@@ -76,36 +76,36 @@ const RankingPage = () => {
           </div>
         ) : (
           <div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
               {currentStories.map((story, index) => {
-                const storyName = 'name' in story ? (story as Story).name : (story as StoryStats).storyTitle || 'Truyện tranh';
-                const storySlug = 'slug' in story ? (story as Story).slug : (story as StoryStats).storySlug || '';
-                const imageUrl = getImageUrl(('cover' in story && (story as any).cover) || ('thumbnail' in story && (story as any).thumbnail) || ('thumb_url' in story && (story as any).thumb_url) || '');
+                const storyName = (('name' in story ? story.name : ('storyTitle' in story ? story.storyTitle : null)) || 'Truyện tranh') as string;
+                const storySlug = (('slug' in story ? story.slug : ('storySlug' in story ? story.storySlug : null)) || '') as string;
+                const imageUrl = getImageUrl(('cover' in story && typeof story.cover === 'string' ? story.cover : ('thumbnail' in story && typeof story.thumbnail === 'string' ? story.thumbnail : ('thumb_url' in story && typeof story.thumb_url === 'string' ? story.thumb_url : ''))));
                 const indexOfFirstStory = (currentPage - 1) * storiesPerPage;
+                const viewsStr = 'totalViews' in story ? (story as StoryStats).totalViews : 'N/A';
+                const categories = ('category' in story) ? (story.category as any[]) : [];
+                const categoryText = (Array.isArray(categories) && categories.length > 0) ? categories.map(c => c.name).slice(0, 3).join(' | ') : 'Xếp hạng';
 
                 return (
-                  <Link key={storySlug} href={`/truyen/${storySlug}`}>
-                    <div className="group">
-                      <div className="relative aspect-[3/4] bg-gray-200 rounded-lg overflow-hidden shadow-lg transition-transform transform group-hover:scale-105">
-                        {imageUrl ? (
-                          <Image
-                            src={imageUrl || '/placeholder-story.jpg'}
-                            alt={storyName || 'Truyện tranh'}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-400 to-indigo-600">
-                            <span className="text-4xl">📖</span>
-                          </div>
-                        )}
-                        <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          #{indexOfFirstStory + index + 1}
-                        </div>
+                  <Link key={storySlug} href={`/truyen/${storySlug}`} className="group block flex-shrink-0 snap-start">
+                    <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3]">
+                      <Image
+                        src={imageUrl || '/placeholder-story.jpg'}
+                        alt={storyName || 'Truyện tranh'}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full z-10">
+                        #{indexOfFirstStory + index + 1}
                       </div>
-                      <h3 className="mt-3 text-lg font-semibold text-white truncate group-hover:text-blue-600 font-lexend-exa">{storyName}</h3>
-                      <p className="text-sm text-gray-400 font-lexend-exa">Lượt xem: {'totalViews' in story ? (story as StoryStats).totalViews : 'N/A'}</p>
                     </div>
+
+                    <h3 className="mb-2 recent-update-title line-clamp-2">
+                      {storyName}
+                    </h3>
+                    <h2 className="mb-2 recent-update-sup-title line-clamp-1">
+                      {categoryText}
+                    </h2>
                   </Link>
                 );
               })}

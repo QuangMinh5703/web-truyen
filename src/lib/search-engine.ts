@@ -57,10 +57,10 @@ class SearchEngine {
     page: number = 1
   ): Promise<SearchResults> {
     const allStories = await this.getCachedOrFetch(keyword);
-    
+
     const filteredStories = this.filterResults(allStories, filters);
     const sortedStories = this.sortResults(filteredStories, sort);
-    
+
     return this.paginateResults(sortedStories, page, filters, sort);
   }
 
@@ -112,19 +112,19 @@ class SearchEngine {
           return false;
         }
       }
-      
+
       if (filters.yearFrom || filters.yearTo) {
-          const storyYear = story.createdAt
-            ? new Date(story.createdAt).getFullYear()
-            : null;
-          
-          if (storyYear) {
-            if (filters.yearFrom && storyYear < filters.yearFrom) return false;
-            if (filters.yearTo && storyYear > filters.yearTo) return false;
-          } else {
-              // If story has no year, it shouldn't match a year filter
-              return false;
-          }
+        const storyYear = story.createdAt
+          ? new Date(story.createdAt).getFullYear()
+          : null;
+
+        if (storyYear) {
+          if (filters.yearFrom && storyYear < filters.yearFrom) return false;
+          if (filters.yearTo && storyYear > filters.yearTo) return false;
+        } else {
+          // If story has no year, it shouldn't match a year filter
+          return false;
+        }
       }
 
       return true;
@@ -133,7 +133,7 @@ class SearchEngine {
 
   private normalizeStatus(status?: string): 'ongoing' | 'completed' {
     if (!status) return 'ongoing';
-    
+
     const normalized = status.toLowerCase();
     if (normalized.includes('hoan-thanh') || normalized.includes('completed')) {
       return 'completed';
@@ -152,17 +152,17 @@ class SearchEngine {
         case 'views':
           comparison = (b.views || 0) - (a.views || 0);
           break;
-        
+
         case 'rating':
           comparison = (b.rating || 0) - (a.rating || 0);
           break;
-        
+
         case 'updatedAt':
           const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
           const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
           comparison = dateB - dateA;
           break;
-        
+
         case 'name':
           const nameA = a.name || a.title || '';
           const nameB = b.name || b.title || '';
@@ -185,7 +185,7 @@ class SearchEngine {
     const totalPages = Math.ceil(total / limit);
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    
+
     const paginatedStories = stories.slice(startIndex, endIndex);
 
     return {
@@ -206,14 +206,12 @@ class SearchEngine {
     if (cached) {
       const isExpired = Date.now() - cached.timestamp > (this.options.cacheTimeout || 0);
       if (!isExpired) {
-        console.log('[SearchEngine] Using cached results for:', keyword);
         return Promise.resolve(cached.stories);
       }
     }
 
-    console.log('[SearchEngine] Fetching new results for:', keyword);
     const stories = await this.fetchAllPages(keyword, this.options.maxPagesToFetch || 3);
-    
+
     this.cache.set(cacheKey, {
       keyword: cacheKey,
       stories,
@@ -224,7 +222,6 @@ class SearchEngine {
 
   clearCache(): void {
     this.cache.clear();
-    console.log('[SearchEngine] Cache cleared.');
   }
 }
 

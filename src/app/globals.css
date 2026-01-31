@@ -402,7 +402,7 @@
         position: absolute;
         left: 0;
         bottom: -5.5px;
-        border-width: 0 10px 6px;
+        border-width: 0 12px 6px;
         border-style: solid;
         color: var(--ranking-banner-color-start);
         border-color: transparent currentColor transparent currentColor;
@@ -418,7 +418,7 @@
         position: absolute;
         left: 0;
         bottom: -5.5px;
-        border-width: 0 15px 6px;
+        border-width: 0 16px 6px;
         border-style: solid;
         color: var(--ranking-banner-color-start);
         border-color: transparent currentColor transparent currentColor;
@@ -477,6 +477,20 @@
     .pagination-container {
         max-width: var(--main-content-max-width);
         margin: 0 auto;
+    }
+
+    /* === Scroll Snap Utilities === */
+    .snap-x {
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .snap-start {
+        scroll-snap-align: start;
+    }
+
+    .snap-center {
+        scroll-snap-align: center;
     }
 
     /* === Common Utilities === */

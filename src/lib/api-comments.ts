@@ -49,13 +49,13 @@ const loadFromStorage = () => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return;
-    
+
     const data = JSON.parse(stored);
     if (data.version !== STORAGE_VERSION) {
       localStorage.removeItem(STORAGE_KEY);
       return;
     }
-    
+
     const entries = data.comments as [string, Comment[]][];
     entries.forEach(([slug, comments]) => {
       commentsByStory.set(slug, comments);
@@ -71,9 +71,9 @@ loadFromStorage();
 export const getComments = async (storySlug: string): Promise<Comment[]> => {
   console.log(`Fetching comments for story: ${storySlug}`);
   await new Promise(resolve => setTimeout(resolve, 300));
-  
+
   const comments = commentsByStory.get(storySlug) || [];
-  return [...comments].sort((a, b) => 
+  return [...comments].sort((a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 };
@@ -83,17 +83,17 @@ export const postComment = async (
   storySlug: string,
   comment: { name: string; message: string; storyTitle?: string }
 ): Promise<Comment> => {
-  console.log(`Posting comment for story: ${storySlug}`);
-  
+  // console.log(`Posting comment for story: ${storySlug}`);
+
   if (!storySlug || !comment.name.trim() || !comment.message.trim()) {
     throw new Error('Invalid comment data');
   }
-  
+
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   const existingComments = commentsByStory.get(storySlug) || [];
   const newId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  
+
   const newComment: Comment = {
     id: newId,
     storySlug,
@@ -105,7 +105,7 @@ export const postComment = async (
 
   commentsByStory.set(storySlug, [...existingComments, newComment]);
   saveToStorage();
-  
+
   return newComment;
 };
 
@@ -121,10 +121,10 @@ export const deleteComment = async (
 ): Promise<boolean> => {
   const comments = commentsByStory.get(storySlug);
   if (!comments) return false;
-  
+
   const filtered = comments.filter(c => c.id !== commentId);
   if (filtered.length === comments.length) return false;
-  
+
   commentsByStory.set(storySlug, filtered);
   saveToStorage();
   return true;

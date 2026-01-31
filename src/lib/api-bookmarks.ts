@@ -19,7 +19,6 @@ interface BookmarkStore {
 // --- Mock Database via localStorage ---
 
 const migrateDb = (oldDb: Record<string, any>): BookmarkStore => {
-  console.log("Migrating bookmarks database to new schema...");
   const bookmarks: Record<string, Bookmark> = {};
   const folderSet = new Set<string>([DEFAULT_FOLDER]);
 
@@ -101,8 +100,9 @@ export const addBookmark = async (
   };
 
   db.bookmarks[id] = newBookmark;
-  if (!db.folders.includes(newBookmark.folder)) {
-      db.folders.push(newBookmark.folder);
+  const folderName = newBookmark.folder as string;
+  if (!db.folders.includes(folderName)) {
+    db.folders.push(folderName);
   }
   saveDb(db);
 
@@ -122,77 +122,77 @@ export const removeBookmark = async (bookmarkId: string): Promise<void> => {
 };
 
 export const updateBookmark = async (
-    bookmarkId: string,
-    updates: Partial<Omit<Bookmark, 'id'|'createdAt'>>
+  bookmarkId: string,
+  updates: Partial<Omit<Bookmark, 'id' | 'createdAt'>>
 ): Promise<Bookmark> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const db = getDb();
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const db = getDb();
 
-    if (!db.bookmarks[bookmarkId]) {
-        throw new Error(`Bookmark with id ${bookmarkId} not found.`);
-    }
+  if (!db.bookmarks[bookmarkId]) {
+    throw new Error(`Bookmark with id ${bookmarkId} not found.`);
+  }
 
-    const updatedBookmark = { ...db.bookmarks[bookmarkId], ...updates };
-    db.bookmarks[bookmarkId] = updatedBookmark;
-    saveDb(db);
+  const updatedBookmark = { ...db.bookmarks[bookmarkId], ...updates };
+  db.bookmarks[bookmarkId] = updatedBookmark;
+  saveDb(db);
 
-    return updatedBookmark;
+  return updatedBookmark;
 };
 
 // --- Folder Management Functions ---
 
 export const getFolders = async (): Promise<string[]> => {
-    await new Promise(resolve => setTimeout(resolve, 100));
-    const db = getDb();
-    return db.folders.sort();
+  await new Promise(resolve => setTimeout(resolve, 100));
+  const db = getDb();
+  return db.folders.sort();
 }
 
 export const addFolder = async (folderName: string): Promise<string[]> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const db = getDb();
-    if (!db.folders.includes(folderName)) {
-        db.folders.push(folderName);
-        saveDb(db);
-    }
-    return db.folders.sort();
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const db = getDb();
+  if (!db.folders.includes(folderName)) {
+    db.folders.push(folderName);
+    saveDb(db);
+  }
+  return db.folders.sort();
 }
 
 export const renameFolder = async (oldName: string, newName: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const db = getDb();
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const db = getDb();
 
-    if (!db.folders.includes(oldName) || db.folders.includes(newName)) {
-        throw new Error(`Invalid folder rename operation: from "${oldName}" to "${newName}"`);
+  if (!db.folders.includes(oldName) || db.folders.includes(newName)) {
+    throw new Error(`Invalid folder rename operation: from "${oldName}" to "${newName}"`);
+  }
+
+  db.folders = db.folders.map(f => f === oldName ? newName : f);
+
+  for (const id in db.bookmarks) {
+    if (db.bookmarks[id].folder === oldName) {
+      db.bookmarks[id].folder = newName;
     }
+  }
 
-    db.folders = db.folders.map(f => f === oldName ? newName : f);
-
-    for (const id in db.bookmarks) {
-        if (db.bookmarks[id].folder === oldName) {
-            db.bookmarks[id].folder = newName;
-        }
-    }
-    
-    saveDb(db);
+  saveDb(db);
 }
 
 export const deleteFolder = async (folderName: string): Promise<void> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const db = getDb();
+  await new Promise(resolve => setTimeout(resolve, 500));
+  const db = getDb();
 
-    if (folderName === DEFAULT_FOLDER || !db.folders.includes(folderName)) {
-        throw new Error(`Cannot delete folder: "${folderName}"`);
+  if (folderName === DEFAULT_FOLDER || !db.folders.includes(folderName)) {
+    throw new Error(`Cannot delete folder: "${folderName}"`);
+  }
+
+  db.folders = db.folders.filter(f => f !== folderName);
+
+  for (const id in db.bookmarks) {
+    if (db.bookmarks[id].folder === folderName) {
+      db.bookmarks[id].folder = DEFAULT_FOLDER;
     }
+  }
 
-    db.folders = db.folders.filter(f => f !== folderName);
-
-    for (const id in db.bookmarks) {
-        if (db.bookmarks[id].folder === folderName) {
-            db.bookmarks[id].folder = DEFAULT_FOLDER;
-        }
-    }
-
-    saveDb(db);
+  saveDb(db);
 }
 
 // --- Sharing Functions ---
@@ -202,24 +202,24 @@ export const deleteFolder = async (folderName: string): Promise<void> => {
  * @param {string} folderName - The name of the folder to share.
  * @returns {Promise<{token: string}>} A promise that resolves with a unique share token.
  */
-export const createShare = async (folderName: string): Promise<{token: string}> => {
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const db = getDb();
-    const bookmarksToShare = Object.values(db.bookmarks).filter(bm => bm.folder === folderName);
+export const createShare = async (folderName: string): Promise<{ token: string }> => {
+  await new Promise(resolve => setTimeout(resolve, 400));
+  const db = getDb();
+  const bookmarksToShare = Object.values(db.bookmarks).filter(bm => bm.folder === folderName);
 
-    if (bookmarksToShare.length === 0) {
-        throw new Error("Cannot share an empty folder.");
-    }
+  if (bookmarksToShare.length === 0) {
+    throw new Error("Cannot share an empty folder.");
+  }
 
-    const token = `share_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
-    db.shares[token] = {
-        folderName,
-        bookmarks: bookmarksToShare,
-    };
+  const token = `share_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    saveDb(db);
-    return { token };
+  db.shares[token] = {
+    folderName,
+    bookmarks: bookmarksToShare,
+  };
+
+  saveDb(db);
+  return { token };
 }
 
 /**
@@ -227,8 +227,8 @@ export const createShare = async (folderName: string): Promise<{token: string}> 
  * @param {string} token - The share token.
  * @returns {Promise<{folderName: string, bookmarks: Bookmark[]} | null>} The shared data or null if not found.
  */
-export const getSharedData = async (token: string): Promise<{folderName: string, bookmarks: Bookmark[]} | null> => {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const db = getDb();
-    return db.shares[token] || null;
+export const getSharedData = async (token: string): Promise<{ folderName: string, bookmarks: Bookmark[] } | null> => {
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const db = getDb();
+  return db.shares[token] || null;
 }
