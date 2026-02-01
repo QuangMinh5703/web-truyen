@@ -14,8 +14,13 @@ import { useViewTracking } from '@/lib/hooks/useViewTracking';
 
 // Helper to extract chapter ID from a full API URL
 const getChapterId = (url: string | undefined): string => {
-  if (!url) return '';
-  return url.substring(url.lastIndexOf('/') + 1);
+  if (!url) {
+    console.warn('getChapterId: URL is empty or undefined');
+    return '';
+  }
+  const id = url.substring(url.lastIndexOf('/') + 1);
+  console.log('getChapterId:', url, '->', id);
+  return id;
 };
 
 const DynamicCommentSection = dynamic(() => import('@/components/CommentSection'), {
@@ -87,16 +92,33 @@ const StoryDetailPage = () => {
   }, [slug]);
 
   const allChapters: UiChapter[] = useMemo(() => {
-    if (!story?.chapters) return [];
+    if (!story?.chapters) {
+      console.log('allChapters: No story.chapters found');
+      return [];
+    }
 
-    return story.chapters
+    const chapters = story.chapters
       .flatMap(server => server.server_data || [])
-      .map(apiChapter => ({
-        id: getChapterId(apiChapter.chapter_api_data),
-        name: apiChapter.chapter_name || '',
-        title: apiChapter.chapter_title || '',
-      }))
+      .map((apiChapter) => {
+        // Try to get ID from chapter_api_data URL first
+        let id = getChapterId(apiChapter.chapter_api_data);
+
+        // Fallback: if ID is empty, try using filename
+        if (!id && apiChapter.filename) {
+          id = apiChapter.filename;
+          console.log('Using filename as chapter ID:', id);
+        }
+
+        return {
+          id,
+          name: apiChapter.chapter_name || '',
+          title: apiChapter.chapter_title || '',
+        };
+      })
       .filter(chapter => chapter.id);
+
+    console.log('allChapters extracted:', chapters.length, 'chapters');
+    return chapters;
   }, [story]);
 
   useEffect(() => {
@@ -133,11 +155,24 @@ const StoryDetailPage = () => {
   };
 
   const handleReadClick = () => {
+    console.log('handleReadClick called');
+    console.log('allChapters:', allChapters);
+    console.log('lastReadChapter:', lastReadChapter);
+
+    if (allChapters.length === 0) {
+      console.error('No chapters available');
+      return;
+    }
+
     if (lastReadChapter) {
-      router.push(`/truyen/${slug}/chuong/${lastReadChapter.chapterId}`);
-    } else if (allChapters.length > 0) {
+      const targetUrl = `/truyen/${slug}/chuong/${lastReadChapter.chapterId}`;
+      console.log('Navigating to last read chapter:', targetUrl);
+      router.push(targetUrl);
+    } else {
       const firstChapterId = allChapters[0].id;
-      router.push(`/truyen/${slug}/chuong/${firstChapterId}`);
+      const targetUrl = `/truyen/${slug}/chuong/${firstChapterId}`;
+      console.log('Navigating to first chapter:', targetUrl);
+      router.push(targetUrl);
     }
   };
 
@@ -235,7 +270,11 @@ const StoryDetailPage = () => {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={handleReadClick}
-                  className="w-full px-6 py-4 bg-lime-500 text-black rounded-xl font-bold text-base md:text-lg hover:bg-lime-400 transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-lime-500/20"
+                  disabled={allChapters.length === 0}
+                  className={`w-full px-6 py-4 rounded-xl font-bold text-base md:text-lg transition-all shadow-lg ${allChapters.length === 0
+                      ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                      : 'bg-lime-500 text-black hover:bg-lime-400 hover:scale-[1.02] active:scale-[0.98] shadow-lime-500/20'
+                    }`}
                 >
                   {lastReadChapter ? 'ĐỌC TIẾP' : 'ĐỌC TỪ ĐẦU'}
                 </button>

@@ -4,7 +4,10 @@ import { createCache } from '@/lib/cache';
 
 const storyCache = createCache<Story>(30 * 60 * 1000); // 30 minutes TTL
 
-const getChapterId = (url: string): string => url.substring(url.lastIndexOf('/') + 1);
+const getChapterId = (url: string | undefined): string => {
+  if (!url) return '';
+  return url.substring(url.lastIndexOf('/') + 1);
+};
 
 async function fetchWithRetry<T>(
   fn: () => Promise<T | undefined>,
@@ -34,10 +37,17 @@ async function fetchWithRetry<T>(
 }
 
 const findChapterApiUrl = (story: Story, chapterId: string): string | undefined => {
-  return story.chapters
-    ?.flatMap(s => s.server_data)
-    .find(c => c?.chapter_api_data && getChapterId(c.chapter_api_data) === chapterId)
-    ?.chapter_api_data;
+  const allChapters = story.chapters?.flatMap(s => s.server_data) || [];
+
+  // First try to find by chapter_api_data ID
+  let found = allChapters.find(c => c?.chapter_api_data && getChapterId(c.chapter_api_data) === chapterId);
+
+  // Fallback: try to find by filename
+  if (!found) {
+    found = allChapters.find(c => c?.filename === chapterId);
+  }
+
+  return found?.chapter_api_data;
 };
 
 export const useChapterData = (slug: string, chapterId: string) => {
@@ -52,7 +62,13 @@ export const useChapterData = (slug: string, chapterId: string) => {
 
     const chapterMap = new Map<string, UiChapter>();
     flatChapters.forEach((apiChapter: ApiChapter) => {
-      const chapterId = getChapterId(apiChapter.chapter_api_data!);
+      // Try to get ID from chapter_api_data URL first
+      let chapterId = getChapterId(apiChapter.chapter_api_data);
+
+      // Fallback: if ID is empty, try using filename
+      if (!chapterId && apiChapter.filename) {
+        chapterId = apiChapter.filename;
+      }
       if (chapterId && !chapterMap.has(chapterId)) { // Ensure chapterId is not empty and not already added
         chapterMap.set(chapterId, {
           id: chapterId,
