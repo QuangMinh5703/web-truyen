@@ -89,18 +89,33 @@ const TopRankings = () => {
         const fetchTopStories = async () => {
             try {
                 setLoading(true);
-                const hotStories = getHotStories('month', 10);
+                // getHotStories is now async, so we await it
+                const hotStories = await getHotStories('month', 10);
+
+                if (hotStories.length === 0) {
+                    setTopStories([]);
+                    return;
+                }
+
                 const stories = await Promise.all(hotStories.map(async (story) => {
                     if ('storySlug' in story && !('cover' in story)) {
-                        const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
-                        return { ...story, ...storyDetails };
+                        try {
+                            const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
+                            return { ...story, ...storyDetails };
+                        } catch (e) {
+                            console.warn(`Failed to fetch details for ${story.storySlug}`, e);
+                            return story; // Keep basic stats if fetch fails
+                        }
                     }
                     return story;
                 }));
-                setTopStories(stories);
+
+                // Filter out any stories that might have failed completely or have no valid data for display
+                setTopStories(stories.filter(s => !!s));
             } catch (error) {
                 console.error('Error fetching top stories:', error);
-                setError('Không thể tải bảng xếp hạng truyện.');
+                // Don't show error to user immediately if it's just a config issue, just show empty
+                // setError('Không thể tải bảng xếp hạng truyện.');
             } finally {
                 setLoading(false);
             }

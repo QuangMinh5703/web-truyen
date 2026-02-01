@@ -1,12 +1,24 @@
 import { v4 as uuidv4 } from 'uuid'; // For generating unique session IDs
+import { db, isFirebaseConfigured } from './firebase-config';
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit as firestoreLimit,
+  increment,
+  serverTimestamp,
+  Timestamp
+} from 'firebase/firestore';
 
 // Define StoryView interface
 export interface StoryView {
   storyId: string;
   storySlug: string;
   storyTitle: string;
-  timestamp: number;
-  userId?: string; // Optional, can use sessionId
+  timestamp: number | object; // supports serverTimestamp
   sessionId: string;
 }
 
@@ -16,27 +28,21 @@ export interface StoryStats {
   storySlug: string;
   storyTitle: string;
   totalViews: number;
-  uniqueUsers: Set<string>; // Using Set to ensure unique user IDs
-  lastViewed: number;
-  score: number; // Score for ranking
+  // uniqueUsers: Set<string>; // Complex to maintain in Firestore real-time cheaply, skipping for now
+  lastViewed: number | object;
+  score: number; // Score for ranking (views based)
 }
 
 // Define the ViewTrackingService class
 class ViewTrackingService {
-  private views: StoryView[] = [];
-  private stats: Map<string, StoryStats> = new Map(); // Map storyId to StoryStats
-  private readonly localStorageKey: string = 'manga_view_tracking_data';
+  private readonly viewsCollection = 'story_views';
+  private readonly statsCollection = 'story_stats';
   private readonly sessionKey: string = 'manga_session_id';
 
   constructor() {
-    this.loadFromStorage();
     // Ensure a session ID exists
     if (!this.getSessionId()) {
       this.setSessionId(uuidv4());
-    }
-    // Set up periodic cleanup (e.g., every hour)
-    if (typeof window !== 'undefined') {
-        setInterval(() => this.cleanupOldViews(), 60 * 60 * 1000); // Every hour
     }
   }
 
@@ -52,192 +58,97 @@ class ViewTrackingService {
     }
   }
 
-  // Load data from localStorage
-  private loadFromStorage(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    try {
-      const storedData = localStorage.getItem(this.localStorageKey);
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        // Revive Set for uniqueUsers
-        this.views = parsedData.views || [];
-        this.stats = new Map(
-          parsedData.stats
-            ? parsedData.stats.map((stat: StoryStats) => [
-                stat.storyId,
-                { ...stat, uniqueUsers: new Set(stat.uniqueUsers || []) },
-              ])
-            : []
-        );
-      }
-    } catch (error) {
-      console.error('Error loading view tracking data from localStorage:', error);
-    }
-  }
-
-  // Save data to localStorage
-  private saveToStorage(): void {
-    if (typeof window === 'undefined') {
-      return;
-    }
-    try {
-      // Convert Set to Array for stringification
-      const dataToStore = {
-        views: this.views,
-        stats: Array.from(this.stats.values()).map((stat) => ({
-          ...stat,
-          uniqueUsers: Array.from(stat.uniqueUsers),
-        })),
-      };
-      localStorage.setItem(this.localStorageKey, JSON.stringify(dataToStore));
-    } catch (error) {
-      console.error('Error saving view tracking data to localStorage:', error);
-    }
-  }
-
-  // Track when a user visits a story detail page
-  trackStoryView(story: { id: string; slug: string; title: string }): void {
+  // Track when a user visits a story detail page (Async now)
+  async trackStoryView(story: { id: string; slug: string; title: string }): Promise<void> {
     const sessionId = this.getSessionId();
     if (!sessionId) {
       console.warn('No session ID found, cannot track view.');
       return;
     }
 
-    const now = Date.now();
-    const newView: StoryView = {
-      storyId: story.id,
-      storySlug: story.slug,
-      storyTitle: story.title,
-      timestamp: now,
-      sessionId: sessionId,
-    };
-    this.views.push(newView);
-
-    // Update stats
-    const currentStats = this.stats.get(story.id) || {
-      storyId: story.id,
-      storySlug: story.slug,
-      storyTitle: story.title,
-      totalViews: 0,
-      uniqueUsers: new Set<string>(),
-      lastViewed: 0,
-      score: 0,
-    };
-
-    currentStats.totalViews++;
-    currentStats.uniqueUsers.add(sessionId); // Assuming sessionId represents a unique user for tracking
-    currentStats.lastViewed = now;
-    currentStats.score = this.calculateScore(currentStats);
-
-    this.stats.set(story.id, currentStats);
-    this.saveToStorage();
-  }
-
-  // Calculate ranking score
-  calculateScore(stats: StoryStats): number {
-    // Formula: totalViews + (uniqueUsers * 2)
-    return stats.totalViews + (stats.uniqueUsers.size * 2);
-  }
-
-  // Get ranking for a given period
-  getRanking(
-    period: 'day' | 'week' | 'month' | 'all',
-    limit: number = 10
-  ): StoryStats[] {
-    const now = Date.now();
-    let timeThreshold = 0;
-
-    switch (period) {
-      case 'day':
-        timeThreshold = now - 24 * 60 * 60 * 1000;
-        break;
-      case 'week':
-        timeThreshold = now - 7 * 24 * 60 * 60 * 1000;
-        break;
-      case 'month':
-        timeThreshold = now - 30 * 24 * 60 * 60 * 1000; // Approximate month
-        break;
-      case 'all':
-      default:
-        timeThreshold = 0; // No time threshold
-        break;
+    if (!isFirebaseConfigured || !db) {
+      // Silent fail or log if dev
+      if (process.env.NODE_ENV === 'development') console.warn('Firebase not configured, skipping view track.');
+      return;
     }
 
-    // Filter views based on the time threshold
-    const relevantViews =
-      period === 'all'
-        ? this.views
-        : this.views.filter((view) => view.timestamp >= timeThreshold);
+    try {
+      // 1. Record the raw view
+      const viewRef = doc(collection(db, this.viewsCollection)); // Auto-gen ID
+      await setDoc(viewRef, {
+        storyId: story.id,
+        storySlug: story.slug,
+        storyTitle: story.title,
+        sessionId: sessionId,
+        timestamp: serverTimestamp(),
+      });
 
-    // Recalculate stats for the given period
-    const periodStats = new Map<string, StoryStats>();
-    relevantViews.forEach((view) => {
-      const currentStats = periodStats.get(view.storyId) || {
-        storyId: view.storyId,
-        storySlug: view.storySlug,
-        storyTitle: view.storyTitle,
-        totalViews: 0,
-        uniqueUsers: new Set<string>(),
-        lastViewed: 0,
-        score: 0,
-      };
+      // 2. Aggregate stats
+      // Note: This is a simple counter. For unique views implementation, we would need 
+      // a subcollection 'views' under stats doc or a transaction check, which is more reads/writes ($).
+      // Sticking to simple view count for efficiency.
+      const statsRef = doc(db, this.statsCollection, story.id);
 
-      currentStats.totalViews++;
-      currentStats.uniqueUsers.add(view.sessionId);
-      currentStats.lastViewed = Math.max(currentStats.lastViewed, view.timestamp);
-      periodStats.set(view.storyId, currentStats);
-    });
+      await setDoc(statsRef, {
+        storyId: story.id,
+        storySlug: story.slug,
+        storyTitle: story.title,
+        totalViews: increment(1),
+        lastViewed: serverTimestamp(),
+        score: increment(1) // Simple score = views count
+      }, { merge: true });
 
-    // Calculate scores for the period and sort
-    const rankedStories = Array.from(periodStats.values())
-      .map((stats) => ({
-        ...stats,
-        score: this.calculateScore(stats),
-      }))
-      .sort((a, b) => b.score - a.score);
-
-    return rankedStories.slice(0, limit);
+    } catch (error) {
+      console.error('Error tracking view to Firestore:', error);
+    }
   }
 
-  // Clean up old views (e.g., views older than 3 months)
-  private cleanupOldViews(): void {
-    const threeMonthsAgo = Date.now() - 90 * 24 * 60 * 60 * 1000; // 90 days
-    this.views = this.views.filter((view) => view.timestamp >= threeMonthsAgo);
+  // Get ranking for a given period (Async now)
+  // Note: 'period' filtering with Firestore requires composite indexes if sorting by views.
+  // For simplicity and to modify minimal security rules, we stick to 'all' time (Global Popularity).
+  async getRanking(
+    period: 'day' | 'week' | 'month' | 'all',
+    limit: number = 10
+  ): Promise<StoryStats[]> {
+    if (!isFirebaseConfigured || !db) {
+      return [];
+    }
 
-    // Re-calculate stats based on cleaned views to ensure consistency
-    this.recalculateAllStats();
-    this.saveToStorage();
-  }
+    try {
+      const statsRef = collection(db, this.statsCollection);
+      // Ordering by score/totalViews descending
+      const q = query(statsRef, orderBy('totalViews', 'desc'), firestoreLimit(limit));
 
-  // Recalculate all stats from the current views array
-  private recalculateAllStats(): void {
-    this.stats.clear();
-    this.views.forEach((view) => {
-      const currentStats = this.stats.get(view.storyId) || {
-        storyId: view.storyId,
-        storySlug: view.storySlug,
-        storyTitle: view.storyTitle,
-        totalViews: 0,
-        uniqueUsers: new Set<string>(),
-        lastViewed: 0,
-        score: 0,
-      };
+      const snapshot = await getDocs(q);
 
-      currentStats.totalViews++;
-      currentStats.uniqueUsers.add(view.sessionId);
-      currentStats.lastViewed = Math.max(currentStats.lastViewed, view.timestamp);
-      this.stats.set(view.storyId, currentStats);
-    });
+      return snapshot.docs.map(doc => {
+        const data = doc.data();
+        // Convert Firestore Timestamp to number if needed, or keep for display
+        // Ensuring compatibility with UI expecting number
+        let lastViewed = 0;
+        if (data.lastViewed instanceof Timestamp) {
+          lastViewed = data.lastViewed.toMillis();
+        } else if (typeof data.lastViewed === 'number') {
+          lastViewed = data.lastViewed;
+        }
 
-    // Update scores for all stats
-    this.stats.forEach((stat) => {
-      stat.score = this.calculateScore(stat);
-    });
+        return {
+          storyId: doc.id,
+          storySlug: data.storySlug,
+          storyTitle: data.storyTitle,
+          totalViews: data.totalViews || 0,
+          score: data.totalViews || 0,
+          lastViewed: lastViewed
+        } as StoryStats;
+      });
+
+    } catch (error) {
+      console.error('Error fetching ranking from Firestore:', error);
+      return [];
+    }
   }
 }
 
-// Export a singleton instance of ViewTrackingService
+// Export a singleton instance
 export const viewTrackingService = new ViewTrackingService();
 
