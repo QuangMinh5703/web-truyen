@@ -22,8 +22,10 @@ export default function Header() {
     const fetchGenres = async () => {
       try {
         const response = await otruyenApi.getGenres();
-        if (response?.items) {
-          setGenres(response.items);
+        if (Array.isArray(response)) {
+          setGenres(response);
+        } else if (response && 'items' in (response as any)) {
+          setGenres((response as any).items);
         }
       } catch (error) {
         console.error("Failed to fetch genres:", error);

@@ -16,14 +16,14 @@ const RankingPage = () => {
   const [storiesPerPage] = useState(20);
   const { getHotStories } = useViewTracking();
 
-  const hotStories = useMemo(() => getHotStories('month', 100), [getHotStories]);
-
   useEffect(() => {
     const fetchRankedStories = async () => {
       setLoading(true);
       try {
+        const hotStoriesList = await getHotStories('month', 100);
+
         const stories = await Promise.all(
-          hotStories.map(async (story) => {
+          hotStoriesList.map(async (story) => {
             if ('storySlug' in story && !('cover' in story)) {
               const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
               return { ...story, ...storyDetails };
@@ -33,18 +33,14 @@ const RankingPage = () => {
         );
         setRankedStories(stories);
       } catch (error) {
-        console.error('Error fetching ranked stories:', error);
+        // Error silently handled — empty state shown
       } finally {
         setLoading(false);
       }
     };
 
-    if (hotStories.length > 0) {
-      fetchRankedStories();
-    } else {
-      setLoading(false);
-    }
-  }, [hotStories]);
+    fetchRankedStories();
+  }, [getHotStories]);
 
   const currentStories = useMemo(() => {
     const indexOfLastStory = currentPage * storiesPerPage;
@@ -55,18 +51,18 @@ const RankingPage = () => {
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   return (
-    <div className="flex flex-col min-h-screen --background text-gray-800">
+    <div className="flex flex-col min-h-screen bg-black text-white">
       <Navbar />
       <main className="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="title-main text-center mb-8">Bảng Xếp Hạng Tháng</h1>
+        <h1 className="title-main text-center mb-8">Bảng xếp hạng tháng</h1>
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
             {Array.from({ length: 15 }).map((_, index) => (
               <div key={index} className="animate-pulse">
-                <div className="bg-gray-300 aspect-[2/3] rounded-lg"></div>
-                <div className="h-4 bg-gray-300 rounded mt-2"></div>
-                <div className="h-4 bg-gray-300 rounded w-1/2 mt-1"></div>
+                <div className="bg-gray-800 aspect-[2/3] rounded-lg"></div>
+                <div className="h-4 bg-gray-800 rounded mt-2"></div>
+                <div className="h-4 bg-gray-800 rounded w-1/2 mt-1"></div>
               </div>
             ))}
           </div>
@@ -82,7 +78,6 @@ const RankingPage = () => {
                 const storySlug = (('slug' in story ? story.slug : ('storySlug' in story ? story.storySlug : null)) || '') as string;
                 const imageUrl = getImageUrl(('cover' in story && typeof story.cover === 'string' ? story.cover : ('thumbnail' in story && typeof story.thumbnail === 'string' ? story.thumbnail : ('thumb_url' in story && typeof story.thumb_url === 'string' ? story.thumb_url : ''))));
                 const indexOfFirstStory = (currentPage - 1) * storiesPerPage;
-                const viewsStr = 'totalViews' in story ? (story as StoryStats).totalViews : 'N/A';
                 const categories = ('category' in story) ? (story.category as any[]) : [];
                 const categoryText = (Array.isArray(categories) && categories.length > 0) ? categories.map(c => c.name).slice(0, 3).join(' | ') : 'Xếp hạng';
 

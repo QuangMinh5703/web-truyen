@@ -34,6 +34,7 @@ const HeroBanner = () => {
     const [stories, setStories] = useState<Story[]>([]);
     const [loading, setLoading] = useState(true);
     const [bannerImages, setBannerImages] = useState<string[]>([]);
+    const [imageError, setImageError] = useState(false);
     const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const { isMobile, isDesktop } = useResponsive();
@@ -56,7 +57,7 @@ const HeroBanner = () => {
                     setStories(listResponse.items);
                 }
             } catch (error) {
-                console.error('[HeroBanner] Error fetching popular stories:', error);
+
             } finally {
                 setLoading(false);
             }
@@ -74,6 +75,11 @@ const HeroBanner = () => {
             return () => clearInterval(timer);
         }
     }, [stories.length]);
+
+    // Reset image error state when slide changes
+    useEffect(() => {
+        setImageError(false);
+    }, [currentSlide]);
 
     useEffect(() => {
         if (scrollContainerRef.current && buttonRefs.current[currentSlide]) {
@@ -97,9 +103,9 @@ const HeroBanner = () => {
 
     if (loading) {
         return (
-            <div className="mb-8 md:mb-12">
+            <div className="mb-10 md:mb-14">
                 <div
-                    className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl bg-gray-901 animate-pulse border border-white/5">
+                    className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl bg-gray-900 animate-pulse border border-white/5">
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                     <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 lg:p-16">
                         <div className="space-y-4">
@@ -123,7 +129,7 @@ const HeroBanner = () => {
     const imageUrl = bannerImages[currentSlide % bannerImages.length] || bannerImages[0];
 
     return (
-        <div className="mb-8 md:mb-12">
+        <div className="mb-10 md:mb-14">
             <div
                 className="relative w-full max-w-[var(--herobanner-max-width)] mx-auto h-[var(--herobanner-height)] md:rounded-2xl overflow-hidden shadow-2xl">
 
@@ -135,13 +141,14 @@ const HeroBanner = () => {
                     {/* Background image */}
                     <div className="absolute inset-0 w-full h-full">
                         <Image
-                            src={imageUrl}
+                            src={imageError ? '/ig_banner/banner1.jpg' : imageUrl}
                             alt={storyTitle}
                             fill
                             className="object-cover object-center"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 1300px"
                             quality={90}
                             priority={true}
+                            onError={() => setImageError(true)}
                         />
                         <div
                             className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>

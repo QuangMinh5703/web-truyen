@@ -69,7 +69,7 @@ loadFromStorage();
 
 // ✅ CHANGED: getComments nhận storySlug
 export const getComments = async (storySlug: string): Promise<Comment[]> => {
-  console.log(`Fetching comments for story: ${storySlug}`);
+
   await new Promise(resolve => setTimeout(resolve, 300));
 
   const comments = commentsByStory.get(storySlug) || [];

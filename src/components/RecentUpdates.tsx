@@ -24,13 +24,10 @@ const RecentUpdates = () => {
         const fetchRecentUpdates = async () => {
             try {
                 setLoading(true);
-                console.log('[RecentUpdates] Fetching latest stories...');
                 const listResponse = await otruyenApi.getLatestStories({
                     page: 1,
                     limit: 12, // Tăng số lượng để có nhiều item hơn khi scroll
                 });
-
-                console.log('[RecentUpdates] Response received:', listResponse);
 
                 if (listResponse && listResponse.items) {
                     const updatesWithChapters = listResponse.items.map((story: Story) => {
@@ -47,10 +44,10 @@ const RecentUpdates = () => {
                     });
                     setUpdates(updatesWithChapters);
                 } else {
-                    console.warn('[RecentUpdates] No stories found in response');
+
                 }
             } catch (error) {
-                console.error('[RecentUpdates] Error fetching recent updates:', error);
+
                 setError('Không thể tải các truyện cập nhật mới nhất.');
             } finally {
                 setLoading(false);
@@ -94,20 +91,18 @@ const RecentUpdates = () => {
 
     if (loading) {
         return (
-            <section className="mb-12">
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="text-2xl font-bold text-gray-800 flex items-center space-x-2">
-                        <span className="text-3xl">🆕</span>
-                        <span>Cập nhật mới nhất</span>
-                    </h2>
+            <section className="mb-10 md:mb-14">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <div className="h-8 bg-gray-800 rounded w-48 animate-pulse"></div>
+                    <div className="h-10 w-24 bg-gray-800 rounded animate-pulse"></div>
                 </div>
 
-                <div className="flex gap-4 md:gap-6 overflow-x-auto pb-4 scrollbar-hide">
+                <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
                     {[1, 2, 3, 4, 5].map((i) => (
                         <div key={i} className="flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] animate-pulse">
-                            <div className="bg-gray-800 rounded-xl h-64 mb-4"></div>
-                            <div className="h-5 bg-gray-800 rounded w-3/4 mb-2"></div>
-                            <div className="h-4 bg-gray-800 rounded w-1/2"></div>
+                            <div className="bg-gray-800 rounded-xl aspect-[2/3] mb-3 md:mb-4"></div>
+                            <div className="h-4 bg-gray-800 rounded w-3/4 mb-2"></div>
+                            <div className="h-3 bg-gray-800 rounded w-1/2"></div>
                         </div>
                     ))}
                 </div>
@@ -116,12 +111,12 @@ const RecentUpdates = () => {
     }
 
     return (
-        <section className="mb-12">
+        <section className="mb-10 md:mb-14">
             <div className="flex items-center justify-between mb-4 md:mb-6">
                 <h2 className="title-main">
                     Mới cập nhật
                 </h2>
-                <Link href={`/hoan-thanh`} className="hover:scale-105 transition-transform active:scale-95">
+                <Link href={`/dang-phat-hanh`} className="hover:scale-105 transition-transform active:scale-95">
                     <Image
                         src="/view_more.svg"
                         alt="View more"
@@ -196,11 +191,6 @@ const RecentUpdates = () => {
                 </div>
             )}
 
-            <style jsx>{`
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-            `}</style>
         </section>
     );
 };

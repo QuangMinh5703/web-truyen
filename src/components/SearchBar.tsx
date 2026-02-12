@@ -1,9 +1,8 @@
-// src/components/SearchBar.tsx
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from "next/image";
+import Image from 'next/image';
 
 interface SearchBarProps {
   initialQuery?: string;
@@ -20,12 +19,6 @@ export default function SearchBar({ initialQuery = '', className = '' }: SearchB
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
   return (
     <div className={`relative ${className}`}>
       <input
@@ -33,15 +26,23 @@ export default function SearchBar({ initialQuery = '', className = '' }: SearchB
         placeholder="Tìm kiếm truyện..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={handleKeyDown}
-        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+        className="w-full px-6 py-4 pr-14 bg-white/5 border border-white/10 rounded-full text-white
+                   placeholder-gray-500 focus:outline-none focus:border-lime-400/50 transition-colors"
+        style={{ fontFamily: 'var(--font-lexend-exa)' }}
       />
       <button
         onClick={handleSearch}
-        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700"
+        className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 bg-lime-400/10 hover:bg-lime-400 rounded-full transition-all group"
         aria-label="Tìm kiếm"
       >
-        <Image src="/ri_search_ai_2_line.svg" alt="Search Icon" width={24} height={24} />
+        <Image
+          src="/ri_search_ai_2_line.svg"
+          alt="Tìm kiếm"
+          width={24}
+          height={24}
+          className="group-hover:brightness-0 transition-all"
+        />
       </button>
     </div>
   );

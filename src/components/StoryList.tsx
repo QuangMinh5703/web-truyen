@@ -33,7 +33,7 @@ interface StoryListProps {
  */
 const StoryList = ({ title, type = 'hoan-thanh', limit = 20 }: StoryListProps) => {
   return (
-    <section className="mb-8 md:mb-12">
+    <section className="mb-10 md:mb-14">
       <div className="flex items-center justify-between mb-4 md:mb-6">
         <h2 className="title-main">
           {title}

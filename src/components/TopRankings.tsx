@@ -47,6 +47,7 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
                         width={80}
                         height={96}
                         className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg"
+                        onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
                     />
                     <div
                         className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100"
@@ -103,7 +104,7 @@ const TopRankings = () => {
                             const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
                             return { ...story, ...storyDetails };
                         } catch (e) {
-                            console.warn(`Failed to fetch details for ${story.storySlug}`, e);
+    
                             return story; // Keep basic stats if fetch fails
                         }
                     }
@@ -113,7 +114,7 @@ const TopRankings = () => {
                 // Filter out any stories that might have failed completely or have no valid data for display
                 setTopStories(stories.filter(s => !!s));
             } catch (error) {
-                console.error('Error fetching top stories:', error);
+
                 // Don't show error to user immediately if it's just a config issue, just show empty
                 // setError('Không thể tải bảng xếp hạng truyện.');
             } finally {
@@ -126,8 +127,33 @@ const TopRankings = () => {
 
     if (loading) {
         return (
-            <section className="mb-8 md:mb-12">
-                <div className="w-full h-[var(--ranking-height)] rounded-2xl bg-gray-900 animate-pulse" />
+            <section className="mb-10 md:mb-14 animate-pulse">
+                <div className="flex items-center justify-between mb-4 md:mb-6">
+                    <div className="h-8 bg-gray-800 rounded w-52"></div>
+                    <div className="h-10 w-24 bg-gray-800 rounded"></div>
+                </div>
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex-[3] h-[var(--ranking-height)] rounded-2xl bg-gray-900 relative overflow-hidden">
+                        <div className="absolute bottom-6 left-6 flex gap-4 items-end">
+                            <div className="w-32 h-44 md:w-48 md:h-64 bg-gray-800 rounded-xl"></div>
+                            <div className="space-y-3 pb-4">
+                                <div className="h-6 bg-gray-800 rounded w-40"></div>
+                                <div className="h-4 bg-gray-800 rounded w-24"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex-1 bg-gray-900 rounded-2xl p-4 space-y-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <div key={i} className="flex gap-3 items-center">
+                                <div className="w-16 h-20 bg-gray-800 rounded-lg flex-shrink-0"></div>
+                                <div className="flex-1 space-y-2">
+                                    <div className="h-4 bg-gray-800 rounded w-3/4"></div>
+                                    <div className="h-3 bg-gray-800 rounded w-1/2"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
             </section>
         );
     }
@@ -153,7 +179,7 @@ const TopRankings = () => {
     const imageUrl = getImageUrl(('cover' in movie && movie.cover) || ('thumbnail' in movie && movie.thumbnail) || ('thumb_url' in movie && movie.thumb_url) || '');
 
     return (
-        <section className="mb-8 md:mb-12">
+        <section className="mb-10 md:mb-14">
             <div className="flex items-center justify-between mb-4 md:mb-6">
                 <h2 className="title-main">
                     Bảng xếp hạng
@@ -187,6 +213,7 @@ const TopRankings = () => {
                                     alt="Background top rank"
                                     fill
                                     className="object-cover opacity-60 group-hover:scale-105 transition-transform duration-700"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                             </div>
@@ -205,6 +232,7 @@ const TopRankings = () => {
                                         alt={movieName}
                                         fill
                                         className="object-cover"
+                                        onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
                                     />
                                     <div className="absolute top-0 right-0 w-8 h-12 flex items-center justify-center top-1-ranking-banner shadow-lg">
                                         <span className="top-ranking-banner-text text-xl">1</span>

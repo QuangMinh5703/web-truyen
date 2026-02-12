@@ -274,6 +274,9 @@ useEffect(() => {
 - [x] Verify the fix
 - [x] Update TODO.md if necessary
 - [x] Proposed commit message
+- [x] Fix TypeScript error in Ranking Page (Promise length issue)
+    - [x] Fix missing 'mysql2' module error
+    - [x] Start MariaDB container (fixed "Failed to fetch ranking")
 
 ---
 

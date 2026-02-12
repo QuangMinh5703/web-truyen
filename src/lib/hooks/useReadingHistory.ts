@@ -61,8 +61,7 @@ export const useReadingHistory = () => {
                 setHistory(processedHistory);
 
             } catch (err) {
-                console.error("Failed to fetch reading history:", err);
-                setError({ message: 'Could not load reading history.' });
+                setError({ message: 'Không thể tải lịch sử đọc truyện.' });
             } finally {
                 setLoading(false);
             }

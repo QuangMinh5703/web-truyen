@@ -131,7 +131,6 @@ function SearchPageComponentContent() { // Renamed to avoid confusion with the e
         const searchResults = await searchEngine.search(query, filters, sort, page);
         setResults(searchResults);
       } catch (err) {
-        console.error('[SearchPage] Search failed:', err);
         setError('Có lỗi xảy ra khi tìm kiếm. Vui lòng thử lại.');
       } finally {
         setIsLoading(false);

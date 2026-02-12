@@ -1,274 +1,308 @@
-// src/app/bookmarks/page.tsx
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import Navbar from '@/components/Navbar';
+import FooterComponent from '@/components/FooterComponent';
 import { useBookmarks } from '@/lib/hooks/useBookmarks';
 import { Bookmark as BookmarkIcon, Tag, Trash2, FolderPlus, Pencil, X, Check, Share2, Copy } from 'lucide-react';
 
-const DEFAULT_FOLDER = 'Uncategorized';
+const DEFAULT_FOLDER = 'Chưa phân loại';
 
-// A simple modal component defined within the page for reusability
-const Modal = ({ children, onClose }: { children: React.ReactNode, onClose: () => void }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center" onClick={onClose}>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
-            {children}
-        </div>
+const Modal = ({ children, onClose }: { children: React.ReactNode; onClose: () => void }) => (
+  <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-center p-4" onClick={onClose}>
+    <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl shadow-2xl p-6 w-full max-w-md" onClick={e => e.stopPropagation()}>
+      {children}
     </div>
+  </div>
 );
 
-const BookmarksPage = () => {
-    const {
-        bookmarks,
-        folders,
-        loading,
-        error,
-        toggleBookmark,
-        moveBookmarkToFolder,
-        addFolder,
-        renameFolder,
-        deleteFolder,
-        shareFolder
-    } = useBookmarks();
+export default function BookmarksPage() {
+  const {
+    bookmarks, folders, loading, error,
+    toggleBookmark, moveBookmarkToFolder,
+    addFolder, renameFolder, deleteFolder, shareFolder,
+  } = useBookmarks();
 
-    const [selectedFolder, setSelectedFolder] = useState('All');
-    const [newFolderName, setNewFolderName] = useState('');
-    const [editingFolder, setEditingFolder] = useState<{ oldName: string; newName: string } | null>(null);
-    const [deletingFolder, setDeletingFolder] = useState<string | null>(null);
-    const [movingBookmark, setMovingBookmark] = useState<any | null>(null); // Kept as any as Bookmark type from useBookmarks is not explicitly exported/accessible here easily without more research, but I will try to use the correct type if I can find it. Wait, I see 'bookmarks' is Bookmark[]. I'll use 'typeof bookmarks[0]'.
-    const [shareLink, setShareLink] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
+  const [selectedFolder, setSelectedFolder] = useState('All');
+  const [newFolderName, setNewFolderName] = useState('');
+  const [editingFolder, setEditingFolder] = useState<{ oldName: string; newName: string } | null>(null);
+  const [deletingFolder, setDeletingFolder] = useState<string | null>(null);
+  const [movingBookmark, setMovingBookmark] = useState<any | null>(null);
+  const [shareLink, setShareLink] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+  const editInputRef = useRef<HTMLInputElement>(null);
 
-    const editInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, []);
 
-    useEffect(() => {
-        if (editingFolder && editInputRef.current) {
-            editInputRef.current.focus();
-        }
-    }, [editingFolder]);
+  useEffect(() => {
+    if (editingFolder && editInputRef.current) editInputRef.current.focus();
+  }, [editingFolder]);
 
-    const filteredBookmarks = selectedFolder === 'All'
-        ? bookmarks
-        : bookmarks.filter(bm => bm.folder === selectedFolder);
+  const filteredBookmarks = selectedFolder === 'All'
+    ? bookmarks
+    : bookmarks.filter(bm => bm.folder === selectedFolder);
 
-    const handleAddFolder = async () => {
-        if (newFolderName.trim() && !folders.includes(newFolderName.trim())) {
-            await addFolder(newFolderName.trim());
-            setNewFolderName('');
-        }
-    };
-
-    const handleRenameFolder = async () => {
-        if (editingFolder && editingFolder.newName.trim() && editingFolder.oldName !== editingFolder.newName.trim()) {
-            await renameFolder(editingFolder.oldName, editingFolder.newName.trim());
-        }
-        setEditingFolder(null);
-    };
-
-    const handleDeleteFolder = async () => {
-        if (deletingFolder) {
-            await deleteFolder(deletingFolder);
-            if (selectedFolder === deletingFolder) {
-                setSelectedFolder(DEFAULT_FOLDER);
-            }
-        }
-        setDeletingFolder(null);
-    };
-
-    const handleMoveBookmark = async (targetFolder: string) => {
-        if (movingBookmark) {
-            await moveBookmarkToFolder(movingBookmark.id, targetFolder);
-        }
-        setMovingBookmark(null);
-    };
-
-    const handleShareFolder = async (folderName: string) => {
-        const url = await shareFolder(folderName);
-        if (url) {
-            setShareLink(url);
-        }
-    };
-
-    const handleCopy = () => {
-        if (shareLink) {
-            navigator.clipboard.writeText(shareLink);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    };
-
-    if (loading) {
-        return <div className="text-center py-12 text-gray-400">Loading bookmarks...</div>;
+  const handleAddFolder = async () => {
+    if (newFolderName.trim() && !folders.includes(newFolderName.trim())) {
+      await addFolder(newFolderName.trim());
+      setNewFolderName('');
     }
+  };
 
-    if (error) {
-        // Simple error display, could be a toast notification
-        return <div className="text-center py-12 text-red-500">Error: {error.message}</div>;
+  const handleRenameFolder = async () => {
+    if (editingFolder && editingFolder.newName.trim() && editingFolder.oldName !== editingFolder.newName.trim()) {
+      await renameFolder(editingFolder.oldName, editingFolder.newName.trim());
     }
+    setEditingFolder(null);
+  };
 
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">My Bookmarks</h1>
+  const handleDeleteFolder = async () => {
+    if (deletingFolder) {
+      await deleteFolder(deletingFolder);
+      if (selectedFolder === deletingFolder) setSelectedFolder('All');
+    }
+    setDeletingFolder(null);
+  };
 
-            <div className="flex flex-col lg:flex-row gap-8">
-                {/* Folders Sidebar */}
-                <aside className="lg:w-1/4">
-                    <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Folders</h2>
-                    <ul className="space-y-1">
-                        {['All', ...folders].map(folder => (
-                            <li key={folder} className="group flex items-center">
-                                {editingFolder?.oldName === folder ? (
-                                    <div className="flex-grow flex gap-1">
-                                        <input
-                                            ref={editInputRef}
-                                            type="text"
-                                            value={editingFolder.newName}
-                                            onChange={(e) => setEditingFolder({ ...editingFolder, newName: e.target.value })}
-                                            onBlur={handleRenameFolder}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
-                                            className="w-full text-left px-2 py-1 rounded-md border text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                                        />
-                                        <button onClick={handleRenameFolder} className="p-2 hover:bg-green-100 dark:hover:bg-green-800 rounded-md text-green-500"><Check size={16} /></button>
-                                        <button onClick={() => setEditingFolder(null)} className="p-2 hover:bg-red-100 dark:hover:bg-red-800 rounded-md text-red-500"><X size={16} /></button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <button
-                                            onClick={() => setSelectedFolder(folder)}
-                                            className={`w-full text-left px-3 py-2 rounded-md transition-colors ${selectedFolder === folder
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                }`}
-                                        >
-                                            {folder}
-                                        </button>
-                                        {folder !== 'All' && (
-                                            <div className="hidden group-hover:flex items-center ml-1">
-                                                <button onClick={() => handleShareFolder(folder)} className="p-2 text-gray-500 hover:text-green-600 dark:hover:text-green-400" title="Share Folder"><Share2 size={14} /></button>
-                                                {folder !== DEFAULT_FOLDER && (
-                                                    <>
-                                                        <button onClick={() => setEditingFolder({ oldName: folder, newName: folder })} className="p-2 text-gray-500 hover:text-blue-600 dark:hover:text-blue-400" title="Rename Folder"><Pencil size={14} /></button>
-                                                        <button onClick={() => setDeletingFolder(folder)} className="p-2 text-gray-500 hover:text-red-600 dark:hover:text-red-400" title="Delete Folder"><Trash2 size={14} /></button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        )}
-                                    </>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                    <div className="mt-6">
-                        <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Create New Folder</h3>
-                        <div className="flex gap-2">
-                            <input
-                                type="text"
-                                value={newFolderName}
-                                onChange={(e) => setNewFolderName(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleAddFolder()}
-                                placeholder="New folder name..."
-                                className="flex-grow px-3 py-2 border rounded-md text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                            />
-                            <button onClick={handleAddFolder} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                <FolderPlus size={20} />
-                            </button>
-                        </div>
-                    </div>
-                </aside>
+  const handleMoveBookmark = async (targetFolder: string) => {
+    if (movingBookmark) await moveBookmarkToFolder(movingBookmark.id, targetFolder);
+    setMovingBookmark(null);
+  };
 
-                {/* Bookmarks List */}
-                <main className="flex-grow">
-                    {filteredBookmarks.length === 0 ? (
-                        <div className="text-center py-16 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700">
-                            <BookmarkIcon className="mx-auto h-12 w-12 text-gray-400" />
-                            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No bookmarks</h3>
-                            <p className="mt-1 text-sm text-gray-500">
-                                {selectedFolder === 'All'
-                                    ? "You haven&apos;t bookmarked any chapters yet."
-                                    : `No bookmarks found in the "${selectedFolder}" folder.`}
-                            </p>
-                        </div>
+  const handleShareFolder = async (folderName: string) => {
+    const url = await shareFolder(folderName);
+    if (url) setShareLink(url);
+  };
+
+  const handleCopy = () => {
+    if (shareLink) {
+      navigator.clipboard.writeText(shareLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <Navbar />
+
+      <main className="flex-1 max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="title-main mb-8">Đánh dấu</h1>
+
+        {loading && (
+          <div className="space-y-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white/5 p-5 rounded-2xl border border-white/5 animate-pulse">
+                <div className="h-5 bg-white/10 rounded w-2/3 mb-3"></div>
+                <div className="h-4 bg-white/10 rounded w-1/3"></div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5">
+            <X className="mx-auto h-12 w-12 text-red-400 mb-4" />
+            <h3 className="text-lg font-bold mb-2">Lỗi tải đánh dấu</h3>
+            <p className="text-sm text-gray-500">{error.message}</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Folders sidebar */}
+            <aside className="lg:w-64 flex-shrink-0">
+              <h2 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Thư mục</h2>
+              <ul className="space-y-1">
+                {['All', ...folders].map(folder => (
+                  <li key={folder} className="group flex items-center">
+                    {editingFolder?.oldName === folder ? (
+                      <div className="flex-grow flex gap-1">
+                        <input
+                          ref={editInputRef}
+                          type="text"
+                          value={editingFolder.newName}
+                          onChange={(e) => setEditingFolder({ ...editingFolder, newName: e.target.value })}
+                          onBlur={handleRenameFolder}
+                          onKeyDown={(e) => e.key === 'Enter' && handleRenameFolder()}
+                          className="w-full px-3 py-2 bg-white/10 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-lime-400/50"
+                        />
+                        <button onClick={handleRenameFolder} className="p-2 hover:bg-lime-400/10 rounded-xl text-lime-400"><Check size={16} /></button>
+                        <button onClick={() => setEditingFolder(null)} className="p-2 hover:bg-red-400/10 rounded-xl text-red-400"><X size={16} /></button>
+                      </div>
                     ) : (
-                        <ul className="space-y-4">
-                            {filteredBookmarks.map(bookmark => (
-                                <li key={bookmark.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm flex justify-between items-center border border-gray-100 dark:border-gray-700">
-                                    <div>
-                                        <Link href={`/truyen/${bookmark.storySlug}/chuong/${bookmark.chapterId}`} className="font-semibold text-gray-900 dark:text-white hover:text-blue-600">
-                                            {bookmark.storySlug} - Chapter {bookmark.chapterId}
-                                        </Link>
-                                        <div className="text-sm text-gray-500 mt-1">
-                                            Bookmarked on: {new Date(bookmark.createdAt).toLocaleDateString()}
-                                        </div>
-                                        {bookmark.folder && (
-                                            <div className="mt-2 inline-flex items-center gap-1.5 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full text-xs text-gray-600 dark:text-gray-400">
-                                                <Tag size={12} /> {bookmark.folder}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setMovingBookmark(bookmark)}
-                                            className="p-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
-                                            title="Move to folder"
-                                        >
-                                            <FolderPlus size={18} />
-                                        </button>
-                                        <button
-                                            onClick={() => toggleBookmark(bookmark)}
-                                            className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-gray-700 rounded-full"
-                                            title="Remove bookmark"
-                                        >
-                                            <Trash2 size={18} />
-                                        </button>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </main>
-            </div>
-
-            {/* Modals for actions */}
-            {deletingFolder && (
-                <Modal onClose={() => setDeletingFolder(null)}>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Delete Folder</h3>
-                    <p className="my-4 text-gray-600 dark:text-gray-400">Are you sure you want to delete the folder &quot;{deletingFolder}&quot;? Bookmarks inside will be moved to &quot;{DEFAULT_FOLDER}&quot;.</p>
-                    <div className="flex justify-end gap-4">
-                        <button onClick={() => setDeletingFolder(null)} className="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
-                        <button onClick={handleDeleteFolder} className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700">Delete</button>
-                    </div>
-                </Modal>
-            )}
-
-            {movingBookmark && (
-                <Modal onClose={() => setMovingBookmark(null)}>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Move Bookmark</h3>
-                    <p className="my-2 text-gray-600 dark:text-gray-400">Move bookmark for &quot;{movingBookmark.storySlug}&quot; to:</p>
-                    <select
-                        onChange={(e) => handleMoveBookmark(e.target.value)}
-                        defaultValue={movingBookmark.folder || DEFAULT_FOLDER}
-                        className="w-full p-2 border rounded-md text-gray-900 dark:text-white dark:bg-gray-700 dark:border-gray-600"
-                    >
-                        {folders.map(f => <option key={f} value={f}>{f}</option>)}
-                    </select>
-                </Modal>
-            )}
-
-            {shareLink && (
-                <Modal onClose={() => setShareLink(null)}>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Share Folder</h3>
-                    <p className="my-2 text-sm text-gray-500">Anyone with this link can view this folder&apos;s bookmarks.</p>
-                    <div className="flex items-center gap-2 mt-4">
-                        <input type="text" readOnly value={shareLink} className="flex-grow px-3 py-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 text-gray-900 dark:text-white" />
-                        <button onClick={handleCopy} className="p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center gap-2">
-                            {copied ? <Check size={16} /> : <Copy size={16} />}
-                            {copied ? 'Copied!' : 'Copy'}
+                      <>
+                        <button
+                          onClick={() => setSelectedFolder(folder)}
+                          className={`flex-1 text-left px-4 py-3 rounded-xl text-sm font-bold transition-all active:scale-95 ${
+                            selectedFolder === folder
+                              ? 'bg-lime-500 text-black shadow-lg shadow-lime-500/20'
+                              : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                          }`}
+                        >
+                          {folder === 'All' ? 'Tất cả' : folder}
                         </button>
-                    </div>
-                </Modal>
-            )}
-        </div>
-    );
-};
+                        {folder !== 'All' && (
+                          <div className="hidden group-hover:flex items-center ml-1">
+                            <button onClick={() => handleShareFolder(folder)} className="p-2 text-gray-600 hover:text-lime-400 rounded-lg" title="Chia sẻ"><Share2 size={14} /></button>
+                            {folder !== DEFAULT_FOLDER && (
+                              <>
+                                <button onClick={() => setEditingFolder({ oldName: folder, newName: folder })} className="p-2 text-gray-600 hover:text-white rounded-lg" title="Đổi tên"><Pencil size={14} /></button>
+                                <button onClick={() => setDeletingFolder(folder)} className="p-2 text-gray-600 hover:text-red-400 rounded-lg" title="Xóa"><Trash2 size={14} /></button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
 
-export default BookmarksPage;
+              <div className="mt-6">
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Tạo thư mục mới</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newFolderName}
+                    onChange={(e) => setNewFolderName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAddFolder()}
+                    placeholder="Tên thư mục..."
+                    className="flex-grow px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white text-sm
+                               placeholder-gray-600 focus:outline-none focus:border-lime-400/50"
+                  />
+                  <button
+                    onClick={handleAddFolder}
+                    className="p-2.5 bg-lime-500 text-black rounded-xl hover:bg-lime-400 transition-all active:scale-95"
+                  >
+                    <FolderPlus size={20} />
+                  </button>
+                </div>
+              </div>
+            </aside>
+
+            {/* Bookmarks list */}
+            <div className="flex-grow">
+              {filteredBookmarks.length === 0 ? (
+                <div className="text-center py-20 bg-white/5 rounded-3xl border border-white/5 border-dashed">
+                  <BookmarkIcon className="mx-auto h-16 w-16 text-gray-600 mb-6" />
+                  <h3 className="text-lg font-bold mb-3">Chưa có đánh dấu</h3>
+                  <p className="text-sm text-gray-500" style={{ fontFamily: 'var(--font-lexend-exa)' }}>
+                    {selectedFolder === 'All'
+                      ? 'Bạn chưa đánh dấu chương truyện nào.'
+                      : `Không có đánh dấu nào trong thư mục "${selectedFolder}".`}
+                  </p>
+                </div>
+              ) : (
+                <ul className="space-y-3">
+                  {filteredBookmarks.map(bookmark => (
+                    <li key={bookmark.id} className="bg-white/5 p-5 rounded-2xl border border-white/5 flex justify-between items-center
+                                                     hover:border-lime-400/20 transition-all duration-300 group">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/truyen/${bookmark.storySlug}/chuong/${bookmark.chapterId}`}
+                          className="font-bold text-sm md:text-base text-white group-hover:text-lime-400 transition-colors line-clamp-1"
+                          style={{ fontFamily: 'var(--font-lexend-exa)' }}
+                        >
+                          {bookmark.storySlug.replace(/-/g, ' ')} — Chương {bookmark.chapterId.split('-').pop()}
+                        </Link>
+                        <div className="flex items-center gap-3 mt-2">
+                          <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                            {new Date(bookmark.createdAt).toLocaleDateString('vi-VN')}
+                          </span>
+                          {bookmark.folder && (
+                            <span className="inline-flex items-center gap-1 bg-white/5 px-2.5 py-1 rounded-lg text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                              <Tag size={10} /> {bookmark.folder}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0 ml-4">
+                        <button
+                          onClick={() => setMovingBookmark(bookmark)}
+                          className="p-2.5 text-gray-600 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                          title="Di chuyển"
+                        >
+                          <FolderPlus size={18} />
+                        </button>
+                        <button
+                          onClick={() => toggleBookmark(bookmark)}
+                          className="p-2.5 text-gray-600 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                          title="Xóa đánh dấu"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+
+      <FooterComponent />
+
+      {/* Delete folder modal */}
+      {deletingFolder && (
+        <Modal onClose={() => setDeletingFolder(null)}>
+          <h3 className="text-lg font-bold mb-4">Xóa thư mục</h3>
+          <p className="text-gray-400 text-sm mb-6">
+            Bạn có chắc chắn muốn xóa thư mục &quot;{deletingFolder}&quot;? Các đánh dấu bên trong sẽ được chuyển vào &quot;{DEFAULT_FOLDER}&quot;.
+          </p>
+          <div className="flex justify-end gap-3">
+            <button onClick={() => setDeletingFolder(null)} className="px-5 py-2.5 rounded-xl text-gray-400 hover:bg-white/5 font-bold text-sm transition-all">
+              Hủy
+            </button>
+            <button onClick={handleDeleteFolder} className="px-5 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-500 transition-all active:scale-95">
+              Xóa
+            </button>
+          </div>
+        </Modal>
+      )}
+
+      {/* Move bookmark modal */}
+      {movingBookmark && (
+        <Modal onClose={() => setMovingBookmark(null)}>
+          <h3 className="text-lg font-bold mb-4">Di chuyển đánh dấu</h3>
+          <p className="text-gray-400 text-sm mb-4">Chọn thư mục đích:</p>
+          <select
+            onChange={(e) => handleMoveBookmark(e.target.value)}
+            defaultValue={movingBookmark.folder || DEFAULT_FOLDER}
+            className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm
+                       focus:outline-none focus:border-lime-400/50"
+          >
+            {folders.map(f => <option key={f} value={f}>{f}</option>)}
+          </select>
+        </Modal>
+      )}
+
+      {/* Share link modal */}
+      {shareLink && (
+        <Modal onClose={() => setShareLink(null)}>
+          <h3 className="text-lg font-bold mb-2">Chia sẻ thư mục</h3>
+          <p className="text-gray-500 text-xs mb-4">Bất kỳ ai có liên kết này đều có thể xem đánh dấu.</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              readOnly
+              value={shareLink}
+              className="flex-grow px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-gray-300 text-sm"
+            />
+            <button
+              onClick={handleCopy}
+              className="px-4 py-2.5 bg-lime-500 text-black rounded-xl font-bold text-sm hover:bg-lime-400 transition-all active:scale-95 flex items-center gap-2"
+            >
+              {copied ? <Check size={16} /> : <Copy size={16} />}
+              {copied ? 'Đã sao chép' : 'Sao chép'}
+            </button>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}

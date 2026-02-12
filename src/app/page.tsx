@@ -9,12 +9,13 @@ import { ContinueReading } from '@/components/ContinueReading';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen --background">
+    <div className="min-h-screen bg-black text-white">
       <Navbar />
 
       <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <HeroBanner />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <ContinueReading />
           <TopRankings />
           <RecentUpdates />
           <StoryList title="Đã hoàn thành" />

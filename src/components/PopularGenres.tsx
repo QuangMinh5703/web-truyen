@@ -14,17 +14,17 @@ interface GenreItem {
 
 const genres: GenreItem[] = [
     { id: '1', name: 'Lãng Mạn', slug: 'lang-man', image: '/ig_themes/themes1.png', color: '#F5DBE9' },
-    { id: '2', name: 'High School', slug: 'high-school', image: '/ig_themes/themes2.png', color: '#FFF3DE' },
-    { id: '3', name: 'Gangster', slug: 'gangster', image: '/ig_themes/themes3.png', color: '#175446' },
-    { id: '4', name: 'Obsessive', slug: 'obsessive', image: '/ig_themes/themes4.png', color: '#3E2942' },
-    { id: '5', name: 'Historical', slug: 'historical', image: '/ig_themes/themes5.png', color: '#8D98A2' },
-    { id: '6', name: 'One-side Love', slug: 'one-side-love', image: '/ig_themes/themes6.png', color: '#232430' },
-    { id: '7', name: 'Bully', slug: 'bully', image: '/ig_themes/themes7.png', color: '#D7C6BE' },
-    { id: '8', name: 'Non-human', slug: 'non-human', image: '/ig_themes/themes8.png', color: '#393737' },
-    { id: '9', name: 'Fantasy', slug: 'fantasy', image: '/ig_themes/themes9.png', color: '#3D4B64' },
-    { id: '10', name: 'Supernatural', slug: 'supernatural', image: '/ig_themes/themes4.png', color: '#E8C4D8' },
-    { id: '11', name: 'Comedy', slug: 'comedy', image: '/ig_themes/themes5.png', color: '#FFE5B4' },
-    { id: '12', name: 'Action', slug: 'action', image: '/ig_themes/themes6.png', color: '#2A5F4F' },
+    { id: '2', name: 'Học Đường', slug: 'high-school', image: '/ig_themes/themes2.png', color: '#FFF3DE' },
+    { id: '3', name: 'Giang Hồ', slug: 'gangster', image: '/ig_themes/themes3.png', color: '#175446' },
+    { id: '4', name: 'Ám Ảnh', slug: 'obsessive', image: '/ig_themes/themes4.png', color: '#3E2942' },
+    { id: '5', name: 'Lịch Sử', slug: 'historical', image: '/ig_themes/themes5.png', color: '#8D98A2' },
+    { id: '6', name: 'Tình Đơn Phương', slug: 'one-side-love', image: '/ig_themes/themes6.png', color: '#232430' },
+    { id: '7', name: 'Bắt Nạt', slug: 'bully', image: '/ig_themes/themes7.png', color: '#D7C6BE' },
+    { id: '8', name: 'Phi Nhân', slug: 'non-human', image: '/ig_themes/themes8.png', color: '#393737' },
+    { id: '9', name: 'Huyền Huyễn', slug: 'fantasy', image: '/ig_themes/themes9.png', color: '#3D4B64' },
+    { id: '10', name: 'Siêu Nhiên', slug: 'supernatural', image: '/ig_themes/themes4.png', color: '#E8C4D8' },
+    { id: '11', name: 'Hài Hước', slug: 'comedy', image: '/ig_themes/themes5.png', color: '#FFE5B4' },
+    { id: '12', name: 'Hành Động', slug: 'action', image: '/ig_themes/themes6.png', color: '#2A5F4F' },
 ];
 
 const PopularGenres = () => {
@@ -36,7 +36,7 @@ const PopularGenres = () => {
     const clipPathValue = `polygon(${cornerSize} 0, 100% 0, 100% calc(100% - ${bottomCut}), calc(100% - ${bottomCut}) 100%, 0 100%, 0 ${cornerSize})`;
 
     return (
-        <section className="mb-8 md:mb-12 bg-black py-6 md:py-8 px-4 rounded-2xl">
+        <section className="mb-10 md:mb-14 bg-black py-6 md:py-8 px-4 rounded-2xl">
             <div className="mb-6 md:mb-8">
                 <h2 className="title-main">Thể loại</h2>
             </div>
@@ -46,7 +46,7 @@ const PopularGenres = () => {
                     <Link
                         key={genre.id}
                         href={`/the-loai/${genre.slug}`}
-                        className="group block"
+                        className="group block active:scale-95 transition-transform"
                     >
                         <div className="relative h-[150px] md:h-[175px] lg:h-[200px] w-full transform transition-transform duration-300 group-hover:-translate-y-1">
                             {/* Outer Border with dynamic clipPath */}

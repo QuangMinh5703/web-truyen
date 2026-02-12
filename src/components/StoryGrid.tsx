@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, Eye } from 'lucide-react';
-import { otruyenApi, Story, Genre as ApiGenre } from '@/lib/api';
+import { otruyenApi, Story } from '@/lib/api';
 import { getImageUrl } from '@/lib/api';
 import ErrorDisplay from './ui/ErrorDisplay';
 
@@ -51,7 +50,7 @@ function StoryCard({ story }: { story: Story }) {
   return (
     <Link
       href={`/truyen/${story.slug}`}
-      className="group block"
+      className="group block active:scale-[0.97] transition-transform"
     >
       <div className="relative overflow-hidden rounded-lg mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">
         <Image
@@ -103,7 +102,7 @@ function SelfFetchingStoryGrid({ limit = 20, type = 'truyen-moi' }: StoryGridPro
         const response = await otruyenApi.getStoriesByType(type, { page: 1, limit });
         setStories(response?.items?.slice(0, limit) || []);
       } catch (err) {
-        console.error('Error fetching stories:', err);
+
         setError('Không thể tải danh sách truyện. Vui lòng thử lại sau.');
       } finally {
         setLoading(false);

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ChevronDown, Menu, X, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
+import { GENRES } from '@/lib/genres';
 
 interface NavbarProps {
     className?: string;
@@ -23,24 +24,7 @@ const Navbar = ({ className }: NavbarProps) => {
     const genreDropdownRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-    const genres = [
-        { name: "BL", slug: "bl" },
-        { name: "GL", slug: "gl" },
-        { name: "Action", slug: "action" },
-        { name: "Mature", slug: "mature" },
-        { name: "Adventure", slug: "adventure" },
-        { name: "Chuyển sinh", slug: "chuyen-sinh" },
-        { name: "Comedy", slug: "comedy" },
-        { name: "Drama", slug: "drama" },
-        { name: "Harem", slug: "harem" },
-        { name: "Historical", slug: "historical" },
-        { name: "Ngôn Tình", slug: "ngon-tinh" },
-        { name: "Psychological", slug: "psychological" },
-        { name: "Romance", slug: "romance" },
-        { name: "Sci-fi", slug: "sci-fi" },
-        { name: "Trinh Thám", slug: "trinh-tham" },
-        { name: "Slice of Life", slug: "slice-of-life" }
-    ];
+    const genres = GENRES;
 
     const menuItems = [
         { name: 'Trang chủ', href: '/' },

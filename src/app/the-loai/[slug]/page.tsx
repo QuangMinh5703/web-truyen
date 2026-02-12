@@ -23,37 +23,40 @@ const GenrePage = () => {
   // Map slug to display name
   const genreNames: Record<string, string> = {
     'lang-man': 'Lãng Mạn',
-    'high-school': 'High School',
-    'gangster': 'Gangster',
-    'obsessive': 'Obsessive',
-    'historical': 'Historical',
-    'one-side-love': 'One-side Love',
-    'bully': 'Bully',
-    'non-human': 'Non-human',
-    'fantasy': 'Fantasy',
-    'supernatural': 'Supernatural',
-    'comedy': 'Comedy',
-    'action': 'Action',
-    'mystery': 'Mystery',
-    'tragedy': 'Tragedy',
-    'drama': 'Drama',
+    'high-school': 'Học Đường',
+    'gangster': 'Giang Hồ',
+    'obsessive': 'Ám Ảnh',
+    'historical': 'Lịch Sử',
+    'one-side-love': 'Tình Đơn Phương',
+    'bully': 'Bắt Nạt',
+    'non-human': 'Phi Nhân',
+    'fantasy': 'Huyền Huyễn',
+    'supernatural': 'Siêu Nhiên',
+    'comedy': 'Hài Hước',
+    'action': 'Hành Động',
+    'mystery': 'Bí Ẩn',
+    'tragedy': 'Bi Kịch',
+    'drama': 'Chính Kịch',
     'manhwa': 'Manhwa',
     'martial-arts': 'Võ Thuật',
     'truyen-mau': 'Truyện Màu',
-    // Added from Navbar
     'bl': 'BL',
     'gl': 'GL',
-    'mature': 'Mature',
-    'adventure': 'Adventure',
-    'chuyen-sinh': 'Chuyển sinh',
+    'mature': 'Trưởng Thành',
+    'adventure': 'Phiêu Lưu',
+    'chuyen-sinh': 'Chuyển Sinh',
     'harem': 'Harem',
     'ngon-tinh': 'Ngôn Tình',
-    'psychological': 'Psychological',
-    'romance': 'Romance',
-    'sci-fi': 'Sci-fi',
+    'psychological': 'Tâm Lý',
+    'romance': 'Tình Cảm',
+    'sci-fi': 'Khoa Học Viễn Tưởng',
     'trinh-tham': 'Trinh Thám',
-    'slice-of-life': 'Slice of Life'
+    'slice-of-life': 'Đời Thường',
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [slug]);
 
   useEffect(() => {
     const fetchGenreStories = async () => {
@@ -63,32 +66,21 @@ const GenrePage = () => {
         setLoading(true);
         setError(null);
 
-        console.log('[Genre] Fetching stories for genre:', slug);
-
-        // Try to get genre name
         const displayName = genreNames[slug] || slug;
         setGenreName(displayName);
 
-        // Fetch stories by genre (we'll use search as fallback)
         let listResponse;
         try {
           listResponse = await otruyenApi.getStoriesByGenre(slug, { page: 1, limit: 20 });
-        } catch (genreError) {
-          // If genre endpoint doesn't work, try search
-          console.log('[Genre] Genre endpoint failed, trying search:', genreError);
+        } catch {
           listResponse = await otruyenApi.searchStories(displayName, { page: 1, limit: 20 });
         }
 
-        console.log('[Genre] Response:', listResponse);
-
         if (listResponse && listResponse.items) {
           setStories(listResponse.items.slice(0, 20));
-        } else {
-          console.warn('[Genre] No stories found for genre:', slug);
         }
 
       } catch (err) {
-        console.error('[Genre] Error:', err);
         setError(err instanceof Error ? err.message : 'Có lỗi xảy ra');
       } finally {
         setLoading(false);

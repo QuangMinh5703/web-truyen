@@ -12,26 +12,26 @@ const FooterComponent = ({ className }: FooterComponentProps) => {
                 {/* Navigation Links */}
                 <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center sm:justify-start gap-x-8 gap-y-4 text-sm mb-8">
                     <Link href="/gioi-thieu" className="footer-text hover:text-white transition-colors">
-                        About Sketcha
+                        Giới thiệu
                     </Link>
                     <Link href="/dieu-khoan" className="footer-text hover:text-white transition-colors">
-                        Terms of Use
+                        Điều khoản sử dụng
                     </Link>
                     <Link href="/chinh-sach" className="footer-text hover:text-white transition-colors">
-                        Privacy Policy
+                        Chính sách bảo mật
                     </Link>
                     <Link href="/ho-tro" className="footer-text hover:text-white transition-colors">
-                        Customer Support
+                        Hỗ trợ
                     </Link>
                     <Link href="/yeu-cau" className="footer-text hover:text-white transition-colors">
-                        Submission
+                        Yêu cầu đăng truyện
                     </Link>
                 </div>
 
                 {/* Contact Info */}
                 <div className="mb-8 text-center sm:text-left">
                     <p className="footer-text">
-                        Contact Us: <a href="mailto:contact@sketcha.com" className="hover:text-lime-400 transition-colors">contact@sketcha.com</a>
+                        Liên hệ: <a href="mailto:contact@sketcha.com" className="hover:text-lime-400 transition-colors">contact@sketcha.com</a>
                     </p>
                 </div>
 
@@ -83,7 +83,7 @@ const FooterComponent = ({ className }: FooterComponentProps) => {
                     </div>
 
                     <div className="footer-text text-sm opacity-60">
-                        © 2026 Sketcha. All rights reserved.
+                        © 2026 M-Truyện. Tất cả quyền được bảo lưu.
                     </div>
                 </div>
             </div>
