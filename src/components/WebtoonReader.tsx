@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import Image from 'next/image';
 import { useInView } from 'react-intersection-observer';
 import { WebtoonImage } from './WebtoonImage';
 import { useVirtualizer } from '@tanstack/react-virtual';
@@ -90,10 +89,6 @@ export default function WebtoonReader({
 
   const { backgroundColor } = useReaderSettings();
 
-  /**
-   * @state {boolean} isWebtoon - True if the content is detected as a vertical webtoon.
-   */
-  const [isWebtoon, setIsWebtoon] = useState(false);
 
   /**
    * @effect Initializes the pages state from the images prop.
@@ -254,12 +249,6 @@ export default function WebtoonReader({
       style={{ backgroundColor }}
       onScroll={handleScroll}
     >
-      {isWebtoon && (
-        <div className="fixed top-4 right-4 z-50 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium shadow-lg">
-          Chế độ Webtoon
-        </div>
-      )}
-
       <div className="fixed top-0 left-0 w-full h-1 bg-white/5 z-50">
         <div
           className="h-full bg-lime-400 shadow-[0_0_10px_rgba(168,227,0,0.5)] transition-all duration-300"
