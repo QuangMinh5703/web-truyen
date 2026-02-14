@@ -4,8 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, getImageUrl } from '@/lib/api';
 import Image from "next/image";
-import { useViewTracking } from '@/lib/hooks/useViewTracking';
-import { StoryStats } from '@/lib/view-tracking';
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
 import ErrorDisplay from './ui/ErrorDisplay';
 import EyeIcon from './icons/EyeIcon';
@@ -74,11 +72,10 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
 };
 
 const TopRankings = () => {
-    const [topStories, setTopStories] = useState<(Story | StoryStats)[]>([]);
+    const [topStories, setTopStories] = useState<Story[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
-    const { getHotStories } = useViewTracking();
     const { isMobile, isDesktop } = useResponsive();
 
     useEffect(() => {
@@ -90,40 +87,18 @@ const TopRankings = () => {
         const fetchTopStories = async () => {
             try {
                 setLoading(true);
-                // getHotStories is now async, so we await it
-                const hotStories = await getHotStories('month', 10);
-
-                if (hotStories.length === 0) {
-                    setTopStories([]);
-                    return;
-                }
-
-                const stories = await Promise.all(hotStories.map(async (story) => {
-                    if ('storySlug' in story && !('cover' in story)) {
-                        try {
-                            const storyDetails = await otruyenApi.getStoryBySlug(story.storySlug);
-                            return { ...story, ...storyDetails };
-                        } catch (e) {
-    
-                            return story; // Keep basic stats if fetch fails
-                        }
-                    }
-                    return story;
-                }));
-
-                // Filter out any stories that might have failed completely or have no valid data for display
-                setTopStories(stories.filter(s => !!s));
-            } catch (error) {
-
-                // Don't show error to user immediately if it's just a config issue, just show empty
-                // setError('Không thể tải bảng xếp hạng truyện.');
+                const response = await otruyenApi.getHomeStories();
+                const stories = response?.items ?? [];
+                setTopStories(stories.slice(0, 6));
+            } catch {
+                setError('Không thể tải bảng xếp hạng truyện.');
             } finally {
                 setLoading(false);
             }
         };
 
         fetchTopStories();
-    }, [getHotStories]);
+    }, []);
 
     if (loading) {
         return (
@@ -170,13 +145,12 @@ const TopRankings = () => {
     if (!topStories || topStories.length === 0) return null;
 
     const movie = topStories[0];
-    const otherTopStories = topStories.slice(1, 6); // Lấy 5 truyện tiếp theo
+    const otherTopStories = topStories.slice(1, 6);
 
-    const movieName = ('name' in movie ? movie.name : ('storyTitle' in movie ? movie.storyTitle : null)) || 'Truyện tranh';
-    const movieSlug = ('slug' in movie ? movie.slug : ('storySlug' in movie ? movie.storySlug : null)) || '';
+    const movieName = movie.name || 'Truyện tranh';
+    const movieSlug = movie.slug || '';
     const imageBgUrl = backgroundImages[0] || localBackground[0];
-
-    const imageUrl = getImageUrl(('cover' in movie && movie.cover) || ('thumbnail' in movie && movie.thumbnail) || ('thumb_url' in movie && movie.thumb_url) || '');
+    const imageUrl = getImageUrl(movie.thumb_url || movie.cover || movie.thumbnail || '');
 
     return (
         <section className="mb-10 md:mb-14">
@@ -187,7 +161,7 @@ const TopRankings = () => {
                 <Link href={`/xep-hang`} className="flex items-center justify-center min-w-[90px] min-h-[44px] hover:scale-105 transition-transform active:scale-95">
                     <Image
                         src="/view_more.svg"
-                        alt="View more"
+                        alt="Xem thêm"
                         width={isMobile ? 90 : 116}
                         height={isMobile ? 44 : 52}
                         className="cursor-pointer"
@@ -244,18 +218,10 @@ const TopRankings = () => {
                                     <h2 className="top-ranking-title line-clamp-2 drop-shadow-lg text-white">
                                         🔥 {movieName}
                                     </h2>
-                                    {'totalViews' in movie && (
-                                        <div className="flex items-center gap-2">
-                                            <EyeIcon width={20} height={20} className="flex-shrink-0" />
-                                            <span className="text-lg md:text-xl text-lime-400 font-medium drop-shadow">
-                                                {movie.totalViews.toLocaleString('vi-VN')}
-                                            </span>
-                                        </div>
-                                    )}
                                     <div className="pt-2">
                                         <Image
                                             src="/read_now.svg"
-                                            alt="Read now"
+                                            alt="Đọc ngay"
                                             width={isMobile ? 120 : 130}
                                             height={isMobile ? 45 : 48}
                                             className="cursor-pointer hover:brightness-110 active:scale-95 transition-all"
@@ -274,19 +240,17 @@ const TopRankings = () => {
                 >
                     <div className={`${isMobile ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : 'flex flex-col space-y-1'}`}>
                         {otherTopStories.map((story, index) => {
-                            const storyName = ('name' in story ? story.name : ('storyTitle' in story ? story.storyTitle : null)) || 'Truyện tranh';
-                            const storySlug = ('slug' in story ? story.slug : ('storySlug' in story ? story.storySlug : null)) || '';
-                            const storyImage = getImageUrl(('cover' in story && story.cover) || ('thumbnail' in story && story.thumbnail) || ('thumb_url' in story && story.thumb_url) || '');
-                            const views = 'totalViews' in story ? story.totalViews : undefined;
+                            const storyName = story.name || 'Truyện tranh';
+                            const storySlug = story.slug || '';
+                            const storyImage = getImageUrl(story.thumb_url || story.cover || story.thumbnail || '');
 
                             return (
                                 <MangaItem
-                                    key={('id' in story && story.id) || index}
+                                    key={story._id || story.slug || index}
                                     number={index + 2}
                                     title={storyName}
                                     image={storyImage}
                                     slug={storySlug}
-                                    views={views}
                                 />
                             );
                         })}

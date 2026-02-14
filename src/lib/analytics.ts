@@ -5,7 +5,6 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { viewTrackingService } from './view-tracking'; // Import viewTrackingService
 
 // Analytics event types
 export interface AnalyticsEvent {
@@ -234,8 +233,6 @@ class AnalyticsService {
       },
     });
 
-    // Sync with ViewTrackingService
-    viewTrackingService.trackStoryView({ id: storyId, slug: storySlug, title: storyTitle });
   }
 
   public getHotStoriesByAnalytics(limit: number = 10): ContentMetrics[] {

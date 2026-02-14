@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,7 +10,6 @@ import { otruyenApi, Story, getImageUrl, UiChapter } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
 import ErrorDisplay from '@/components/ui/ErrorDisplay';
-import { useViewTracking } from '@/lib/hooks/useViewTracking';
 
 const getChapterId = (url: string | undefined): string => {
   if (!url) return '';
@@ -37,23 +36,10 @@ const StoryDetailClient = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastReadChapter, setLastReadChapter] = useState<{ chapterId: string, page: number } | null>(null);
 
-  const { trackView } = useViewTracking();
-  const trackedRef = useRef(false);
   const { ref: commentsRef, inView: commentsInView } = useInView({
     triggerOnce: true,
     rootMargin: '200px 0px',
   });
-
-  useEffect(() => {
-    if (story && story._id && story.slug && story.name && !trackedRef.current) {
-      trackView({
-        id: story._id,
-        slug: story.slug,
-        title: story.name,
-      });
-      trackedRef.current = true;
-    }
-  }, [story, trackView]);
 
   useEffect(() => {
     const fetchStory = async () => {
