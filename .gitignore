@@ -42,3 +42,7 @@ next-env.d.ts
 
 # Windows reserved filenames
 nul
+
+# ranking worker
+ranking-worker/node_modules
+ranking-worker/.wrangler
