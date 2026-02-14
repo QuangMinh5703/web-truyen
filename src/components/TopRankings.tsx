@@ -42,7 +42,7 @@ interface MangaItemProps {
 }
 
 const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => (
-    <Link href={`/truyen/${slug}`} className="flex-shrink-0 w-full sm:w-auto md:w-full">
+    <Link href={`/truyen/${slug}`} className="flex-shrink-0 w-full sm:w-auto md:w-full active:scale-[0.97] transition-transform">
         <div className="flex gap-3 md:gap-4 p-2 md:p-3 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group">
             <div className="relative flex-shrink-0 hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
                 <Image
@@ -190,7 +190,7 @@ const TopRankings = () => {
                     className="overflow-hidden rounded-2xl relative"
                     style={{ flexBasis: isMobile ? '100%' : 'var(--ranking-featured-width)' }}
                 >
-                    <Link href={`/truyen/${featured.slug}`} className="block w-full">
+                    <Link href={`/truyen/${featured.slug}`} className="block w-full active:scale-[0.99] transition-transform">
                         <div
                             className="relative w-full overflow-hidden group cursor-pointer transition-all duration-500"
                             style={{ height: 'var(--ranking-height)' }}

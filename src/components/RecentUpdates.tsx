@@ -157,7 +157,7 @@ const RecentUpdates = () => {
                                 <Link
                                     key={storyId}
                                     href={`/truyen/${storySlug}`}
-                                    className="group block flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] snap-start"
+                                    className="group block flex-shrink-0 w-[calc(50%-12px)] sm:w-[calc(33.33%-16px)] lg:w-[calc(20%-19.2px)] snap-start active:scale-[0.97] transition-transform"
                                     onDragStart={(e) => e.preventDefault()}
                                 >
                                     <div className="relative overflow-hidden rounded-xl mb-3 md:mb-4 aspect-[2/3] shadow-lg group-hover:shadow-lime-400/20 transition-all duration-300">

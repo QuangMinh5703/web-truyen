@@ -399,8 +399,8 @@ class OtruyenApi {
    */
   async getGenres(): Promise<Genre[] | undefined> {
     const response = await this.fetch<unknown>(ENDPOINTS.CATEGORY);
-    const items = (response as { items?: Genre[] }).items || (Array.isArray(response) ? response : undefined);
-    return items as Genre[];
+    const data = response.data as { items?: Genre[] } | undefined;
+    return data?.items;
   }
 
   /**

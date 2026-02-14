@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { ChevronDown, Menu, X, Search } from 'lucide-react';
 import Image from 'next/image';
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
-import { GENRES } from '@/lib/genres';
+import { GENRES_FALLBACK, fetchGenres, GenreItem } from '@/lib/genres';
 
 interface NavbarProps {
     className?: string;
@@ -23,8 +23,12 @@ const Navbar = ({ className }: NavbarProps) => {
 
     const genreDropdownRef = useRef<HTMLDivElement>(null);
     const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const [genres, setGenres] = useState<GenreItem[]>(GENRES_FALLBACK);
 
-    const genres = GENRES;
+    // Fetch genres from API once (cached for 1 hour)
+    useEffect(() => {
+        fetchGenres().then(setGenres).catch(() => {});
+    }, []);
 
     const menuItems = [
         { name: 'Trang chủ', href: '/' },
