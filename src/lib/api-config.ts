@@ -13,4 +13,4 @@ export const API_CONFIG = {
 
 // Ranking Worker API (Cloudflare Worker + D1)
 export const RANKING_API_URL =
-  process.env.NEXT_PUBLIC_RANKING_API_URL || 'https://mtruyen-ranking.quangminh5703.workers.dev';
+  process.env.NEXT_PUBLIC_RANKING_API_URL || 'https://mtruyen-ranking.kinal.workers.dev';
