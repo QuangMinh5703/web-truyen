@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mtruyen-ranking",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mtruyen-ranking",
+      "database_id": "REPLACE_WITH_ACTUAL_DATABASE_ID"
+    }
+  ]
+}

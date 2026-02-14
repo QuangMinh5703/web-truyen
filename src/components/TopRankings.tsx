@@ -3,16 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, getImageUrl } from '@/lib/api';
+import { getTopStories, RankedStory } from '@/lib/ranking';
 import Image from "next/image";
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
 import ErrorDisplay from './ui/ErrorDisplay';
 import EyeIcon from './icons/EyeIcon';
 
-interface MangaItemProps {
-    number: number;
-    title: string;
-    image: string;
-    slug?: string;
+interface DisplayStory {
+    name: string;
+    slug: string;
+    imageUrl: string;
     views?: number;
 }
 
@@ -33,71 +33,97 @@ const shuffleArray = <T,>(array: T[]): T[] => {
     return newArray;
 };
 
-const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => {
-    return (
-        <Link href={`/truyen/${slug || ''}`} className="flex-shrink-0 w-full sm:w-auto md:w-full">
-            <div className="flex gap-3 md:gap-4 p-2 md:p-3 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group">
-                {/* Thumbnail with badge */}
-                <div className="relative flex-shrink-0 hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
-                    <Image
-                        src={image}
-                        alt={title}
-                        width={80}
-                        height={96}
-                        className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg"
-                        onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
-                    />
-                    <div
-                        className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100"
-                    >
-                        <span className="top-ranking-banner-text text-xs md:text-sm">{number}</span>
-                    </div>
-                </div>
+interface MangaItemProps {
+    number: number;
+    title: string;
+    image: string;
+    slug: string;
+    views?: number;
+}
 
-                {/* Title */}
-                <div className="flex-1 min-w-0 flex flex-col justify-center">
-                    <h3 className="story-list-name line-clamp-2 text-sm md:text-base font-medium text-white group-hover:text-lime-400">
-                        {title}
-                    </h3>
-                    {views !== undefined && (
-                        <div className="flex items-center gap-1.5 mt-1">
-                            <EyeIcon width={16} height={16} className="flex-shrink-0" />
-                            <span className="text-xs md:text-sm text-gray-500">{views.toLocaleString('vi-VN')}</span>
-                        </div>
-                    )}
+const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => (
+    <Link href={`/truyen/${slug}`} className="flex-shrink-0 w-full sm:w-auto md:w-full">
+        <div className="flex gap-3 md:gap-4 p-2 md:p-3 cursor-pointer hover:bg-white/5 rounded-xl transition-colors group">
+            <div className="relative flex-shrink-0 hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
+                <Image
+                    src={image}
+                    alt={title}
+                    width={80}
+                    height={96}
+                    className="w-16 h-20 md:w-20 md:h-24 object-cover rounded-lg"
+                    onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
+                />
+                <div className="absolute -top-1 -right-1 w-6 h-6 flex items-center justify-center top-ranking-banner scale-75 md:scale-100">
+                    <span className="top-ranking-banner-text text-xs md:text-sm">{number}</span>
                 </div>
             </div>
-        </Link>
-    );
-};
+            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                <h3 className="story-list-name line-clamp-2 text-sm md:text-base font-medium text-white group-hover:text-lime-400">
+                    {title}
+                </h3>
+                {views !== undefined && views > 0 && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                        <EyeIcon width={16} height={16} className="flex-shrink-0" />
+                        <span className="text-xs md:text-sm text-gray-500">{views.toLocaleString('vi-VN')}</span>
+                    </div>
+                )}
+            </div>
+        </div>
+    </Link>
+);
+
+/**
+ * Merge ranking data (có views) với fallback từ otruyenApi (nếu ranking trống).
+ * Ranking Worker trả thumb_url dạng filename → cần getImageUrl().
+ */
+async function fetchDisplayStories(): Promise<DisplayStory[]> {
+    // Try ranking API first
+    const ranked = await getTopStories('month', 6);
+
+    if (ranked.length > 0) {
+        return ranked.map((r) => ({
+            name: r.story_name,
+            slug: r.story_slug,
+            imageUrl: getImageUrl(r.thumb_url),
+            views: r.total_views,
+        }));
+    }
+
+    // Fallback: show latest stories from otruyenApi
+    const response = await otruyenApi.getHomeStories();
+    const stories = response?.items ?? [];
+    return stories.slice(0, 6).map((s: Story) => ({
+        name: s.name || 'Truyện tranh',
+        slug: s.slug || '',
+        imageUrl: getImageUrl(s.thumb_url || s.cover || s.thumbnail || ''),
+    }));
+}
 
 const TopRankings = () => {
-    const [topStories, setTopStories] = useState<Story[]>([]);
+    const [stories, setStories] = useState<DisplayStory[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [backgroundImages, setBackgroundImages] = useState<string[]>([]);
-    const { isMobile, isDesktop } = useResponsive();
+    const { isMobile } = useResponsive();
 
     useEffect(() => {
-        const shuffledBackground = shuffleArray(localBackground);
-        setBackgroundImages(shuffledBackground);
+        setBackgroundImages(shuffleArray(localBackground));
     }, []);
 
     useEffect(() => {
-        const fetchTopStories = async () => {
+        let cancelled = false;
+        (async () => {
             try {
                 setLoading(true);
-                const response = await otruyenApi.getHomeStories();
-                const stories = response?.items ?? [];
-                setTopStories(stories.slice(0, 6));
+                const data = await fetchDisplayStories();
+                if (!cancelled) setStories(data);
             } catch {
-                setError('Không thể tải bảng xếp hạng truyện.');
+                if (!cancelled) setError('Không thể tải bảng xếp hạng.');
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
-        };
-
-        fetchTopStories();
+        })();
+        return () => { cancelled = true; };
     }, []);
 
     if (loading) {
@@ -134,31 +160,20 @@ const TopRankings = () => {
     }
 
     if (error) {
-        return (
-            <ErrorDisplay
-                message={error}
-                onRetry={() => window.location.reload()}
-            />
-        );
+        return <ErrorDisplay message={error} onRetry={() => window.location.reload()} />;
     }
 
-    if (!topStories || topStories.length === 0) return null;
+    if (stories.length === 0) return null;
 
-    const movie = topStories[0];
-    const otherTopStories = topStories.slice(1, 6);
-
-    const movieName = movie.name || 'Truyện tranh';
-    const movieSlug = movie.slug || '';
+    const featured = stories[0];
+    const rest = stories.slice(1, 6);
     const imageBgUrl = backgroundImages[0] || localBackground[0];
-    const imageUrl = getImageUrl(movie.thumb_url || movie.cover || movie.thumbnail || '');
 
     return (
         <section className="mb-10 md:mb-14">
             <div className="flex items-center justify-between mb-4 md:mb-6">
-                <h2 className="title-main">
-                    Bảng xếp hạng
-                </h2>
-                <Link href={`/xep-hang`} className="flex items-center justify-center min-w-[90px] min-h-[44px] hover:scale-105 transition-transform active:scale-95">
+                <h2 className="title-main">Bảng xếp hạng</h2>
+                <Link href="/xep-hang" className="flex items-center justify-center min-w-[90px] min-h-[44px] hover:scale-105 transition-transform active:scale-95">
                     <Image
                         src="/view_more.svg"
                         alt="Xem thêm"
@@ -170,17 +185,16 @@ const TopRankings = () => {
             </div>
 
             <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-6 md:gap-4`}>
-                {/* Left Side - Featured Story */}
+                {/* Featured Story */}
                 <div
                     className="overflow-hidden rounded-2xl relative"
                     style={{ flexBasis: isMobile ? '100%' : 'var(--ranking-featured-width)' }}
                 >
-                    <Link href={`/truyen/${movieSlug}`} className="block w-full">
+                    <Link href={`/truyen/${featured.slug}`} className="block w-full">
                         <div
                             className="relative w-full overflow-hidden group cursor-pointer transition-all duration-500"
                             style={{ height: 'var(--ranking-height)' }}
                         >
-                            {/* Background Image */}
                             <div className="absolute inset-0 bg-gray-900">
                                 <Image
                                     src={imageBgUrl}
@@ -192,18 +206,17 @@ const TopRankings = () => {
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                             </div>
 
-                            {/* Content Container */}
                             <div className="relative h-full flex flex-col md:flex-row items-center md:items-end p-6 md:p-8 gap-6 md:gap-8">
-                                {/* Story Thumbnail */}
                                 <div
                                     className="relative flex-shrink-0 bg-gray-800 rounded-xl overflow-hidden shadow-2xl transform transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-lime-400/20 herobanner-card-3d"
                                     style={{
                                         width: 'var(--ranking-thumbnail-width)',
                                         height: 'var(--ranking-thumbnail-height)'
-                                    }}>
+                                    }}
+                                >
                                     <Image
-                                        src={imageUrl}
-                                        alt={movieName}
+                                        src={featured.imageUrl}
+                                        alt={featured.name}
                                         fill
                                         className="object-cover"
                                         onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
@@ -213,11 +226,18 @@ const TopRankings = () => {
                                     </div>
                                 </div>
 
-                                {/* Right Side Content */}
                                 <div className="flex-1 flex flex-col items-center md:items-start text-center md:text-left justify-end md:pb-4 space-y-4 md:space-y-6">
                                     <h2 className="top-ranking-title line-clamp-2 drop-shadow-lg text-white">
-                                        🔥 {movieName}
+                                        🔥 {featured.name}
                                     </h2>
+                                    {featured.views !== undefined && featured.views > 0 && (
+                                        <div className="flex items-center gap-2">
+                                            <EyeIcon width={20} height={20} className="flex-shrink-0" />
+                                            <span className="text-lg md:text-xl text-lime-400 font-medium drop-shadow">
+                                                {featured.views.toLocaleString('vi-VN')}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="pt-2">
                                         <Image
                                             src="/read_now.svg"
@@ -233,27 +253,22 @@ const TopRankings = () => {
                     </Link>
                 </div>
 
-                {/* Right Side - Top Stories List */}
+                {/* Top Stories List */}
                 <div
                     className="top-ranking-stories-list rounded-2xl flex flex-col p-2 md:p-4 overflow-hidden shadow-xl"
                     style={{ flexBasis: isMobile ? '100%' : 'var(--ranking-list-width)' }}
                 >
                     <div className={`${isMobile ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : 'flex flex-col space-y-1'}`}>
-                        {otherTopStories.map((story, index) => {
-                            const storyName = story.name || 'Truyện tranh';
-                            const storySlug = story.slug || '';
-                            const storyImage = getImageUrl(story.thumb_url || story.cover || story.thumbnail || '');
-
-                            return (
-                                <MangaItem
-                                    key={story._id || story.slug || index}
-                                    number={index + 2}
-                                    title={storyName}
-                                    image={storyImage}
-                                    slug={storySlug}
-                                />
-                            );
-                        })}
+                        {rest.map((story, index) => (
+                            <MangaItem
+                                key={story.slug || index}
+                                number={index + 2}
+                                title={story.name}
+                                image={story.imageUrl}
+                                slug={story.slug}
+                                views={story.views}
+                            />
+                        ))}
                     </div>
                 </div>
             </div>

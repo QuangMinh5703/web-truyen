@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -10,6 +10,7 @@ import { otruyenApi, Story, getImageUrl, UiChapter } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
 import ErrorDisplay from '@/components/ui/ErrorDisplay';
+import { trackView } from '@/lib/ranking';
 
 const getChapterId = (url: string | undefined): string => {
   if (!url) return '';
@@ -36,6 +37,7 @@ const StoryDetailClient = () => {
   const [error, setError] = useState<string | null>(null);
   const [lastReadChapter, setLastReadChapter] = useState<{ chapterId: string, page: number } | null>(null);
 
+  const trackedRef = useRef(false);
   const { ref: commentsRef, inView: commentsInView } = useInView({
     triggerOnce: true,
     rootMargin: '200px 0px',
@@ -67,6 +69,14 @@ const StoryDetailClient = () => {
 
     fetchStory();
   }, [slug]);
+
+  // Track view khi story đã load
+  useEffect(() => {
+    if (story?.slug && story?.name && !trackedRef.current) {
+      trackView(story.slug, story.name, story.thumb_url || '');
+      trackedRef.current = true;
+    }
+  }, [story]);
 
   // Scroll to top on mount
   useEffect(() => {

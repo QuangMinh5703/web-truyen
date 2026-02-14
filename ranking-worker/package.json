@@ -1,0 +1,17 @@
+{
+  "name": "mtruyen-ranking",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create mtruyen-ranking",
+    "db:init": "wrangler d1 execute mtruyen-ranking --remote --file=schema.sql",
+    "db:init:local": "wrangler d1 execute mtruyen-ranking --local --file=schema.sql"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250214.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
+  }
+}
