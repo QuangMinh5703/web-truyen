@@ -86,20 +86,23 @@ const StoryDetailClient = () => {
   const allChapters: UiChapter[] = useMemo(() => {
     if (!story?.chapters) return [];
 
+    const seen = new Set<string>();
     return story.chapters
       .flatMap(server => server.server_data || [])
-      .map((apiChapter) => {
+      .reduce<UiChapter[]>((acc, apiChapter) => {
         let id = getChapterId(apiChapter.chapter_api_data);
         if (!id && apiChapter.filename) {
           id = apiChapter.filename;
         }
-        return {
+        if (!id || seen.has(id)) return acc;
+        seen.add(id);
+        acc.push({
           id,
           name: apiChapter.chapter_name || '',
           title: apiChapter.chapter_title || '',
-        };
-      })
-      .filter(chapter => chapter.id);
+        });
+        return acc;
+      }, []);
   }, [story]);
 
   useEffect(() => {
