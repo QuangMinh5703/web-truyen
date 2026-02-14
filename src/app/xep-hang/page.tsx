@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { getTopStories, RankedStory } from '@/lib/ranking';
-import { getImageUrl } from '@/lib/api';
+import { getTopStories, enrichRankedStories, EnrichedRankedStory } from '@/lib/ranking';
 import Navbar from '@/components/Navbar';
 import FooterComponent from '@/components/FooterComponent';
 import Image from 'next/image';
@@ -19,7 +18,7 @@ const PERIOD_LABELS: Record<Period, string> = {
 };
 
 const RankingPage = () => {
-  const [stories, setStories] = useState<RankedStory[]>([]);
+  const [stories, setStories] = useState<EnrichedRankedStory[]>([]);
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<Period>('month');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,8 +29,13 @@ const RankingPage = () => {
     (async () => {
       setLoading(true);
       try {
-        const data = await getTopStories(period, 100);
-        if (!cancelled) setStories(data);
+        const raw = await getTopStories(period, 100);
+        if (!cancelled && raw.length > 0) {
+          const enriched = await enrichRankedStories(raw);
+          if (!cancelled) setStories(enriched);
+        } else if (!cancelled) {
+          setStories([]);
+        }
       } catch {
         if (!cancelled) setStories([]);
       } finally {
@@ -41,7 +45,6 @@ const RankingPage = () => {
     return () => { cancelled = true; };
   }, [period]);
 
-  // Reset page khi đổi period
   useEffect(() => { setCurrentPage(1); }, [period]);
 
   const currentStories = useMemo(() => {
@@ -94,18 +97,17 @@ const RankingPage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-6 gap-y-8">
               {currentStories.map((story, index) => {
                 const rank = (currentPage - 1) * storiesPerPage + index + 1;
-                const imageUrl = getImageUrl(story.thumb_url);
 
                 return (
                   <Link
-                    key={story.story_slug}
-                    href={`/truyen/${story.story_slug}`}
-                    className="group block flex-shrink-0 snap-start"
+                    key={story.slug}
+                    href={`/truyen/${story.slug}`}
+                    className="group block flex-shrink-0 snap-start active:scale-[0.97] transition-transform"
                   >
                     <div className="relative mb-4 aspect-[2/3] hover:scale-105 transition-transform shadow-lg group-hover:shadow-lime-400/20 rounded-lg">
                       <Image
-                        src={imageUrl || '/placeholder-story.jpg'}
-                        alt={story.story_name}
+                        src={story.imageUrl || '/placeholder-story.jpg'}
+                        alt={story.name}
                         fill
                         className="object-cover rounded-lg shadow-md"
                         onError={(e) => { e.currentTarget.src = '/placeholder-story.jpg'; }}
@@ -116,12 +118,12 @@ const RankingPage = () => {
                     </div>
 
                     <h3 className="mb-1 recent-update-title line-clamp-2">
-                      {story.story_name}
+                      {story.name}
                     </h3>
                     <div className="flex items-center gap-1.5">
                       <EyeIcon width={14} height={14} className="flex-shrink-0" />
                       <span className="text-xs text-gray-500">
-                        {story.total_views.toLocaleString('vi-VN')} lượt xem
+                        {story.views.toLocaleString('vi-VN')} lượt xem
                       </span>
                     </div>
                   </Link>

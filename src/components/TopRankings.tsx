@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { otruyenApi, Story, getImageUrl } from '@/lib/api';
-import { getTopStories, RankedStory } from '@/lib/ranking';
+import { getTopStories, enrichRankedStories, EnrichedRankedStory } from '@/lib/ranking';
 import Image from "next/image";
 import { useResponsive } from '@/lib/hooks/useMediaQuery';
 import ErrorDisplay from './ui/ErrorDisplay';
@@ -73,19 +73,19 @@ const MangaItem = ({ number, title, image, slug, views }: MangaItemProps) => (
 );
 
 /**
- * Merge ranking data (có views) với fallback từ otruyenApi (nếu ranking trống).
- * Ranking Worker trả thumb_url dạng filename → cần getImageUrl().
+/**
+ * Fetch ranked stories with enriched thumbnails, or fall back to latest stories.
  */
 async function fetchDisplayStories(): Promise<DisplayStory[]> {
-    // Try ranking API first
     const ranked = await getTopStories('month', 6);
 
     if (ranked.length > 0) {
-        return ranked.map((r) => ({
-            name: r.story_name,
-            slug: r.story_slug,
-            imageUrl: getImageUrl(r.thumb_url),
-            views: r.total_views,
+        const enriched = await enrichRankedStories(ranked);
+        return enriched.map((e) => ({
+            name: e.name,
+            slug: e.slug,
+            imageUrl: e.imageUrl,
+            views: e.views,
         }));
     }
 
